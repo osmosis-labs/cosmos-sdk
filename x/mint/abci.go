@@ -13,6 +13,7 @@ import (
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
+// Check if we are at an epoch boundary. If not, exit early
 	epochDuration := k.GetParams(ctx).EpochDuration
 	nextEpochTimeEst := k.GetLastEpochTime(ctx).Add(epochDuration)
 	if ctx.BlockTime().Before(nextEpochTimeEst) {
