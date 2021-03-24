@@ -13,7 +13,7 @@ import (
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
-// Check if we are at an epoch boundary. If not, exit early
+	// Check if we are at an epoch boundary. If not, exit early
 	epochDuration := k.GetParams(ctx).EpochDuration
 	nextEpochTimeEst := k.GetLastEpochTime(ctx).Add(epochDuration)
 	if ctx.BlockTime().Before(nextEpochTimeEst) {
@@ -27,10 +27,10 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	minter := k.GetMinter(ctx)
 	params := k.GetParams(ctx)
 
-        // Check if we have hit an epoch where we update the inflation parameter.
-        // Since epochs only update based on BFT time data, it is safe to store the "halvening period time" 
-        // in terms of the number of epochs that have transpired. 
-     	if k.GetEpochNum(ctx) >= int64(k.GetParams(ctx).HalvenPeriodInEpoch)+k.GetLastHalvenEpochNum(ctx) {
+	// Check if we have hit an epoch where we update the inflation parameter.
+	// Since epochs only update based on BFT time data, it is safe to store the "halvening period time"
+	// in terms of the number of epochs that have transpired.
+	if k.GetEpochNum(ctx) >= k.GetParams(ctx).HalvenPeriodInEpoch+k.GetLastHalvenEpochNum(ctx) {
 		// Halven the reward per halven period
 		minter.AnnualProvisions = minter.NextAnnualProvisions(params)
 		k.SetMinter(ctx, minter)

@@ -50,7 +50,7 @@ message Params {
     (gogoproto.nullable)    = false
   ];
   // number of epochs in halven period
-  uint64 halven_period_in_epoch = 6 [(gogoproto.moretags) = "yaml:\"halven_period_in_epoch\""];
+  int64 halven_period_in_epoch = 6 [(gogoproto.moretags) = "yaml:\"halven_period_in_epoch\""];
   // expected epochs per year
-  uint64 epochs_per_year = 7 [(gogoproto.moretags) = "yaml:\"epochs_per_year\""];
+  int64 epochs_per_year = 7 [(gogoproto.moretags) = "yaml:\"epochs_per_year\""];
 }

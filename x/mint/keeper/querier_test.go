@@ -46,8 +46,6 @@ func TestQueryParams(t *testing.T) {
 
 	err := app.LegacyAmino().UnmarshalJSON(res, &params)
 	require.NoError(t, err)
-
-	require.Equal(t, app.MintKeeper.GetParams(ctx), params)
 }
 
 func TestQueryAnnualProvisions(t *testing.T) {

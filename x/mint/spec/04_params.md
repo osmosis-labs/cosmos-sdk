@@ -11,4 +11,4 @@ The minting module contains the following parameters:
 | MintDenom           | string          | "uatom"                |
 | MaxRewardPerEpoch   | string (dec)    | "0.200000000000000000" |
 | MinRewardPerEpoch   | string (dec)    | "0.070000000000000000" |
-| EpochsPerYear       | string (uint64) | "6311520"              |
+| EpochsPerYear       | string (int64) | "6311520"              |

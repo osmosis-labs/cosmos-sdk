@@ -26,7 +26,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 func NewParams(
-	mintDenom string, annualProvisions, maxRewardPerEpoch, minRewardPerEpoch sdk.Dec, epochDuration time.Duration, halvenPeriodInEpoch, epochsPerYear uint64,
+	mintDenom string, annualProvisions, maxRewardPerEpoch, minRewardPerEpoch sdk.Dec, epochDuration time.Duration, halvenPeriodInEpoch, epochsPerYear int64,
 ) Params {
 
 	return Params{
@@ -138,7 +138,7 @@ func validateMinRewardPerEpoch(i interface{}) error {
 }
 
 func validateEpochsPerYear(i interface{}) error {
-	v, ok := i.(uint64)
+	v, ok := i.(int64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

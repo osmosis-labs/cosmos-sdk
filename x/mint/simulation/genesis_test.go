@@ -43,7 +43,7 @@ func TestRandomizedGenState(t *testing.T) {
 	dec2, _ := sdk.NewDecFromStr("0.200000000000000000")
 	dec3, _ := sdk.NewDecFromStr("0.070000000000000000")
 
-	require.Equal(t, uint64(6311520), mintGenesis.Params.EpochsPerYear)
+	require.Equal(t, int64(6311520), mintGenesis.Params.EpochsPerYear)
 	require.Equal(t, dec2, mintGenesis.Params.MaxRewardPerEpoch)
 	require.Equal(t, dec3, mintGenesis.Params.MinRewardPerEpoch)
 	require.Equal(t, "stake", mintGenesis.Params.MintDenom)
