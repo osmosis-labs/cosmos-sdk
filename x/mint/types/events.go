@@ -5,4 +5,5 @@ const (
 	EventTypeMint = ModuleName
 
 	AttributeKeyAnnualProvisions = "annual_provisions"
+	AttributeEpochNumber         = "epoch_number"
 )

@@ -13,16 +13,16 @@ func TestEpochProvision(t *testing.T) {
 	minter := InitialMinter()
 	params := DefaultParams()
 
-	secondsPerYear := int64(60 * 60 * 8766)
+	daysPerYear := int64(365)
 
 	tests := []struct {
 		annualProvisions int64
 		expProvisions    int64
 	}{
-		{secondsPerYear / 5, 121375},
-		{secondsPerYear/5 + 1, 121375},
-		{(secondsPerYear / 5) * 2, 242750},
-		{(secondsPerYear / 5) / 2, 60687},
+		{daysPerYear / 7, 1},
+		{daysPerYear/7 + 1, 1},
+		{(daysPerYear / 7) * 2, 2},
+		{(daysPerYear / 7) / 2, 0},
 	}
 	for i, tc := range tests {
 		minter.AnnualProvisions = sdk.NewDec(tc.annualProvisions)
