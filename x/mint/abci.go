@@ -29,9 +29,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	params := k.GetParams(ctx)
 
 	// Check if we have hit an epoch where we update the inflation parameter.
-	// Since epochs only update based on BFT time data, it is safe to store the "halvening period time"
+	// Since epochs only update based on BFT time data, it is safe to store the "reduction period time"
 	// in terms of the number of epochs that have transpired.
-	if k.GetEpochNum(ctx) >= k.GetParams(ctx).HalvenPeriodInEpoch+k.GetLastHalvenEpochNum(ctx) {
+	if k.GetEpochNum(ctx) >= k.GetParams(ctx).ReductionPeriodInEpochs+k.GetLastHalvenEpochNum(ctx) {
 		// Halven the reward per halven period
 		minter.AnnualProvisions = minter.NextAnnualProvisions(params)
 		k.SetMinter(ctx, minter)

@@ -26,17 +26,19 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 func NewParams(
-	mintDenom string, annualProvisions, maxRewardPerEpoch, minRewardPerEpoch sdk.Dec, epochDuration time.Duration, halvenPeriodInEpoch, epochsPerYear int64,
+	mintDenom string, annualProvisions, maxRewardPerEpoch, minRewardPerEpoch sdk.Dec, epochDuration time.Duration,
+	reductionFactorForEvent sdk.Dec, reductionPeriodInEpochs, epochsPerYear int64,
 ) Params {
 
 	return Params{
-		MintDenom:           mintDenom,
-		AnnualProvisions:    annualProvisions,
-		MaxRewardPerEpoch:   maxRewardPerEpoch,
-		MinRewardPerEpoch:   minRewardPerEpoch,
-		EpochDuration:       epochDuration,
-		HalvenPeriodInEpoch: halvenPeriodInEpoch,
-		EpochsPerYear:       epochsPerYear,
+		MintDenom:               mintDenom,
+		AnnualProvisions:        annualProvisions,
+		MaxRewardPerEpoch:       maxRewardPerEpoch,
+		MinRewardPerEpoch:       minRewardPerEpoch,
+		EpochDuration:           epochDuration,
+		ReductionPeriodInEpochs: reductionPeriodInEpochs,
+		ReductionFactorForEvent: reductionFactorForEvent,
+		EpochsPerYear:           epochsPerYear,
 	}
 }
 
@@ -44,13 +46,14 @@ func NewParams(
 func DefaultParams() Params {
 	epochDuration, _ := time.ParseDuration("168h") // 1 week
 	return Params{
-		MintDenom:           sdk.DefaultBondDenom,
-		AnnualProvisions:    sdk.NewDec(5000000).Mul(sdk.NewDec(52)), // yearly rewards
-		MaxRewardPerEpoch:   sdk.NewDec(6000000),                     // per epoch max
-		MinRewardPerEpoch:   sdk.NewDec(4000000),                     // per epoch min
-		EpochDuration:       epochDuration,                           // 1 week
-		HalvenPeriodInEpoch: 156,                                     // 3 years
-		EpochsPerYear:       52,                                      // assuming 5 second block times
+		MintDenom:               sdk.DefaultBondDenom,
+		AnnualProvisions:        sdk.NewDec(5000000).Mul(sdk.NewDec(52)), // yearly rewards
+		MaxRewardPerEpoch:       sdk.NewDec(6000000),                     // per epoch max
+		MinRewardPerEpoch:       sdk.NewDec(4000000),                     // per epoch min
+		EpochDuration:           epochDuration,                           // 1 week
+		ReductionPeriodInEpochs: 156,                                     // 3 years
+		ReductionFactorForEvent: sdk.NewDecWithPrec(5, 1),                // 0.5
+		EpochsPerYear:           52,                                      // assuming 5 second block times
 	}
 }
 

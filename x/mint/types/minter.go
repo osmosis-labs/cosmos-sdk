@@ -28,8 +28,8 @@ func ValidateMinter(minter Minter) error {
 }
 
 // NextAnnualProvisions returns the annual provisions
-func (m Minter) NextAnnualProvisions(_ Params) sdk.Dec {
-	return m.AnnualProvisions.QuoInt(sdk.NewInt(2))
+func (m Minter) NextAnnualProvisions(params Params) sdk.Dec {
+	return m.AnnualProvisions.Mul(params.ReductionFactorForEvent)
 }
 
 // EpochProvision returns the provisions for a block based on the annual
