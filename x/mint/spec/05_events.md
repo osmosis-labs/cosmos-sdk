@@ -10,6 +10,6 @@ The minting module emits the following events:
 
 | Type | Attribute Key     | Attribute Value    |
 |------|-------------------|--------------------|
-| mint | bonded_ratio      | {bondedRatio}      |
+| mint | epoch_number      | {epochNumber}      |
 | mint | annual_provisions | {annualProvisions} |
 | mint | amount            | {amount}           |

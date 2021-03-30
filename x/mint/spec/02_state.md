@@ -8,23 +8,25 @@ order: 2
 
 The minter is a space for holding current rewards information.
 
- - Minter: `0x00 -> ProtocolBuffer(minter)`
-
-+++ https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc7/proto/cosmos/mint/v1beta1/mint.proto#L8-L19
+```go
+type Minter struct {
+	AnnualProvisions sdk.Dec   // current annual exptected provisions
+}
+```
 
 ## Params
 
 Minting params are held in the global params store. 
 
- - Params: `mint/params -> amino(params)`
-
 ```go
 type Params struct {
-	MintDenom           string  // type of coin to mint
-	InflationRateChange sdk.Dec // maximum annual change in inflation rate
-	InflationMax        sdk.Dec // maximum inflation rate
-	InflationMin        sdk.Dec // minimum inflation rate
-	GoalBonded          sdk.Dec // goal of percent bonded atoms
-	BlocksPerYear       int64   // expected blocks per year
+	MintDenom               string        // type of coin to mint
+	AnnualProvisions        sdk.Dec       // annual provisions
+	MaxRewardPerEpoch       sdk.Dec       // maximum reward per epoch
+	MinRewardPerEpoch       sdk.Dec       // minimum reward per epoch
+	EpochDuration           time.Duration // duration of an epoch
+	ReductionPeriodInEpochs int64         // number of epochs take to reduce rewards
+	ReductionFactorForEvent sdk.Dec       // reduction multiplier to execute on each period
+	EpochsPerYear           int64         // expected epochs per year
 }
 ```
