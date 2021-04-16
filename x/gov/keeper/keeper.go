@@ -74,7 +74,7 @@ func (keeper Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", "x/"+types.ModuleName)
 }
 
-// Set the validator hooks
+// SetHooks sets the hooks for governance
 func (k *Keeper) SetHooks(sh types.GovHooks) *Keeper {
 	if k.hooks != nil {
 		panic("cannot set validator hooks twice")
