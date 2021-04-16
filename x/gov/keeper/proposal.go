@@ -42,7 +42,7 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, content types.Content) (typ
 	keeper.SetProposalID(ctx, proposalID+1)
 
 	// called when proposal is submitted
-	keeper.AfterProposalSubmission(ctx, proposalID)         
+	keeper.AfterProposalSubmission(ctx, proposalID)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
