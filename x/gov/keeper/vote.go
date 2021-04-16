@@ -26,7 +26,7 @@ func (keeper Keeper) AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.A
 	keeper.SetVote(ctx, vote)
 
 	// called when vote on a proposal
-	keeper.AfterProposalVote(ctx, proposalID, voterAddr, option)
+	keeper.AfterProposalVote(ctx, proposalID, voterAddr)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

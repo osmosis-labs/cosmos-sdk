@@ -57,9 +57,9 @@ type BankKeeper interface {
 
 // GovHooks event hooks for governance proposal object (noalias)
 type GovHooks interface {
-	AfterProposalSubmission(ctx sdk.Context, proposalID uint64)                         // Must be called when proposal is submitted
-	AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAmount sdk.Coins)                            // Must be called when deposit finish
-	AfterProposalVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, option VoteOption)     // Must be called when vote on a proposal
-	AfterProposalInactive(ctx sdk.Context, proposalID uint64) // Must be called when proposal become inactive
-	AfterProposalActive(ctx sdk.Context, proposalID uint64)   // Must be called when proposal become active
+	AfterProposalSubmission(ctx sdk.Context, proposalID uint64)                       // Must be called when proposal is submitted
+	AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAmount sdk.Coins) // Must be called when deposit finish
+	AfterProposalVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress)   // Must be called when vote on a proposal
+	AfterProposalInactive(ctx sdk.Context, proposalID uint64)                         // Must be called when proposal become inactive
+	AfterProposalActive(ctx sdk.Context, proposalID uint64)                           // Must be called when proposal become active
 }

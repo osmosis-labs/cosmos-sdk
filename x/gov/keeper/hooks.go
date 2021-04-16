@@ -23,9 +23,9 @@ func (k Keeper) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, deposit
 }
 
 // AfterProposalVote - call hook if registered
-func (k Keeper) AfterProposalVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, option types.VoteOption) {
+func (k Keeper) AfterProposalVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress) {
 	if k.hooks != nil {
-		k.hooks.AfterProposalVote(ctx, proposalID, voterAddr, option)
+		k.hooks.AfterProposalVote(ctx, proposalID, voterAddr)
 	}
 }
 
