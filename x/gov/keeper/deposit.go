@@ -150,8 +150,8 @@ func (keeper Keeper) AddDeposit(ctx sdk.Context, proposalID uint64, depositorAdd
 		deposit = types.NewDeposit(proposalID, depositorAddr, depositAmount)
 	}
 
-		// called when deposit finish                
-	keeper.AfterProposalDeposit(ctx, proposalID, depositAmount)  
+	// called when deposit finish
+	keeper.AfterProposalDeposit(ctx, proposalID, depositorAddr)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

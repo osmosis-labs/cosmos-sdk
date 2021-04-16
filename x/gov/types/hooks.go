@@ -19,9 +19,9 @@ func (h MultiGovHooks) AfterProposalSubmission(ctx sdk.Context, proposalID uint6
 	}
 }
 
-func (h MultiGovHooks) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAmount sdk.Coins) {
+func (h MultiGovHooks) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositorAddr sdk.AccAddress) {
 	for i := range h {
-		h[i].AfterProposalDeposit(ctx, proposalID, depositAmount)
+		h[i].AfterProposalDeposit(ctx, proposalID, depositorAddr)
 	}
 }
 

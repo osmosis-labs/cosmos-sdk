@@ -16,9 +16,9 @@ func (keeper Keeper) AfterProposalSubmission(ctx sdk.Context, proposalID uint64)
 }
 
 // AfterProposalDeposit - call hook if registered
-func (keeper Keeper) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAmount sdk.Coins) {
+func (keeper Keeper) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAddr sdk.AccAddress) {
 	if keeper.hooks != nil {
-		keeper.hooks.AfterProposalDeposit(ctx, proposalID, depositAmount)
+		keeper.hooks.AfterProposalDeposit(ctx, proposalID, depositAddr)
 	}
 }
 
