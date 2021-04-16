@@ -3,7 +3,9 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-var _ GovHooks = new MultiGovHooks{}
+
+var _ GovHooks = MultiGovHooks{}
+
 // combine multiple governance hooks, all hook functions are run in array sequence
 type MultiGovHooks []GovHooks
 
