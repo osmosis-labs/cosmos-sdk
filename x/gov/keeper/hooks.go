@@ -9,36 +9,36 @@ import (
 var _ types.GovHooks = Keeper{}
 
 // AfterProposalSubmission - call hook if registered
-func (k Keeper) AfterProposalSubmission(ctx sdk.Context, proposalID uint64) {
-	if k.hooks != nil {
-		k.hooks.AfterProposalSubmission(ctx, proposalID)
+func (keeper Keeper) AfterProposalSubmission(ctx sdk.Context, proposalID uint64) {
+	if keeper.hooks != nil {
+		keeper.hooks.AfterProposalSubmission(ctx, proposalID)
 	}
 }
 
 // AfterProposalDeposit - call hook if registered
-func (k Keeper) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAmount sdk.Coins) {
-	if k.hooks != nil {
-		k.hooks.AfterProposalDeposit(ctx, proposalID, depositAmount)
+func (keeper Keeper) AfterProposalDeposit(ctx sdk.Context, proposalID uint64, depositAmount sdk.Coins) {
+	if keeper.hooks != nil {
+		keeper.hooks.AfterProposalDeposit(ctx, proposalID, depositAmount)
 	}
 }
 
 // AfterProposalVote - call hook if registered
-func (k Keeper) AfterProposalVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress) {
-	if k.hooks != nil {
-		k.hooks.AfterProposalVote(ctx, proposalID, voterAddr)
+func (keeper Keeper) AfterProposalVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress) {
+	if keeper.hooks != nil {
+		keeper.hooks.AfterProposalVote(ctx, proposalID, voterAddr)
 	}
 }
 
 // AfterProposalInactive - call hook if registered
-func (k Keeper) AfterProposalInactive(ctx sdk.Context, proposalID uint64) {
-	if k.hooks != nil {
-		k.hooks.AfterProposalInactive(ctx, proposalID)
+func (keeper Keeper) AfterProposalInactive(ctx sdk.Context, proposalID uint64) {
+	if keeper.hooks != nil {
+		keeper.hooks.AfterProposalInactive(ctx, proposalID)
 	}
 }
 
 // AfterProposalActive - call hook if registered
-func (k Keeper) AfterProposalActive(ctx sdk.Context, proposalID uint64) {
-	if k.hooks != nil {
-		k.hooks.AfterProposalActive(ctx, proposalID)
+func (keeper Keeper) AfterProposalActive(ctx sdk.Context, proposalID uint64) {
+	if keeper.hooks != nil {
+		keeper.hooks.AfterProposalActive(ctx, proposalID)
 	}
 }

@@ -75,14 +75,14 @@ func (keeper Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // SetHooks sets the hooks for governance
-func (k *Keeper) SetHooks(sh types.GovHooks) *Keeper {
-	if k.hooks != nil {
+func (keeper *Keeper) SetHooks(sh types.GovHooks) *Keeper {
+	if keeper.hooks != nil {
 		panic("cannot set validator hooks twice")
 	}
 
-	k.hooks = sh
+	keeper.hooks = sh
 
-	return k
+	return keeper
 }
 
 // Router returns the gov Keeper's Router
