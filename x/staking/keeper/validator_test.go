@@ -1097,7 +1097,6 @@ func TestUpdateValidatorCommission(t *testing.T) {
 		commission, err := app.StakingKeeper.UpdateValidatorCommission(ctx, tc.validator, tc.newRate)
 
 		if tc.expectedErr {
-			fmt.Println(app.StakingKeeper.MinCommissionRate(ctx))
 			require.Error(t, err, "expected error for test case #%d with rate: %s", i, tc.newRate)
 		} else {
 			tc.validator.Commission = commission
