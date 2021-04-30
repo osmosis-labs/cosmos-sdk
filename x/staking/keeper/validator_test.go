@@ -1089,7 +1089,7 @@ func TestUpdateValidatorCommission(t *testing.T) {
 		{val2, sdk.NewDecWithPrec(-1, 1), true},
 		{val2, sdk.NewDecWithPrec(4, 1), true},
 		{val2, sdk.NewDecWithPrec(3, 1), true},
-		{val2, sdk.NewDecWithPrec(1, 2), true},
+		{val2, sdk.NewDecWithPrec(1, 2), true}, // Commission rate below minimum
 		{val2, sdk.NewDecWithPrec(2, 1), false},
 	}
 
