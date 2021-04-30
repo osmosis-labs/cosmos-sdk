@@ -33,8 +33,7 @@ const (
 )
 
 var (
-	// DefaultMinCommissionRate is set to 1%.
-	// DefaultMinCommissionRate = sdk.NewDecWithPrec(1, 1)
+	// DefaultMinCommissionRate is set to 0%
 	DefaultMinCommissionRate = sdk.ZeroDec()
 )
 
