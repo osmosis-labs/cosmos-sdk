@@ -39,6 +39,12 @@ func (k Keeper) BondDenom(ctx sdk.Context) (res string) {
 	return
 }
 
+// MinCommissionRate - Minimum validator commission rate
+func (k Keeper) MinCommissionRate(ctx sdk.Context) (res sdk.Dec) {
+	k.paramstore.Get(ctx, types.KeyMinCommissionRate, &res)
+	return
+}
+
 // Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.NewParams(
@@ -47,6 +53,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		k.MaxEntries(ctx),
 		k.HistoricalEntries(ctx),
 		k.BondDenom(ctx),
+		k.MinCommissionRate(ctx),
 	)
 }
 
