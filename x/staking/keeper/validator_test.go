@@ -1061,7 +1061,7 @@ func TestUpdateValidatorCommission(t *testing.T) {
 
 	params := app.StakingKeeper.GetParams(ctx)
 
-	params.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
+	params.MinCommissionRate = sdk.MustNewDecFromStr("0.05")
 
 	app.StakingKeeper.SetParams(ctx, params)
 
