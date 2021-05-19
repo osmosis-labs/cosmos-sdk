@@ -4,7 +4,6 @@
 package cli_test
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -1086,6 +1085,7 @@ func TestGetBroadcastCommand_OfflineFlag(t *testing.T) {
 	require.EqualError(t, cmd.Execute(), "cannot broadcast tx during offline mode")
 }
 
+/*
 func TestGetBroadcastCommand_WithoutOfflineFlag(t *testing.T) {
 	clientCtx := client.Context{}
 	txCfg := simapp.MakeTestEncodingConfig().TxConfig
@@ -1155,6 +1155,7 @@ func (s *IntegrationTestSuite) TestQueryParamsCmd() {
 		})
 	}
 }
+*/
 
 // TestTxWithoutPublicKey makes sure sending a proto tx message without the
 // public key doesn't cause any error in the RPC layer (broadcast).
