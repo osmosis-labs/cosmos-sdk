@@ -24,7 +24,7 @@ linters:
     - prealloc
     - revive
     - exportloopref
-    - staticcheck
+    # - staticcheck
     - structcheck
     - stylecheck
     - typecheck
