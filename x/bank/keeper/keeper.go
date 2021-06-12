@@ -34,6 +34,7 @@ type Keeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
+	SendCoinsFromModuleToAccountOriginalVesting(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
@@ -285,6 +286,27 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 	}
 
 	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
+}
+
+// SendCoinsFromModuleToAccountOriginalVesting does existing bank keeper logic for SendCoinsFromModuleToAccount,
+// except the recipient account should have its original vesting increment if its a vesting account.
+// If recipient is a regular account, just do a normal send
+func (k BaseKeeper) SendCoinsFromModuleToAccountOriginalVesting(
+	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins,
+) error {
+
+	err := k.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
+	if err != nil {
+		return err
+	}
+
+	recipientAcc := k.ak.GetAccount(ctx, recipientAddr)
+	if dva, ok := recipientAcc.(vestexported.VestingAccount); ok {
+		dva.AddToOriginalVestedCoins(amt)
+		k.ak.SetAccount(ctx, dva)
+	}
+
+	return nil
 }
 
 // DelegateCoinsFromAccountToModule delegates coins and transfers them from a
