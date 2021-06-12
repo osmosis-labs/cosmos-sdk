@@ -60,6 +60,7 @@ func getCoinsByName(ctx sdk.Context, bk keeper.Keeper, ak types.AccountKeeper, m
 	return bk.GetAllBalances(ctx, macc.GetAddress())
 }
 
+// dummy comment
 type IntegrationTestSuite struct {
 	suite.Suite
 
