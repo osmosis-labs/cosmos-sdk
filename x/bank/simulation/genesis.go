@@ -40,7 +40,7 @@ func GenesisCoins(bondDenom string, initialStake int64) sdk.Coins {
 	for i := range coins {
 		coins[i] = sdk.NewCoin(fmt.Sprintf("%s%02d", bondDenom, i), sdk.NewInt(initialStake))
 	}
-	coins.Add(sdk.NewInt64Coin(bondDenom, initialStake))
+	coins = coins.Add(sdk.NewInt64Coin(bondDenom, initialStake))
 	return coins
 }
 
