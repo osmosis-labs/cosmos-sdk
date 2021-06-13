@@ -36,7 +36,7 @@ func RandomGenesisSendParams(r *rand.Rand) types.SendEnabledParams {
 }
 
 func GenesisCoins(bondDenom string, initialStake int64) sdk.Coins {
-	coins := make(sdk.Coins, 20)
+	coins := make(sdk.Coins, 8)
 	for i := range coins {
 		coins[i] = sdk.NewCoin(fmt.Sprintf("%s%02d", bondDenom, i), sdk.NewInt(initialStake))
 	}
