@@ -43,7 +43,7 @@ func TestRandomizedGenState(t *testing.T) {
 	require.Len(t, bankGenesis.Balances, 3)
 	require.Equal(t, "cosmos1ghekyjucln7y67ntx7cf27m9dpuxxemn4c8g4r", bankGenesis.Balances[2].GetAddress().String())
 	require.Equal(t, simulation.GenesisCoins("stake", 1000).String(), bankGenesis.Balances[2].GetCoins().String())
-	require.Equal(t, "6000stake", bankGenesis.Supply.String())
+	require.Equal(t, "3000stake,3000stake00,3000stake01,3000stake02,3000stake03,3000stake04,3000stake05,3000stake06,3000stake07,3000stake08,3000stake09,3000stake10,3000stake11,3000stake12,3000stake13,3000stake14,3000stake15,3000stake16,3000stake17,3000stake18,3000stake19", bankGenesis.Supply.String())
 }
 
 // TestRandomizedGenState tests abnormal scenarios of applying RandomizedGenState.
