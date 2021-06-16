@@ -214,6 +214,7 @@ func (d Dec) Neg() Dec          { return Dec{new(big.Int).Neg(d.i)} } // reverse
 func (d Dec) NegMut() Dec       { d.i.Neg(d.i); return d }            // reverse the decimal sign, mutable
 func (d Dec) Abs() Dec          { return Dec{new(big.Int).Abs(d.i)} } // absolute value
 func (d Dec) Set(d2 Dec) Dec    { d.i.Set(d2.i); return d }           // set to existing dec value
+func (d Dec) Clone() Dec        { return Dec{new(big.Int).Set(d.i)} } // clone new dec
 
 // BigInt returns a copy of the underlying big.Int.
 func (d Dec) BigInt() *big.Int {
@@ -226,18 +227,15 @@ func (d Dec) BigInt() *big.Int {
 }
 
 func (d Dec) ImmutOp(op func(Dec, Dec) Dec, d2 Dec) Dec {
-	res := Dec{new(big.Int).Set(d.i)}
-	return op(res, d2)
+	return op(d.Clone(), d2)
 }
 
 func (d Dec) ImmutOpInt(op func(Dec, Int) Dec, d2 Int) Dec {
-	res := Dec{new(big.Int).Set(d.i)}
-	return op(res, d2)
+	return op(d.Clone(), d2)
 }
 
 func (d Dec) ImmutOpInt64(op func(Dec, int64) Dec, d2 int64) Dec {
-	res := Dec{new(big.Int).Set(d.i)}
-	return op(res, d2)
+	return op(d.Clone(), d2)
 }
 
 // addition
@@ -343,11 +341,10 @@ func (d Dec) QuoMut(d2 Dec) Dec {
 	d.i.Mul(d.i, precisionReuse)
 	d.i.Quo(d.i, d2.i)
 
-	chopped := chopPrecisionAndRound(d.i)
-	if chopped.BitLen() > 255+DecimalPrecisionBits {
+	chopPrecisionAndRound(d.i)
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	*d.i = *chopped
 	return d
 }
 
@@ -363,11 +360,10 @@ func (d Dec) QuoTruncateMut(d2 Dec) Dec {
 	d.i.Mul(d.i, precisionReuse)
 	d.i.Quo(d.i, d2.i)
 
-	chopped := chopPrecisionAndTruncate(d.i)
-	if chopped.BitLen() > 255+DecimalPrecisionBits {
+	chopPrecisionAndTruncate(d.i)
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	*d.i = *chopped
 	return d
 }
 
@@ -383,11 +379,10 @@ func (d Dec) QuoRoundupMut(d2 Dec) Dec {
 	d.i.Mul(d.i, precisionReuse)
 	d.i.Quo(d.i, d2.i)
 
-	chopped := chopPrecisionAndRoundUp(d.i)
-	if chopped.BitLen() > 255+DecimalPrecisionBits {
+	chopPrecisionAndRoundUp(d.i)
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	*d.i = *chopped
 	return d
 }
 
