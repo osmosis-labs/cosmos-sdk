@@ -198,7 +198,6 @@ func MustNewDecFromStr(s string) Dec {
 	return dec
 }
 
-
 // _____________________________________________________________________________________________
 //nolint
 
@@ -212,7 +211,7 @@ func (d Dec) GTE(d2 Dec) bool   { return (d.i).Cmp(d2.i) >= 0 }       // greater
 func (d Dec) LT(d2 Dec) bool    { return (d.i).Cmp(d2.i) < 0 }        // less than
 func (d Dec) LTE(d2 Dec) bool   { return (d.i).Cmp(d2.i) <= 0 }       // less than or equal
 func (d Dec) Neg() Dec          { return Dec{new(big.Int).Neg(d.i)} } // reverse the decimal sign
-func (d Dec) NegMut() Dec				{ d.i.Neg(d.i); return d }						// reverse the decimal sign, mutable
+func (d Dec) NegMut() Dec       { d.i.Neg(d.i); return d }            // reverse the decimal sign, mutable
 func (d Dec) Abs() Dec          { return Dec{new(big.Int).Abs(d.i)} } // absolute value
 func (d Dec) Set(d2 Dec) Dec    { d.i.Set(d2.i); return d }           // set to existing dec value
 
@@ -311,7 +310,7 @@ func (d Dec) MulInt(i Int) Dec {
 }
 
 func (d Dec) MulIntMut(i Int) Dec {
-	d.i.Mul(d.i, i.i)	
+	d.i.Mul(d.i, i.i)
 	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
@@ -337,7 +336,7 @@ func (d Dec) Quo(d2 Dec) Dec {
 	return d.ImmutOp(Dec.QuoMut, d2)
 }
 
-// mutable quotient 
+// mutable quotient
 func (d Dec) QuoMut(d2 Dec) Dec {
 	// multiply precision twice
 	d.i.Mul(d.i, precisionReuse)
