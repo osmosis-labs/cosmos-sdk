@@ -432,7 +432,7 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 	}()
 
 	if d.IsNegative() {
-		absRoot, err := d.MulInt64(-1).ApproxRoot(root)
+		absRoot, err := d.Neg().ApproxRoot(root)
 		return absRoot.NegMut(), err
 	}
 
@@ -444,7 +444,6 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 		return OneDec(), nil
 	}
 
-	rootInt := NewIntFromUint64(root)
 	guess, delta := OneDec(), OneDec()
 
 	for iter := 0; delta.Abs().GT(SmallestDec()) && iter < maxApproxRootIterations; iter++ {
@@ -454,7 +453,7 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 		}
 		delta.Set(d).QuoMut(prev)
 		delta.SubMut(guess)
-		delta.QuoIntMut(rootInt)
+		delta.QuoInt64Mut(int64(root))
 
 		guess.AddMut(delta)
 	}
