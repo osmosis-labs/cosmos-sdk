@@ -198,8 +198,10 @@ func MustNewDecFromStr(s string) Dec {
 	return dec
 }
 
+
 // _____________________________________________________________________________________________
 //nolint
+
 func (d Dec) IsNil() bool       { return d.i == nil }                 // is decimal nil
 func (d Dec) IsZero() bool      { return (d.i).Sign() == 0 }          // is equal to zero
 func (d Dec) IsNegative() bool  { return (d.i).Sign() == -1 }         // is negative
@@ -212,6 +214,7 @@ func (d Dec) LTE(d2 Dec) bool   { return (d.i).Cmp(d2.i) <= 0 }       // less th
 func (d Dec) Neg() Dec          { return Dec{new(big.Int).Neg(d.i)} } // reverse the decimal sign
 func (d Dec) NegMut() Dec				{ d.i.Neg(d.i); return d }						// reverse the decimal sign, mutable
 func (d Dec) Abs() Dec          { return Dec{new(big.Int).Abs(d.i)} } // absolute value
+func (d Dec) Set(d2 Dec) Dec    { d.i.Set(d2.i); return d }           // set to existing dec value
 
 // BigInt returns a copy of the underlying big.Int.
 func (d Dec) BigInt() *big.Int {
@@ -225,8 +228,17 @@ func (d Dec) BigInt() *big.Int {
 
 func (d Dec) ImmutOp(op func(Dec, Dec) Dec, d2 Dec) Dec {
 	res := Dec{new(big.Int).Set(d.i)}
-	res = op(res, d2)
-	return res
+	return op(res, d2)
+}
+
+func (d Dec) ImmutOpInt(op func(Dec, Int) Dec, d2 Int) Dec {
+	res := Dec{new(big.Int).Set(d.i)}
+	return op(res, d2)
+}
+
+func (d Dec) ImmutOpInt64(op func(Dec, int64) Dec, d2 int64) Dec {
+	res := Dec{new(big.Int).Set(d.i)}
+	return op(res, d2)
 }
 
 // addition
@@ -295,22 +307,29 @@ func (d Dec) MulTruncateMut(d2 Dec) Dec {
 
 // multiplication
 func (d Dec) MulInt(i Int) Dec {
-	mul := new(big.Int).Mul(d.i, i.i)
+	return d.ImmutOpInt(Dec.MulIntMut, i)
+}
 
-	if mul.BitLen() > 255+DecimalPrecisionBits {
+func (d Dec) MulIntMut(i Int) Dec {
+	d.i.Mul(d.i, i.i)	
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{mul}
+	return d
 }
 
 // MulInt64 - multiplication with int64
 func (d Dec) MulInt64(i int64) Dec {
-	mul := new(big.Int).Mul(d.i, big.NewInt(i))
+	return d.ImmutOpInt64(Dec.MulInt64Mut, i)
+}
 
-	if mul.BitLen() > 255+DecimalPrecisionBits {
+func (d Dec) MulInt64Mut(i int64) Dec {
+	d.i.Mul(d.i, big.NewInt(i))
+
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{mul}
+	return d
 }
 
 // quotient
@@ -375,14 +394,22 @@ func (d Dec) QuoRoundupMut(d2 Dec) Dec {
 
 // quotient
 func (d Dec) QuoInt(i Int) Dec {
-	mul := new(big.Int).Quo(d.i, i.i)
-	return Dec{mul}
+	return d.ImmutOpInt(Dec.QuoIntMut, i)
+}
+
+func (d Dec) QuoIntMut(i Int) Dec {
+	d.i.Quo(d.i, i.i)
+	return d
 }
 
 // QuoInt64 - quotient with int64
 func (d Dec) QuoInt64(i int64) Dec {
-	mul := new(big.Int).Quo(d.i, big.NewInt(i))
-	return Dec{mul}
+	return d.ImmutOpInt64(Dec.QuoInt64Mut, i)
+}
+
+func (d Dec) QuoInt64Mut(i int64) Dec {
+	d.i.Quo(d.i, big.NewInt(i))
+	return d
 }
 
 // ApproxRoot returns an approximate estimation of a Dec's positive real nth root
@@ -392,8 +419,6 @@ func (d Dec) QuoInt64(i int64) Dec {
 // A maximum number of 100 iterations is used a backup boundary condition for
 // cases where the answer never converges enough to satisfy the main condition.
 func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
-	// TODO: use mutable funcitons here
-
 	defer func() {
 		if r := recover(); r != nil {
 			var ok bool
@@ -406,7 +431,7 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 
 	if d.IsNegative() {
 		absRoot, err := d.MulInt64(-1).ApproxRoot(root)
-		return absRoot.MulInt64(-1), err
+		return absRoot.NegMut(), err
 	}
 
 	if root == 1 || d.IsZero() || d.Equal(OneDec()) {
@@ -425,11 +450,11 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 		if prev.IsZero() {
 			prev = SmallestDec()
 		}
-		delta = d.Quo(prev)
-		delta = delta.Sub(guess)
-		delta = delta.QuoInt(rootInt)
+		delta.Set(d).QuoMut(prev)
+		delta.SubMut(guess)
+		delta.QuoIntMut(rootInt)
 
-		guess = guess.Add(delta)
+		guess.AddMut(delta)
 	}
 
 	return guess, nil
@@ -437,6 +462,11 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 
 // Power returns a the result of raising to a positive integer power
 func (d Dec) Power(power uint64) Dec {
+	res := Dec{new(big.Int).Set(d.i)}
+	return res.PowerMut(power)
+}
+
+func (d Dec) PowerMut(power uint64) Dec {
 	// TODO: use mutable functions here
 	if power == 0 {
 		return OneDec()
@@ -445,13 +475,13 @@ func (d Dec) Power(power uint64) Dec {
 
 	for i := power; i > 1; {
 		if i%2 != 0 {
-			tmp = tmp.Mul(d)
+			tmp.MulMut(d)
 		}
 		i /= 2
-		d = d.Mul(d)
+		d.MulMut(d)
 	}
 
-	return d.Mul(tmp)
+	return d.MulMut(tmp)
 }
 
 // ApproxSqrt is a wrapper around ApproxRoot for the common special case
