@@ -242,6 +242,7 @@ func (d Dec) ImmutOpInt64(op func(Dec, int64) Dec, d2 int64) Dec {
 
 func (d Dec) SetInt64(i int64) Dec {
 	d.i.SetInt64(i)
+	d.i.Mul(d.i, precisionReuse)
 	return d
 }
 
