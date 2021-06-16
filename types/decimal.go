@@ -235,7 +235,14 @@ func (d Dec) ImmutOpInt(op func(Dec, Int) Dec, d2 Int) Dec {
 }
 
 func (d Dec) ImmutOpInt64(op func(Dec, int64) Dec, d2 int64) Dec {
+	// TODO: use already allocated operand bigint to avoid
+	// newint each time, add mutex for race condition
 	return op(d.Clone(), d2)
+}
+
+func (d Dec) SetInt64(i int64) Dec {
+	d.i.SetInt64(i)
+	return d
 }
 
 // addition
