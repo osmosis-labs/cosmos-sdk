@@ -210,6 +210,7 @@ func (d Dec) GTE(d2 Dec) bool   { return (d.i).Cmp(d2.i) >= 0 }       // greater
 func (d Dec) LT(d2 Dec) bool    { return (d.i).Cmp(d2.i) < 0 }        // less than
 func (d Dec) LTE(d2 Dec) bool   { return (d.i).Cmp(d2.i) <= 0 }       // less than or equal
 func (d Dec) Neg() Dec          { return Dec{new(big.Int).Neg(d.i)} } // reverse the decimal sign
+func (d Dec) NegMut() Dec				{ d.i.Neg(d.i); return d }						// reverse the decimal sign, mutable
 func (d Dec) Abs() Dec          { return Dec{new(big.Int).Abs(d.i)} } // absolute value
 
 // BigInt returns a copy of the underlying big.Int.
@@ -222,46 +223,74 @@ func (d Dec) BigInt() *big.Int {
 	return copy.Set(d.i)
 }
 
+func (d Dec) ImmutOp(op func(Dec, Dec) Dec, d2 Dec) Dec {
+	res := Dec{new(big.Int).Set(d.i)}
+	res = op(res, d2)
+	return res
+}
+
 // addition
 func (d Dec) Add(d2 Dec) Dec {
-	res := new(big.Int).Add(d.i, d2.i)
+	return d.ImmutOp(Dec.AddMut, d2)
+}
 
-	if res.BitLen() > 255+DecimalPrecisionBits {
+// mutable addition
+func (d Dec) AddMut(d2 Dec) Dec {
+	d.i.Add(d.i, d2.i)
+
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{res}
+	return d
 }
 
 // subtraction
 func (d Dec) Sub(d2 Dec) Dec {
-	res := new(big.Int).Sub(d.i, d2.i)
+	return d.ImmutOp(Dec.SubMut, d2)
+}
 
-	if res.BitLen() > 255+DecimalPrecisionBits {
+// mutable subtraction
+func (d Dec) SubMut(d2 Dec) Dec {
+	d.i.Sub(d.i, d2.i)
+
+	if d.i.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{res}
+	return d
 }
 
 // multiplication
 func (d Dec) Mul(d2 Dec) Dec {
-	mul := new(big.Int).Mul(d.i, d2.i)
-	chopped := chopPrecisionAndRound(mul)
+	return d.ImmutOp(Dec.MulMut, d2)
+}
+
+// mutable multiplication
+func (d Dec) MulMut(d2 Dec) Dec {
+	d.i.Mul(d.i, d2.i)
+	chopped := chopPrecisionAndRound(d.i)
 
 	if chopped.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{chopped}
+	*d.i = *chopped
+	return d
 }
 
 // multiplication truncate
 func (d Dec) MulTruncate(d2 Dec) Dec {
-	mul := new(big.Int).Mul(d.i, d2.i)
-	chopped := chopPrecisionAndTruncate(mul)
+	return d.ImmutOp(Dec.MulTruncateMut, d2)
+}
+
+// mutable multiplication truncage
+func (d Dec) MulTruncateMut(d2 Dec) Dec {
+	d.i.Mul(d.i, d2.i)
+	chopped := chopPrecisionAndTruncate(d.i)
 
 	if chopped.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{chopped}
+	*d.i = *chopped
+	return d
 }
 
 // multiplication
@@ -286,47 +315,62 @@ func (d Dec) MulInt64(i int64) Dec {
 
 // quotient
 func (d Dec) Quo(d2 Dec) Dec {
+	return d.ImmutOp(Dec.QuoMut, d2)
+}
+
+// mutable quotient 
+func (d Dec) QuoMut(d2 Dec) Dec {
 	// multiply precision twice
-	mul := new(big.Int).Mul(d.i, precisionReuse)
-	mul.Mul(mul, precisionReuse)
+	d.i.Mul(d.i, precisionReuse)
+	d.i.Mul(d.i, precisionReuse)
+	d.i.Quo(d.i, d2.i)
 
-	quo := new(big.Int).Quo(mul, d2.i)
-	chopped := chopPrecisionAndRound(quo)
-
+	chopped := chopPrecisionAndRound(d.i)
 	if chopped.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{chopped}
+	*d.i = *chopped
+	return d
 }
 
 // quotient truncate
 func (d Dec) QuoTruncate(d2 Dec) Dec {
+	return d.ImmutOp(Dec.QuoTruncateMut, d2)
+}
+
+// mutable quotient truncate
+func (d Dec) QuoTruncateMut(d2 Dec) Dec {
 	// multiply precision twice
-	mul := new(big.Int).Mul(d.i, precisionReuse)
-	mul.Mul(mul, precisionReuse)
+	d.i.Mul(d.i, precisionReuse)
+	d.i.Mul(d.i, precisionReuse)
+	d.i.Quo(d.i, d2.i)
 
-	quo := new(big.Int).Quo(mul, d2.i)
-	chopped := chopPrecisionAndTruncate(quo)
-
+	chopped := chopPrecisionAndTruncate(d.i)
 	if chopped.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{chopped}
+	*d.i = *chopped
+	return d
 }
 
 // quotient, round up
 func (d Dec) QuoRoundUp(d2 Dec) Dec {
+	return d.ImmutOp(Dec.QuoRoundupMut, d2)
+}
+
+// mutable quotient, round up
+func (d Dec) QuoRoundupMut(d2 Dec) Dec {
 	// multiply precision twice
-	mul := new(big.Int).Mul(d.i, precisionReuse)
-	mul.Mul(mul, precisionReuse)
+	d.i.Mul(d.i, precisionReuse)
+	d.i.Mul(d.i, precisionReuse)
+	d.i.Quo(d.i, d2.i)
 
-	quo := new(big.Int).Quo(mul, d2.i)
-	chopped := chopPrecisionAndRoundUp(quo)
-
+	chopped := chopPrecisionAndRoundUp(d.i)
 	if chopped.BitLen() > 255+DecimalPrecisionBits {
 		panic("Int overflow")
 	}
-	return Dec{chopped}
+	*d.i = *chopped
+	return d
 }
 
 // quotient
@@ -348,6 +392,8 @@ func (d Dec) QuoInt64(i int64) Dec {
 // A maximum number of 100 iterations is used a backup boundary condition for
 // cases where the answer never converges enough to satisfy the main condition.
 func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
+	// TODO: use mutable funcitons here
+
 	defer func() {
 		if r := recover(); r != nil {
 			var ok bool
@@ -391,6 +437,7 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 
 // Power returns a the result of raising to a positive integer power
 func (d Dec) Power(power uint64) Dec {
+	// TODO: use mutable functions here
 	if power == 0 {
 		return OneDec()
 	}
@@ -619,7 +666,11 @@ func (d Dec) Ceil() Dec {
 
 // MaxSortableDec is the largest Dec that can be passed into SortableDecBytes()
 // Its negative form is the least Dec that can be passed in.
-var MaxSortableDec = OneDec().Quo(SmallestDec())
+var MaxSortableDec Dec
+
+func init() {
+	MaxSortableDec = OneDec().Quo(SmallestDec())
+}
 
 // ValidSortableDec ensures that a Dec is within the sortable bounds,
 // a Dec can't have a precision of less than 10^-18.
