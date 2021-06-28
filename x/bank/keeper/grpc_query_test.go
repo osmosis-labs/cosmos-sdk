@@ -109,7 +109,7 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 	SetOsmosisAddressPrefixes()
 	defer SetCosmosAddressPrefixes()
 
-	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
+	app, queryClient := suite.app, suite.queryClient
 
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
