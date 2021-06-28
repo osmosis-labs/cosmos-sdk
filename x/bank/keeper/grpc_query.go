@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -83,6 +84,13 @@ func (k BaseKeeper) TotalSupply(ctx context.Context, _ *types.QueryTotalSupplyRe
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	totalSupply := k.GetSupply(sdkCtx).GetTotal()
 
+	if totalSupply.AmountOf(OsmoBondDenom).IsPositive() {
+		devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(DevUnvestedRewardsAddr)
+		if err != nil {
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devUnvestedRewardsAddr))
+		}
+		totalSupply = totalSupply.Sub(sdk.Coins{k.GetBalance(sdkCtx, devUnvestedRewardsAddr, OsmoBondDenom)})
+	}
 	return &types.QueryTotalSupplyResponse{Supply: totalSupply}, nil
 }
 
@@ -99,6 +107,13 @@ func (k BaseKeeper) SupplyOf(c context.Context, req *types.QuerySupplyOfRequest)
 	ctx := sdk.UnwrapSDKContext(c)
 	supply := k.GetSupply(ctx).GetTotal().AmountOf(req.Denom)
 
+	if req.Denom == OsmoBondDenom {
+		devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(DevUnvestedRewardsAddr)
+		if err != nil {
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devUnvestedRewardsAddr))
+		}
+		supply = supply.Sub(k.GetBalance(ctx, devUnvestedRewardsAddr, OsmoBondDenom).Amount)
+	}
 	return &types.QuerySupplyOfResponse{Amount: sdk.NewCoin(req.Denom, supply)}, nil
 }
 

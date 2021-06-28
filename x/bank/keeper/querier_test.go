@@ -86,10 +86,17 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryAllBalances() {
 }
 
 func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupply() {
+	SetOsmosisAddressPrefixes()
+	defer SetCosmosAddressPrefixes()
 	app, ctx := suite.app, suite.ctx
 	legacyAmino := app.LegacyAmino()
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000)))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	uosmoSupply := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000000)
+	uosmoDevRewards := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000)
+	devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(keeper.DevUnvestedRewardsAddr)
+	suite.Require().NoError(err)
+	totalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000), uosmoSupply))
+	app.BankKeeper.SetSupply(ctx, totalSupply)
+	app.BankKeeper.SetBalance(ctx, devUnvestedRewardsAddr, uosmoDevRewards)
 
 	req := abci.RequestQuery{
 		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QueryTotalSupply),
@@ -109,16 +116,23 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupply() {
 
 	var resp sdk.Coins
 	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &resp))
-	suite.Require().Equal(expectedTotalSupply.Total, resp)
+	suite.Require().Equal(totalSupply.Total.Sub(sdk.Coins{uosmoDevRewards}), resp)
 }
 
 func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupplyOf() {
+	SetOsmosisAddressPrefixes()
+	defer SetCosmosAddressPrefixes()
 	app, ctx := suite.app, suite.ctx
 	legacyAmino := app.LegacyAmino()
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	uosmoSupply := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000000)
+	uosmoDevRewards := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000)
+	devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(keeper.DevUnvestedRewardsAddr)
+	suite.Require().NoError(err)
+	totalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply, uosmoSupply))
+	app.BankKeeper.SetSupply(ctx, totalSupply)
+	app.BankKeeper.SetBalance(ctx, devUnvestedRewardsAddr, uosmoDevRewards)
 
 	req := abci.RequestQuery{
 		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QuerySupplyOf),
@@ -139,6 +153,14 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupplyOf() {
 	var resp sdk.Coin
 	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &resp))
 	suite.Require().Equal(test1Supply, resp)
+
+	req.Data = legacyAmino.MustMarshalJSON(types.NewQuerySupplyOfParams(keeper.OsmoBondDenom))
+	res, err = querier(ctx, []string{types.QuerySupplyOf}, req)
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+
+	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &resp))
+	suite.Require().Equal(uosmoSupply.Sub(uosmoDevRewards), resp)
 }
 
 func (suite *IntegrationTestSuite) TestQuerierRouteNotFound() {
