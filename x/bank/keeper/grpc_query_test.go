@@ -95,8 +95,8 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
 	devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(keeper.DevUnvestedRewardsAddr)
 	suite.Require().NoError(err)
 	totalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000), uosmoSupply))
-	app.BankKeeper.SetSupply(suite.ctx, totalSupply)
-	app.BankKeeper.SetBalance(suite.ctx, devUnvestedRewardsAddr, uosmoDevRewards)
+	app.BankKeeper.SetSupply(ctx, totalSupply)
+	app.BankKeeper.SetBalance(ctx, devUnvestedRewardsAddr, uosmoDevRewards)
 
 	res, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
 	suite.Require().NoError(err)
@@ -109,7 +109,7 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 	SetOsmosisAddressPrefixes()
 	defer SetCosmosAddressPrefixes()
 
-	app, queryClient := suite.app, suite.queryClient
+	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
 
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
