@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -9,6 +11,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
+
+var OsmoBondDenom = "uosmo"
+var DevRewardsAddr = "osmo1vqy8rqqlydj9wkcyvct9zxl3hc4eqgu3d7hd9k"
 
 // NewQuerier returns a new sdk.Keeper instance.
 func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
@@ -93,6 +98,14 @@ func queryTotalSupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQu
 		totalSupply = totalSupply[start:end]
 	}
 
+	if totalSupply.AmountOf(OsmoBondDenom).IsPositive() {
+		devRewardAddr, err := sdk.AccAddressFromBech32(DevRewardsAddr)
+		if err != nil {
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devRewardAddr))
+		}
+		totalSupply = totalSupply.Sub(sdk.Coins{k.GetBalance(ctx, devRewardAddr, OsmoBondDenom)})
+	}
+
 	res, err := legacyQuerierCdc.MarshalJSON(totalSupply)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
@@ -111,6 +124,13 @@ func querySupplyOf(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQueri
 
 	amount := k.GetSupply(ctx).GetTotal().AmountOf(params.Denom)
 	supply := sdk.NewCoin(params.Denom, amount)
+	if params.Denom == OsmoBondDenom {
+		devRewardAddr, err := sdk.AccAddressFromBech32(DevRewardsAddr)
+		if err != nil {
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devRewardAddr))
+		}
+		supply = supply.Sub(k.GetBalance(ctx, devRewardAddr, OsmoBondDenom))
+	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, supply)
 	if err != nil {

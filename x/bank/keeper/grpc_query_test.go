@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
@@ -85,24 +86,39 @@ func (suite *IntegrationTestSuite) TestQueryAllBalances() {
 }
 
 func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
-	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000)))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	SetOsmosisAddressPrefixes()
+	defer SetCosmosAddressPrefixes()
+
+	uosmoSupply := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000000)
+	uosmoDevRewards := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000)
+	devRewardAddr, err := sdk.AccAddressFromBech32(keeper.DevRewardsAddr)
+	suite.Require().NoError(err)
+	totalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000), uosmoSupply))
+	app.BankKeeper.SetSupply(ctx, totalSupply)
+	app.BankKeeper.SetBalance(ctx, devRewardAddr, uosmoDevRewards)
 
 	res, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
 
-	suite.Require().Equal(expectedTotalSupply.Total, res.Supply)
+	suite.Require().Equal(totalSupply.Total.Sub(uosmoDevRewards), res.Supply)
 }
 
 func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
+	SetOsmosisAddressPrefixes()
+	defer SetCosmosAddressPrefixes()
+
 	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
 
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	uosmoSupply := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000000)
+	uosmoDevRewards := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000)
+	devRewardAddr, err := sdk.AccAddressFromBech32(keeper.DevRewardsAddr)
+	suite.Require().NoError(err)
+	totalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply, uosmoSupply))
+	app.BankKeeper.SetSupply(ctx, totalSupply)
+	app.BankKeeper.SetBalance(ctx, devRewardAddr, uosmoDevRewards)
 
 	_, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{})
 	suite.Require().Error(err)
@@ -112,6 +128,12 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 	suite.Require().NotNil(res)
 
 	suite.Require().Equal(test1Supply, res.Amount)
+
+	res, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: keeper.OsmoBondDenom})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+
+	suite.Require().Equal(uosmoSupply.Sub(uosmoDevRewards), res.Amount)
 }
 
 func (suite *IntegrationTestSuite) TestQueryParams() {
