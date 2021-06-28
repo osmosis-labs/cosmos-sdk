@@ -102,7 +102,7 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
 
-	suite.Require().Equal(totalSupply.Total.Sub(uosmoDevRewards), res.Supply)
+	suite.Require().Equal(totalSupply.Total.Sub(sdk.Coins{uosmoDevRewards}), res.Supply)
 }
 
 func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
@@ -121,7 +121,7 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 	app.BankKeeper.SetSupply(ctx, totalSupply)
 	app.BankKeeper.SetBalance(ctx, devUnvestedRewardsAddr, uosmoDevRewards)
 
-	_, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{})
+	_, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{})
 	suite.Require().Error(err)
 
 	res, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test1Supply.Denom})
@@ -130,7 +130,7 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 
 	suite.Require().Equal(test1Supply, res.Amount)
 
-	res, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: keeper.OsmoBondDenom})
+	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: keeper.OsmoBondDenom})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
 
