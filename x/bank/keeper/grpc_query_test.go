@@ -86,6 +86,7 @@ func (suite *IntegrationTestSuite) TestQueryAllBalances() {
 }
 
 func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
+	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
 	SetOsmosisAddressPrefixes()
 	defer SetCosmosAddressPrefixes()
 
