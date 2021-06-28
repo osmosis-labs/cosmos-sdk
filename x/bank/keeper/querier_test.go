@@ -92,11 +92,11 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupply() {
 	legacyAmino := app.LegacyAmino()
 	uosmoSupply := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000000)
 	uosmoDevRewards := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000)
-	devRewardAddr, err := sdk.AccAddressFromBech32(keeper.DevRewardsAddr)
+	devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(keeper.DevUnvestedRewardsAddr)
 	suite.Require().NoError(err)
 	totalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000), uosmoSupply))
 	app.BankKeeper.SetSupply(ctx, totalSupply)
-	app.BankKeeper.SetBalance(ctx, devRewardAddr, uosmoDevRewards)
+	app.BankKeeper.SetBalance(ctx, devUnvestedRewardsAddr, uosmoDevRewards)
 
 	req := abci.RequestQuery{
 		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QueryTotalSupply),
@@ -128,11 +128,11 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupplyOf() {
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
 	uosmoSupply := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000000)
 	uosmoDevRewards := sdk.NewInt64Coin(keeper.OsmoBondDenom, 100000)
-	devRewardAddr, err := sdk.AccAddressFromBech32(keeper.DevRewardsAddr)
+	devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(keeper.DevUnvestedRewardsAddr)
 	suite.Require().NoError(err)
 	totalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply, uosmoSupply))
 	app.BankKeeper.SetSupply(ctx, totalSupply)
-	app.BankKeeper.SetBalance(ctx, devRewardAddr, uosmoDevRewards)
+	app.BankKeeper.SetBalance(ctx, devUnvestedRewardsAddr, uosmoDevRewards)
 
 	req := abci.RequestQuery{
 		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QuerySupplyOf),

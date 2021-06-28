@@ -13,7 +13,7 @@ import (
 )
 
 var OsmoBondDenom = "uosmo"
-var DevRewardsAddr = "osmo1vqy8rqqlydj9wkcyvct9zxl3hc4eqgu3d7hd9k"
+var DevUnvestedRewardsAddr = "osmo1vqy8rqqlydj9wkcyvct9zxl3hc4eqgu3d7hd9k"
 
 // NewQuerier returns a new sdk.Keeper instance.
 func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
@@ -99,11 +99,11 @@ func queryTotalSupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQu
 	}
 
 	if totalSupply.AmountOf(OsmoBondDenom).IsPositive() {
-		devRewardAddr, err := sdk.AccAddressFromBech32(DevRewardsAddr)
+		devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(DevUnvestedRewardsAddr)
 		if err != nil {
-			panic(fmt.Errorf("developer rewards address is not parsable: %s", devRewardAddr))
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devUnvestedRewardsAddr))
 		}
-		totalSupply = totalSupply.Sub(sdk.Coins{k.GetBalance(ctx, devRewardAddr, OsmoBondDenom)})
+		totalSupply = totalSupply.Sub(sdk.Coins{k.GetBalance(ctx, devUnvestedRewardsAddr, OsmoBondDenom)})
 	}
 
 	res, err := legacyQuerierCdc.MarshalJSON(totalSupply)
@@ -125,11 +125,11 @@ func querySupplyOf(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQueri
 	amount := k.GetSupply(ctx).GetTotal().AmountOf(params.Denom)
 	supply := sdk.NewCoin(params.Denom, amount)
 	if params.Denom == OsmoBondDenom {
-		devRewardAddr, err := sdk.AccAddressFromBech32(DevRewardsAddr)
+		devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(DevUnvestedRewardsAddr)
 		if err != nil {
-			panic(fmt.Errorf("developer rewards address is not parsable: %s", devRewardAddr))
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devUnvestedRewardsAddr))
 		}
-		supply = supply.Sub(k.GetBalance(ctx, devRewardAddr, OsmoBondDenom))
+		supply = supply.Sub(k.GetBalance(ctx, devUnvestedRewardsAddr, OsmoBondDenom))
 	}
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, supply)

@@ -85,11 +85,11 @@ func (k BaseKeeper) TotalSupply(ctx context.Context, _ *types.QueryTotalSupplyRe
 	totalSupply := k.GetSupply(sdkCtx).GetTotal()
 
 	if totalSupply.AmountOf(OsmoBondDenom).IsPositive() {
-		devRewardAddr, err := sdk.AccAddressFromBech32(DevRewardsAddr)
+		devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(DevUnvestedRewardsAddr)
 		if err != nil {
-			panic(fmt.Errorf("developer rewards address is not parsable: %s", devRewardAddr))
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devUnvestedRewardsAddr))
 		}
-		totalSupply = totalSupply.Sub(sdk.Coins{k.GetBalance(sdkCtx, devRewardAddr, OsmoBondDenom)})
+		totalSupply = totalSupply.Sub(sdk.Coins{k.GetBalance(sdkCtx, devUnvestedRewardsAddr, OsmoBondDenom)})
 	}
 	return &types.QueryTotalSupplyResponse{Supply: totalSupply}, nil
 }
@@ -108,11 +108,11 @@ func (k BaseKeeper) SupplyOf(c context.Context, req *types.QuerySupplyOfRequest)
 	supply := k.GetSupply(ctx).GetTotal().AmountOf(req.Denom)
 
 	if req.Denom == OsmoBondDenom {
-		devRewardAddr, err := sdk.AccAddressFromBech32(DevRewardsAddr)
+		devUnvestedRewardsAddr, err := sdk.AccAddressFromBech32(DevUnvestedRewardsAddr)
 		if err != nil {
-			panic(fmt.Errorf("developer rewards address is not parsable: %s", devRewardAddr))
+			panic(fmt.Errorf("developer rewards address is not parsable: %s", devUnvestedRewardsAddr))
 		}
-		supply = supply.Sub(k.GetBalance(ctx, devRewardAddr, OsmoBondDenom).Amount)
+		supply = supply.Sub(k.GetBalance(ctx, devUnvestedRewardsAddr, OsmoBondDenom).Amount)
 	}
 	return &types.QuerySupplyOfResponse{Amount: sdk.NewCoin(req.Denom, supply)}, nil
 }
