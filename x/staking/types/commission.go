@@ -82,9 +82,9 @@ func (cr CommissionRates) Validate() error {
 // rate. If validation fails, an SDK error is returned.
 func (c Commission) ValidateNewRate(newRate sdk.Dec, blockTime time.Time) error {
 	switch {
-	case blockTime.Sub(c.UpdateTime).Hours() < 24:
-		// new rate cannot be changed more than once within 24 hours
-		return ErrCommissionUpdateTime
+	// case blockTime.Sub(c.UpdateTime).Hours() < 24:
+	// 	// new rate cannot be changed more than once within 24 hours
+	// 	return ErrCommissionUpdateTime
 
 	case newRate.IsNegative():
 		// new rate cannot be negative
@@ -94,9 +94,9 @@ func (c Commission) ValidateNewRate(newRate sdk.Dec, blockTime time.Time) error 
 		// new rate cannot be greater than the max rate
 		return ErrCommissionGTMaxRate
 
-	case newRate.Sub(c.Rate).GT(c.MaxChangeRate):
-		// new rate % points change cannot be greater than the max change rate
-		return ErrCommissionGTMaxChangeRate
+		// case newRate.Sub(c.Rate).GT(c.MaxChangeRate):
+		// 	// new rate % points change cannot be greater than the max change rate
+		// 	return ErrCommissionGTMaxChangeRate
 	}
 
 	return nil
