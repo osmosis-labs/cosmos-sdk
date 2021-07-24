@@ -1,5 +1,9 @@
 package kv
 
+import (
+	"bytes"
+)
+
 // This code was copied from golang.org/pkg/container/list, but specially adapted
 // for use with kv.Pair to avoid the type assertion CPU expense of using Value with
 // an interface, per https://github.com/cosmos/cosmos-sdk/issues/8810
@@ -38,6 +42,28 @@ func (e *Element) Prev() *Element {
 		return p
 	}
 	return nil
+}
+
+// seekPosition takes a nodes current position (with root.Next() being 0)
+// and moves to the target position within the list.
+func (e *Element) seekPosition(curPos int, targetPos int) *Element {
+	if e == nil {
+		return e
+	}
+	// fmt.Println(e.list.len, curPos, targetPos)
+	if targetPos >= curPos {
+		cur := e
+		for i := 0; i < (targetPos - curPos); i++ {
+			cur = cur.Next()
+		}
+		return cur
+	} else {
+		cur := e
+		for i := 0; i < (curPos - targetPos); i++ {
+			cur = cur.Prev()
+		}
+		return cur
+	}
 }
 
 // List represents a doubly linked list.
@@ -233,4 +259,50 @@ func (l *List) PushFrontList(other *List) {
 	for i, e := other.Len(), other.Back(); i > 0; i, e = i-1, e.Prev() {
 		l.insertValue(e.Value, &l.root)
 	}
+}
+
+// SortedSearch searches for the first element with a key >= the argument.
+// It assumes the list is sorted.
+// This mimics a binary search in how it chooses what nodes to compare on,
+// but traverses the list to get to the next node.
+func (l *List) SortedSearch(start []byte) *Element {
+	// We copy the golang search logic here
+	// func Search(n int, f func(int) bool) int {
+	// 	// Define f(-1) == false and f(n) == true.
+	// 	// Invariant: f(i-1) == false, f(j) == true.
+	// 	i, j := 0, n
+	// 	for i < j {
+	// 		h := int(uint(i+j) >> 1) // avoid overflow when computing h
+	// 		// i ≤ h < j
+	// 		if !f(h) {
+	// 			i = h + 1 // preserves f(i-1) == false
+	// 		} else {
+	// 			j = h // preserves f(j) == true
+	// 		}
+	// 	}
+	// 	// i == j, f(i-1) == false, and f(j) (= f(i)) == true  =>  answer is i.
+	// 	return i
+	// }
+	i_index, i_elem, j := 0, l.Front(), l.len
+	// quick check for if its the first element
+	// if bytes.Compare(i_elem.Value.Key, start) >= 0 {
+	// 	return i_elem
+	// }
+
+	for i_index < j {
+		h := int(uint(i_index+j) >> 1) // avoid overflow when computing h
+		h_elem := i_elem.seekPosition(i_index, h)
+		// fmt.Println("h key", h_elem.Value.Key)
+		// i ≤ h < j
+		// f(index) in our case is bytes.Compare(l[index], start) >= 0
+		// !f(index) is bytes.Compare(l[index], start) < 0
+		if bytes.Compare(h_elem.Value.Key, start) < 0 {
+			i_index = h + 1 // preserves f(i-1) == false
+			i_elem = h_elem.Next()
+		} else {
+			j = h // preserves f(j) == true
+		}
+	}
+	// i == j, f(i-1) == false, and f(j) (= f(i)) == true  =>  answer is i.
+	return i_elem
 }

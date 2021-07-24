@@ -354,23 +354,28 @@ func doRandomOp(t *testing.T, st types.CacheKVStore, truth dbm.DB, maxKey int) {
 	switch r {
 	case opSet:
 		k := randInt(maxKey)
+		fmt.Println("opSet", k)
 		st.Set(keyFmt(k), valFmt(k))
 		err := truth.Set(keyFmt(k), valFmt(k))
 		require.NoError(t, err)
 	case opSetRange:
 		start := randInt(maxKey - 2)
 		end := randInt(maxKey-start) + start
+		fmt.Println("opSetRange", start, end)
 		setRange(t, st, truth, start, end)
 	case opDel:
 		k := randInt(maxKey)
+		fmt.Println("opDel", k)
 		st.Delete(keyFmt(k))
 		err := truth.Delete(keyFmt(k))
 		require.NoError(t, err)
 	case opDelRange:
 		start := randInt(maxKey - 2)
 		end := randInt(maxKey-start) + start
+		fmt.Println("opDelRange", start, end)
 		deleteRange(t, st, truth, start, end)
 	case opWrite:
+		fmt.Println("opWrite")
 		st.Write()
 	}
 }
