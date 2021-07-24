@@ -80,10 +80,6 @@ func (store *Store) Set(key []byte, value []byte) {
 	types.AssertValidValue(value)
 
 	store.setCacheValue(key, value, false, true)
-
-	if len(store.cache) >= 5012 {
-		store.Write()
-	}
 }
 
 // Has implements types.KVStore.
