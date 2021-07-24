@@ -80,6 +80,10 @@ func (store *Store) Set(key []byte, value []byte) {
 	types.AssertValidValue(value)
 
 	store.setCacheValue(key, value, false, true)
+
+	if len(store.cache) >= 5012 {
+		store.Write()
+	}
 }
 
 // Has implements types.KVStore.
@@ -235,6 +239,7 @@ func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair) {
 		}
 	}
 
+	// push remaining unsorted items to end of sortedCache
 	for _, kvp := range unsorted {
 		store.sortedCache.PushBack(kvp)
 	}
