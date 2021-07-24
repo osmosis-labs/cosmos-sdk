@@ -200,18 +200,8 @@ func byteSliceToStr(b []byte) string {
 	return *(*string)(unsafe.Pointer(hdr))
 }
 
-// Constructs a slice of dirty items, to use w/ memIterator.
-func (store *Store) dirtyItems(start, end []byte) {
-	unsorted := make([]*kv.Pair, 0)
-
+func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair) {
 	n := len(store.unsortedCache)
-	for key := range store.unsortedCache {
-		if dbm.IsKeyInDomain(strToByte(key), start, end) {
-			cacheValue := store.cache[key]
-			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
-		}
-	}
-
 	if len(unsorted) == n { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
 		for key := range store.unsortedCache {
 			delete(store.unsortedCache, key)
@@ -248,6 +238,33 @@ func (store *Store) dirtyItems(start, end []byte) {
 	for _, kvp := range unsorted {
 		store.sortedCache.PushBack(kvp)
 	}
+}
+
+// Constructs a slice of dirty items, to use w/ memIterator.
+func (store *Store) dirtyItems(start, end []byte) {
+	n := len(store.unsortedCache)
+	unsorted := make([]*kv.Pair, 0)
+	// If the unsortedCache is too big, its costs too much to determine
+	// whats in the subset we are concerned about.
+	// If you are interleaving iterator calls with writes, this can easily become an
+	// O(N^2) overhead.
+	// Even without that, too many range checks eventually becomes more expensive
+	// than just not having the cache.
+	if n >= 1024 {
+		for key := range store.unsortedCache {
+			cacheValue := store.cache[key]
+			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+		}
+	} else {
+		// else do a linear scan to determine if the unsorted pairs are in the pool.
+		for key := range store.unsortedCache {
+			if dbm.IsKeyInDomain(strToByte(key), start, end) {
+				cacheValue := store.cache[key]
+				unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+			}
+		}
+	}
+	store.clearUnsortedCacheSubset(unsorted)
 }
 
 //----------------------------------------
