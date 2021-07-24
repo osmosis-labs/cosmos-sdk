@@ -1,6 +1,7 @@
 package cachekv
 
 import (
+	"bytes"
 	"errors"
 
 	dbm "github.com/tendermint/tm-db"
@@ -17,23 +18,39 @@ type memIterator struct {
 	ascending  bool
 }
 
-func newMemIterator(start, end []byte, items *kv.List, ascending bool) *memIterator {
-	itemsInDomain := make([]*kv.Pair, 0, items.Len())
+func newMemIterator(start, end []byte, sortedItems *kv.List, ascending bool) *memIterator {
+	itemsInDomain := make([]*kv.Pair, 0, sortedItems.Len())
 
-	var entered bool
+	// Old code, that can generously be called optimized for small sorted cache sizes.
+	// (Notable perf issue exists for dbm.IsKeyInDomain repeating the start compare)
+	// This has been checked to yield the same result as the other case for larger inputs
+	if sortedItems.Len() <= 64 {
+		var entered bool
+		for e := sortedItems.Front(); e != nil; e = e.Next() {
+			item := e.Value
+			if !dbm.IsKeyInDomain(item.Key, start, end) {
+				if entered {
+					break
+				}
 
-	for e := items.Front(); e != nil; e = e.Next() {
-		item := e.Value
-		if !dbm.IsKeyInDomain(item.Key, start, end) {
-			if entered {
+				continue
+			}
+
+			itemsInDomain = append(itemsInDomain, item)
+			entered = true
+		}
+	} else {
+		// Code that handles large cache sizes.
+		// Find start point of range.
+		startElem := sortedItems.SortedSearch(start)
+		for e := startElem; e != nil; e = e.Next() {
+			item := e.Value
+			if end != nil && bytes.Compare(end, item.Key) <= 0 {
 				break
 			}
 
-			continue
+			itemsInDomain = append(itemsInDomain, item)
 		}
-
-		itemsInDomain = append(itemsInDomain, item)
-		entered = true
 	}
 
 	return &memIterator{
