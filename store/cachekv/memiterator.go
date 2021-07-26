@@ -3,62 +3,85 @@ package cachekv
 import (
 	"bytes"
 	"errors"
+  "sync"
 
-	dbm "github.com/tendermint/tm-db"
+  "github.com/google/btree"
 
-	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 // Iterates over iterKVCache items.
 // if key is nil, means it was deleted.
 // Implements Iterator.
 type memIterator struct {
+  mtx *sync.Mutex
 	start, end []byte
-	items      []*kv.Pair
+  itemch chan *cValue
+  item *cValue
 	ascending  bool
 }
 
-func newMemIterator(start, end []byte, sortedItems *kv.List, ascending bool) *memIterator {
-	itemsInDomain := make([]*kv.Pair, 0, sortedItems.Len())
+func newMemIterator(start, end []byte, cache *btree.BTree, ascending bool) *memIterator {
+  mi := &memIterator {
+    mtx: new(sync.Mutex),
+    start: start,
+    end: end,
+    itemch: make(chan *cValue),
+    item: nil,
+    ascending: ascending,
+  }
 
-	// Old code, that can generously be called optimized for small sorted cache sizes.
-	// (Notable perf issue exists for dbm.IsKeyInDomain repeating the start compare)
-	// This has been checked to yield the same result as the other case for larger inputs
-	if sortedItems.Len() <= 64 {
-		var entered bool
-		for e := sortedItems.Front(); e != nil; e = e.Next() {
-			item := e.Value
-			if !dbm.IsKeyInDomain(item.Key, start, end) {
-				if entered {
-					break
-				}
+  startKey := newKey(start)
+  endKey := newKey(end)
+  if end == nil {
+    endKey = newInfinityKey()
+  }
 
-				continue
-			}
+  if ascending {
+    go func() {
+      cache.AscendGreaterOrEqual(
+        startKey,
+        func(i btree.Item) bool {
+          value, ok := i.(*cValue)
+          if !ok {
+            panic("invalid access")
+          }
+          if end != nil {
+            if bytes.Compare(value.key, end) != -1 {
+              return false
+            }
+          }
+          mi.itemch <- value
+          return true
+        },
+      )
+      mi.itemch <- nil
+    }()
+    mi.item = <- mi.itemch
+  } else {
+    go func() {
+      cache.DescendLessOrEqual(
+        endKey,
+        func(i btree.Item) bool {
+          value, ok := i.(*cValue)
+          if !ok {
+            panic("invalid access")
+          }
+          if bytes.Compare(value.key, start) == -1 {
+            return false
+          }
+          mi.itemch <- value
+          return true
+        },
+      )
+      mi.itemch <- nil
+    }()
+    mi.item = <- mi.itemch
+    if bytes.Equal(mi.item.key, end) {
+      mi.Next()
+    }
+  }
 
-			itemsInDomain = append(itemsInDomain, item)
-			entered = true
-		}
-	} else {
-		// Code that handles large cache sizes.
-		// Find start point of range.
-		startElem := sortedItems.SortedSearch(start)
-		for e := startElem; e != nil; e = e.Next() {
-			item := e.Value
-			if end != nil && bytes.Compare(end, item.Key) <= 0 {
-				break
-			}
-
-			itemsInDomain = append(itemsInDomain, item)
-		}
-	}
-
-	return &memIterator{
-		start:     start,
-		end:       end,
-		items:     itemsInDomain,
-		ascending: ascending,
-	}
+  return mi
 }
 
 func (mi *memIterator) Domain() ([]byte, []byte) {
@@ -66,7 +89,7 @@ func (mi *memIterator) Domain() ([]byte, []byte) {
 }
 
 func (mi *memIterator) Valid() bool {
-	return len(mi.items) > 0
+  return mi.item != nil
 }
 
 func (mi *memIterator) assertValid() {
@@ -76,39 +99,34 @@ func (mi *memIterator) assertValid() {
 }
 
 func (mi *memIterator) Next() {
-	mi.assertValid()
+  mi.mtx.Lock()
+  defer mi.mtx.Unlock()
 
-	if mi.ascending {
-		mi.items = mi.items[1:]
-	} else {
-		mi.items = mi.items[:len(mi.items)-1]
-	}
+  mi.assertValid()
+
+  mi.item = <-mi.itemch
+  if mi.item == nil {
+    mi.Close()
+  }
 }
 
 func (mi *memIterator) Key() []byte {
-	mi.assertValid()
+  mi.assertValid()
 
-	if mi.ascending {
-		return mi.items[0].Key
-	}
-
-	return mi.items[len(mi.items)-1].Key
+  return mi.item.key
 }
 
 func (mi *memIterator) Value() []byte {
-	mi.assertValid()
+  mi.assertValid()
 
-	if mi.ascending {
-		return mi.items[0].Value
-	}
-
-	return mi.items[len(mi.items)-1].Value
+  return mi.item.value
 }
 
 func (mi *memIterator) Close() error {
 	mi.start = nil
 	mi.end = nil
-	mi.items = nil
+  mi.item = nil
+	mi.itemch = nil
 
 	return nil
 }
