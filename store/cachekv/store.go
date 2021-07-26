@@ -1,7 +1,6 @@
 package cachekv
 
 import (
-	"bytes"
 	"io"
 	"reflect"
 	"sort"
@@ -21,7 +20,6 @@ import (
 // key.  (No need to delete upon Write())
 type cValue struct {
 	value   []byte
-	deleted bool
 	dirty   bool
 }
 
@@ -29,8 +27,9 @@ type cValue struct {
 type Store struct {
 	mtx           sync.Mutex
 	cache         map[string]*cValue
+  deleted       map[string]struct{}
 	unsortedCache map[string]struct{}
-	sortedCache   *kv.List // always ascending sorted
+	sortedCache   *dbm.MemDB // always ascending sorted
 	parent        types.KVStore
 }
 
@@ -40,8 +39,9 @@ var _ types.CacheKVStore = (*Store)(nil)
 func NewStore(parent types.KVStore) *Store {
 	return &Store{
 		cache:         make(map[string]*cValue),
+    deleted:       make(map[string]struct{}),
 		unsortedCache: make(map[string]struct{}),
-		sortedCache:   kv.NewList(),
+		sortedCache:   dbm.NewMemDB(),
 		parent:        parent,
 	}
 }
@@ -122,7 +122,7 @@ func (store *Store) Write() {
 		cacheValue := store.cache[key]
 
 		switch {
-		case cacheValue.deleted:
+		case store.isDeleted(key):
 			store.parent.Delete([]byte(key))
 		case cacheValue.value == nil:
 			// Skip, it already doesn't exist in parent.
@@ -133,8 +133,9 @@ func (store *Store) Write() {
 
 	// Clear the cache
 	store.cache = make(map[string]*cValue)
+  store.deleted = make(map[string]struct{})
 	store.unsortedCache = make(map[string]struct{})
-	store.sortedCache = kv.NewList()
+	store.sortedCache = dbm.NewMemDB()
 }
 
 // CacheWrap implements CacheWrapper.
@@ -173,7 +174,7 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	}
 
 	store.dirtyItems(start, end)
-	cache = newMemIterator(start, end, store.sortedCache, ascending)
+  cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
 
 	return newCacheMergeIterator(parent, cache, ascending)
 }
@@ -222,32 +223,18 @@ func (store *Store) dirtyItems(start, end []byte) {
 		}
 	}
 
-	sort.Slice(unsorted, func(i, j int) bool {
-		return bytes.Compare(unsorted[i].Key, unsorted[j].Key) < 0
-	})
-
-	for e := store.sortedCache.Front(); e != nil && len(unsorted) != 0; {
-		uitem := unsorted[0]
-		sitem := e.Value
-		comp := bytes.Compare(uitem.Key, sitem.Key)
-
-		switch comp {
-		case -1:
-			unsorted = unsorted[1:]
-
-			store.sortedCache.InsertBefore(uitem, e)
-		case 1:
-			e = e.Next()
-		case 0:
-			unsorted = unsorted[1:]
-			e.Value = uitem
-			e = e.Next()
-		}
-	}
-
-	for _, kvp := range unsorted {
-		store.sortedCache.PushBack(kvp)
-	}
+  for _, item := range unsorted {
+    if item.Value == nil {
+      // deleted element, tracked by store.deleted
+      // setting arbitrary value
+      store.sortedCache.Set([]byte(item.Key), []byte{})
+      continue
+    }
+    err := store.sortedCache.Set([]byte(item.Key), item.Value)
+    if err != nil {
+      panic(err)
+    }
+  }
 }
 
 //----------------------------------------
@@ -257,10 +244,19 @@ func (store *Store) dirtyItems(start, end []byte) {
 func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
 	store.cache[string(key)] = &cValue{
 		value:   value,
-		deleted: deleted,
 		dirty:   dirty,
 	}
+  if deleted {
+    store.deleted[string(key)] = struct{}{}
+  } else {
+    delete(store.deleted, string(key))
+  }
 	if dirty {
 		store.unsortedCache[string(key)] = struct{}{}
 	}
+}
+
+func (store *Store) isDeleted(key string) bool {
+  _, ok := store.deleted[key]
+  return ok
 }
