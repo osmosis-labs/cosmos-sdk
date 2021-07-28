@@ -52,3 +52,28 @@ func (ak AccountKeeper) Params(c context.Context, req *types.QueryParamsRequest)
 
 	return &types.QueryParamsResponse{Params: params}, nil
 }
+
+// ModuleAccount returns the account of the module
+func (ak AccountKeeper) AllModuleAccounts(c context.Context, req *types.QueryAllModuleAccountsRequest) (*types.QueryAllModuleAccountsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	var a []*codectypes.Any
+
+	for moduleName := range ak.permAddrs {
+		account := ak.GetModuleAccount(ctx, moduleName)
+		if account == nil {
+			return nil, status.Errorf(codes.NotFound, "account %s not found", moduleName)
+		}
+		any, err := codectypes.NewAnyWithValue(account)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		a = append(a, any)
+	}
+
+	return &types.QueryAllModuleAccountsResponse{Account: a}, nil
+}

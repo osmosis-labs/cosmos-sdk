@@ -20,6 +20,11 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/cosmos/auth/v1beta1/params";
   }
+
+  // ModuleAccounts returns a map of module and its account address
+  rpc AllModuleAccounts(QueryAllModuleAccountsRequest) returns (QueryAllModuleAccountsResponse) {
+    option (google.api.http).get = "/cosmos/auth/v1beta1/all_module_accounts";
+  }
 }
 
 // QueryAccountRequest is the request type for the Query/Account RPC method.
@@ -44,4 +49,12 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+//QueryModuleAccountRequest is the request type for the Query/Params RPC method.
+message QueryAllModuleAccountsRequest {}
+
+// QueryModuleAccountResponse is the response type for the Query/Params RPC method.
+message QueryAllModuleAccountsResponse {
+  repeated google.protobuf.Any account = 1 [(cosmos_proto.accepts_interface) = "ModuleAccountI"];
 }

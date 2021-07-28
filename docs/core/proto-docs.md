@@ -15,6 +15,8 @@
 - [cosmos/auth/v1beta1/query.proto](#cosmos/auth/v1beta1/query.proto)
     - [QueryAccountRequest](#cosmos.auth.v1beta1.QueryAccountRequest)
     - [QueryAccountResponse](#cosmos.auth.v1beta1.QueryAccountResponse)
+    - [QueryAllModuleAccountsRequest](#cosmos.auth.v1beta1.QueryAllModuleAccountsRequest)
+    - [QueryAllModuleAccountsResponse](#cosmos.auth.v1beta1.QueryAllModuleAccountsResponse)
     - [QueryParamsRequest](#cosmos.auth.v1beta1.QueryParamsRequest)
     - [QueryParamsResponse](#cosmos.auth.v1beta1.QueryParamsResponse)
   
@@ -832,6 +834,31 @@ QueryAccountResponse is the response type for the Query/Account RPC method.
 
 
 
+<a name="cosmos.auth.v1beta1.QueryAllModuleAccountsRequest"></a>
+
+### QueryAllModuleAccountsRequest
+QueryModuleAccountRequest is the request type for the Query/Params RPC method.
+
+
+
+
+
+
+<a name="cosmos.auth.v1beta1.QueryAllModuleAccountsResponse"></a>
+
+### QueryAllModuleAccountsResponse
+QueryModuleAccountResponse is the response type for the Query/Params RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `account` | [google.protobuf.Any](#google.protobuf.Any) | repeated |  |
+
+
+
+
+
+
 <a name="cosmos.auth.v1beta1.QueryParamsRequest"></a>
 
 ### QueryParamsRequest
@@ -872,6 +899,7 @@ Query defines the gRPC querier service.
 | ----------- | ------------ | ------------- | ------------| ------- | -------- |
 | `Account` | [QueryAccountRequest](#cosmos.auth.v1beta1.QueryAccountRequest) | [QueryAccountResponse](#cosmos.auth.v1beta1.QueryAccountResponse) | Account returns account details based on address. | GET|/cosmos/auth/v1beta1/accounts/{address}|
 | `Params` | [QueryParamsRequest](#cosmos.auth.v1beta1.QueryParamsRequest) | [QueryParamsResponse](#cosmos.auth.v1beta1.QueryParamsResponse) | Params queries all parameters. | GET|/cosmos/auth/v1beta1/params|
+| `AllModuleAccounts` | [QueryAllModuleAccountsRequest](#cosmos.auth.v1beta1.QueryAllModuleAccountsRequest) | [QueryAllModuleAccountsResponse](#cosmos.auth.v1beta1.QueryAllModuleAccountsResponse) | ModuleAccounts returns a map of module and its account address | GET|/cosmos/auth/v1beta1/all_module_accounts|
 
  <!-- end services -->
 
