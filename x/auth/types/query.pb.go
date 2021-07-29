@@ -200,21 +200,21 @@ func (m *QueryParamsResponse) GetParams() Params {
 }
 
 //QueryModuleAccountRequest is the request type for the Query/Params RPC method.
-type QueryAllModuleAccountsRequest struct {
+type QueryModuleAccountsRequest struct {
 }
 
-func (m *QueryAllModuleAccountsRequest) Reset()         { *m = QueryAllModuleAccountsRequest{} }
-func (m *QueryAllModuleAccountsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryAllModuleAccountsRequest) ProtoMessage()    {}
-func (*QueryAllModuleAccountsRequest) Descriptor() ([]byte, []int) {
+func (m *QueryModuleAccountsRequest) Reset()         { *m = QueryModuleAccountsRequest{} }
+func (m *QueryModuleAccountsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryModuleAccountsRequest) ProtoMessage()    {}
+func (*QueryModuleAccountsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c451370b3929a27c, []int{4}
 }
-func (m *QueryAllModuleAccountsRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryModuleAccountsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryAllModuleAccountsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryModuleAccountsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryAllModuleAccountsRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryModuleAccountsRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -224,35 +224,35 @@ func (m *QueryAllModuleAccountsRequest) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
-func (m *QueryAllModuleAccountsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryAllModuleAccountsRequest.Merge(m, src)
+func (m *QueryModuleAccountsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryModuleAccountsRequest.Merge(m, src)
 }
-func (m *QueryAllModuleAccountsRequest) XXX_Size() int {
+func (m *QueryModuleAccountsRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryAllModuleAccountsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryAllModuleAccountsRequest.DiscardUnknown(m)
+func (m *QueryModuleAccountsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryModuleAccountsRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryAllModuleAccountsRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryModuleAccountsRequest proto.InternalMessageInfo
 
 // QueryModuleAccountResponse is the response type for the Query/Params RPC method.
-type QueryAllModuleAccountsResponse struct {
-	Account []*types.Any `protobuf:"bytes,1,rep,name=account,proto3" json:"account,omitempty"`
+type QueryModuleAccountsResponse struct {
+	Accounts []*types.Any `protobuf:"bytes,1,rep,name=accounts,proto3" json:"accounts,omitempty"`
 }
 
-func (m *QueryAllModuleAccountsResponse) Reset()         { *m = QueryAllModuleAccountsResponse{} }
-func (m *QueryAllModuleAccountsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryAllModuleAccountsResponse) ProtoMessage()    {}
-func (*QueryAllModuleAccountsResponse) Descriptor() ([]byte, []int) {
+func (m *QueryModuleAccountsResponse) Reset()         { *m = QueryModuleAccountsResponse{} }
+func (m *QueryModuleAccountsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryModuleAccountsResponse) ProtoMessage()    {}
+func (*QueryModuleAccountsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c451370b3929a27c, []int{5}
 }
-func (m *QueryAllModuleAccountsResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryModuleAccountsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryAllModuleAccountsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryModuleAccountsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryAllModuleAccountsResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryModuleAccountsResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -262,21 +262,21 @@ func (m *QueryAllModuleAccountsResponse) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-func (m *QueryAllModuleAccountsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryAllModuleAccountsResponse.Merge(m, src)
+func (m *QueryModuleAccountsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryModuleAccountsResponse.Merge(m, src)
 }
-func (m *QueryAllModuleAccountsResponse) XXX_Size() int {
+func (m *QueryModuleAccountsResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryAllModuleAccountsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryAllModuleAccountsResponse.DiscardUnknown(m)
+func (m *QueryModuleAccountsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryModuleAccountsResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryAllModuleAccountsResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryModuleAccountsResponse proto.InternalMessageInfo
 
-func (m *QueryAllModuleAccountsResponse) GetAccount() []*types.Any {
+func (m *QueryModuleAccountsResponse) GetAccounts() []*types.Any {
 	if m != nil {
-		return m.Account
+		return m.Accounts
 	}
 	return nil
 }
@@ -286,46 +286,46 @@ func init() {
 	proto.RegisterType((*QueryAccountResponse)(nil), "cosmos.auth.v1beta1.QueryAccountResponse")
 	proto.RegisterType((*QueryParamsRequest)(nil), "cosmos.auth.v1beta1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "cosmos.auth.v1beta1.QueryParamsResponse")
-	proto.RegisterType((*QueryAllModuleAccountsRequest)(nil), "cosmos.auth.v1beta1.QueryAllModuleAccountsRequest")
-	proto.RegisterType((*QueryAllModuleAccountsResponse)(nil), "cosmos.auth.v1beta1.QueryAllModuleAccountsResponse")
+	proto.RegisterType((*QueryModuleAccountsRequest)(nil), "cosmos.auth.v1beta1.QueryModuleAccountsRequest")
+	proto.RegisterType((*QueryModuleAccountsResponse)(nil), "cosmos.auth.v1beta1.QueryModuleAccountsResponse")
 }
 
 func init() { proto.RegisterFile("cosmos/auth/v1beta1/query.proto", fileDescriptor_c451370b3929a27c) }
 
 var fileDescriptor_c451370b3929a27c = []byte{
-	// 502 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0x41, 0x6b, 0x13, 0x41,
-	0x14, 0xc7, 0x77, 0xac, 0x26, 0x75, 0x14, 0xc1, 0x69, 0x0e, 0x75, 0x6b, 0x67, 0x65, 0x3d, 0x34,
-	0x11, 0x32, 0x63, 0xd3, 0x53, 0xc5, 0x4b, 0xe3, 0xc9, 0x83, 0x50, 0x83, 0x27, 0x2f, 0x61, 0x92,
-	0x1d, 0xb7, 0xc1, 0xcd, 0xce, 0x36, 0x33, 0x2b, 0x06, 0x11, 0xc4, 0x93, 0x37, 0x05, 0xbf, 0x40,
-	0x3f, 0x81, 0xa7, 0x7e, 0x88, 0x52, 0x10, 0x02, 0x5e, 0x3c, 0x89, 0x24, 0x1e, 0xfc, 0x18, 0x92,
-	0x99, 0xb7, 0x6a, 0x70, 0xa3, 0xf6, 0xb4, 0x3b, 0xf3, 0xde, 0xff, 0xfd, 0x7f, 0xef, 0xbd, 0xc1,
-	0x41, 0x5f, 0xe9, 0xa1, 0xd2, 0x5c, 0xe4, 0xe6, 0x80, 0x3f, 0xdb, 0xee, 0x49, 0x23, 0xb6, 0xf9,
-	0x61, 0x2e, 0x47, 0x63, 0x96, 0x8d, 0x94, 0x51, 0x64, 0xcd, 0x25, 0xb0, 0x79, 0x02, 0x83, 0x04,
-	0xbf, 0x16, 0xab, 0x58, 0xd9, 0x38, 0x9f, 0xff, 0xb9, 0x54, 0xff, 0x5a, 0xac, 0x54, 0x9c, 0x48,
-	0x6e, 0x4f, 0xbd, 0xfc, 0x09, 0x17, 0x29, 0x54, 0xf1, 0xaf, 0x43, 0x48, 0x64, 0x03, 0x2e, 0xd2,
-	0x54, 0x19, 0x61, 0x06, 0x2a, 0xd5, 0x10, 0xa5, 0x65, 0x10, 0xd6, 0x10, 0x0a, 0xbb, 0x78, 0xd7,
-	0x39, 0x02, 0x90, 0x3d, 0x84, 0xbb, 0x78, 0xed, 0xe1, 0x9c, 0x76, 0xaf, 0xdf, 0x57, 0x79, 0x6a,
-	0x3a, 0xf2, 0x30, 0x97, 0xda, 0x90, 0x75, 0x5c, 0x15, 0x51, 0x34, 0x92, 0x5a, 0xaf, 0xa3, 0x1b,
-	0xa8, 0x7e, 0xb1, 0x53, 0x1c, 0xef, 0xac, 0xbe, 0x39, 0x0a, 0xbc, 0xef, 0x47, 0x81, 0x17, 0x3e,
-	0xc2, 0xb5, 0x45, 0xa9, 0xce, 0x54, 0xaa, 0x25, 0xb9, 0x8b, 0xab, 0xc2, 0x5d, 0x59, 0xed, 0xa5,
-	0x56, 0x8d, 0x39, 0x7a, 0x56, 0x34, 0xc6, 0xf6, 0xd2, 0x71, 0xfb, 0xf2, 0xe9, 0x71, 0x73, 0x15,
-	0xb4, 0xf7, 0x3b, 0x85, 0x24, 0xac, 0x61, 0x62, 0xab, 0xee, 0x8b, 0x91, 0x18, 0x6a, 0xe0, 0x09,
-	0xf7, 0x01, 0xb3, 0xb8, 0x05, 0xab, 0x5d, 0x5c, 0xc9, 0xec, 0x0d, 0x38, 0x6d, 0xb0, 0x92, 0x69,
-	0x33, 0x27, 0x6a, 0x9f, 0x3f, 0xf9, 0x12, 0x78, 0x1d, 0x10, 0x84, 0x01, 0xde, 0x74, 0xf4, 0x49,
-	0xf2, 0x40, 0x45, 0x79, 0x22, 0x01, 0xe5, 0xa7, 0x65, 0x84, 0xe9, 0xb2, 0x04, 0x70, 0x6f, 0xff,
-	0xde, 0xe8, 0xca, 0xd2, 0x46, 0xc9, 0xe9, 0x71, 0xf3, 0xca, 0x42, 0x89, 0x5f, 0xed, 0xb6, 0x3e,
-	0xae, 0xe0, 0x0b, 0xd6, 0x86, 0xbc, 0x45, 0xb8, 0x0a, 0x71, 0x52, 0x2f, 0xed, 0xa3, 0x64, 0x51,
-	0x7e, 0xe3, 0x3f, 0x32, 0x1d, 0x6e, 0xc8, 0x5f, 0x7f, 0xfa, 0xf6, 0xfe, 0x5c, 0x83, 0x6c, 0xf1,
-	0xd2, 0xe7, 0x02, 0xdd, 0xf1, 0x17, 0xb0, 0xe9, 0x97, 0xe4, 0x15, 0xc2, 0x15, 0x37, 0x3b, 0xb2,
-	0xb5, 0xdc, 0x66, 0x61, 0x51, 0x7e, 0xfd, 0xdf, 0x89, 0x80, 0x73, 0xd3, 0xe2, 0x6c, 0x92, 0x8d,
-	0x52, 0x1c, 0xb7, 0x25, 0xf2, 0x01, 0xe1, 0xab, 0x7f, 0x2c, 0x80, 0xb4, 0xfe, 0xd2, 0xf4, 0x92,
-	0x75, 0xfa, 0x3b, 0x67, 0xd2, 0x00, 0xe3, 0x6d, 0xcb, 0x78, 0x8b, 0xd4, 0xcb, 0x47, 0x96, 0x24,
-	0xdd, 0xa1, 0x15, 0x76, 0x8b, 0xe9, 0xb5, 0xef, 0x9d, 0x4c, 0x29, 0x9a, 0x4c, 0x29, 0xfa, 0x3a,
-	0xa5, 0xe8, 0xdd, 0x8c, 0x7a, 0x93, 0x19, 0xf5, 0x3e, 0xcf, 0xa8, 0xf7, 0xb8, 0x11, 0x0f, 0xcc,
-	0x41, 0xde, 0x63, 0x7d, 0x35, 0x2c, 0xaa, 0xb9, 0x4f, 0x53, 0x47, 0x4f, 0xf9, 0x73, 0x57, 0xda,
-	0x8c, 0x33, 0xa9, 0x7b, 0x15, 0xfb, 0x7e, 0x76, 0x7e, 0x04, 0x00, 0x00, 0xff, 0xff, 0x10, 0xd9,
-	0x2f, 0x0a, 0x5d, 0x04, 0x00, 0x00,
+	// 499 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0x31, 0x6f, 0x13, 0x31,
+	0x14, 0xc7, 0xcf, 0x14, 0x92, 0x60, 0x10, 0x83, 0x9b, 0xa1, 0x5c, 0xca, 0x05, 0x1d, 0x88, 0x26,
+	0x12, 0xb1, 0x69, 0x99, 0x8a, 0x58, 0x1a, 0x58, 0x3a, 0x20, 0x95, 0x13, 0x13, 0x4b, 0xe5, 0x5c,
+	0xcc, 0x35, 0xa2, 0x39, 0x5f, 0x63, 0x1f, 0x22, 0x42, 0x48, 0x88, 0x89, 0x0d, 0x24, 0xbe, 0x40,
+	0xf9, 0x0e, 0xfd, 0x00, 0x8c, 0x55, 0xa7, 0x4a, 0x2c, 0x4c, 0x08, 0x25, 0x0c, 0x7c, 0x0c, 0x74,
+	0xf6, 0xbb, 0x4a, 0x27, 0x39, 0x22, 0x53, 0x62, 0xbf, 0xf7, 0xff, 0xff, 0x7f, 0x7e, 0xef, 0x70,
+	0x3b, 0x96, 0x6a, 0x2c, 0x15, 0xe3, 0xb9, 0x3e, 0x60, 0x6f, 0x36, 0x07, 0x42, 0xf3, 0x4d, 0x76,
+	0x94, 0x8b, 0xc9, 0x94, 0x66, 0x13, 0xa9, 0x25, 0x59, 0xb5, 0x0d, 0xb4, 0x68, 0xa0, 0xd0, 0xe0,
+	0x37, 0x13, 0x99, 0x48, 0x53, 0x67, 0xc5, 0x3f, 0xdb, 0xea, 0xdf, 0x4c, 0xa4, 0x4c, 0x0e, 0x05,
+	0x33, 0xa7, 0x41, 0xfe, 0x8a, 0xf1, 0x14, 0x5c, 0xfc, 0x75, 0x28, 0xf1, 0x6c, 0xc4, 0x78, 0x9a,
+	0x4a, 0xcd, 0xf5, 0x48, 0xa6, 0x0a, 0xaa, 0x81, 0x0b, 0xc2, 0x04, 0x82, 0xb1, 0xad, 0xef, 0xdb,
+	0x44, 0x00, 0x32, 0x87, 0x70, 0x1b, 0xaf, 0x3e, 0x2f, 0x68, 0x77, 0xe2, 0x58, 0xe6, 0xa9, 0x8e,
+	0xc4, 0x51, 0x2e, 0x94, 0x26, 0x6b, 0xb8, 0xce, 0x87, 0xc3, 0x89, 0x50, 0x6a, 0x0d, 0xdd, 0x46,
+	0x9d, 0xab, 0x51, 0x79, 0x7c, 0xd4, 0xf8, 0x74, 0xdc, 0xf6, 0xfe, 0x1e, 0xb7, 0xbd, 0xf0, 0x05,
+	0x6e, 0x56, 0xa5, 0x2a, 0x93, 0xa9, 0x12, 0xe4, 0x31, 0xae, 0x73, 0x7b, 0x65, 0xb4, 0xd7, 0xb6,
+	0x9a, 0xd4, 0xd2, 0xd3, 0xf2, 0x61, 0x74, 0x27, 0x9d, 0xf6, 0xaf, 0x9f, 0x9d, 0xf4, 0x1a, 0xa0,
+	0xdd, 0x8d, 0x4a, 0x49, 0xd8, 0xc4, 0xc4, 0xb8, 0xee, 0xf1, 0x09, 0x1f, 0x2b, 0xe0, 0x09, 0xf7,
+	0x00, 0xb3, 0xbc, 0x85, 0xa8, 0x6d, 0x5c, 0xcb, 0xcc, 0x0d, 0x24, 0xb5, 0xa8, 0x63, 0xda, 0xd4,
+	0x8a, 0xfa, 0x97, 0x4f, 0x7f, 0xb5, 0xbd, 0x08, 0x04, 0xe1, 0x3a, 0xf6, 0x8d, 0xe3, 0x33, 0x39,
+	0xcc, 0x0f, 0x05, 0x70, 0x5c, 0xe4, 0xc5, 0xb8, 0xe5, 0xac, 0x42, 0xee, 0x53, 0xdc, 0x00, 0xde,
+	0x22, 0x79, 0x65, 0xe1, 0x1b, 0xc9, 0xd9, 0x49, 0xef, 0x46, 0xc5, 0x63, 0x37, 0xba, 0x50, 0x6e,
+	0x7d, 0x5f, 0xc1, 0x57, 0x4c, 0x0a, 0xf9, 0x8c, 0x70, 0x1d, 0x1a, 0x48, 0xc7, 0xf9, 0x06, 0xc7,
+	0x92, 0xfc, 0xee, 0x12, 0x9d, 0x16, 0x38, 0x64, 0x1f, 0x7f, 0xfc, 0xf9, 0x7a, 0xa9, 0x4b, 0x36,
+	0x98, 0xf3, 0x53, 0x01, 0x22, 0xf6, 0x0e, 0xb6, 0xfc, 0x9e, 0x7c, 0x40, 0xb8, 0x66, 0xe7, 0x46,
+	0x36, 0x16, 0xc7, 0x54, 0x96, 0xe4, 0x77, 0xfe, 0xdf, 0x08, 0x38, 0x77, 0x0c, 0xce, 0x2d, 0xd2,
+	0x72, 0xe2, 0xd8, 0x0d, 0x91, 0x6f, 0x08, 0x57, 0x67, 0xa7, 0x08, 0x5b, 0x9c, 0xe0, 0xdc, 0xa3,
+	0xff, 0x60, 0x79, 0x01, 0xa0, 0xdd, 0x37, 0x68, 0xf7, 0xc8, 0x5d, 0x27, 0xda, 0xd8, 0x88, 0xf6,
+	0xcb, 0x81, 0xf5, 0x9f, 0x9c, 0xce, 0x02, 0x74, 0x3e, 0x0b, 0xd0, 0xef, 0x59, 0x80, 0xbe, 0xcc,
+	0x03, 0xef, 0x7c, 0x1e, 0x78, 0x3f, 0xe7, 0x81, 0xf7, 0xb2, 0x9b, 0x8c, 0xf4, 0x41, 0x3e, 0xa0,
+	0xb1, 0x1c, 0x97, 0x4e, 0xf6, 0xa7, 0xa7, 0x86, 0xaf, 0xd9, 0x5b, 0x6b, 0xab, 0xa7, 0x99, 0x50,
+	0x83, 0x9a, 0xf9, 0x66, 0x1e, 0xfe, 0x0b, 0x00, 0x00, 0xff, 0xff, 0x12, 0x80, 0x18, 0xda, 0x4c,
+	0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -345,7 +345,7 @@ type QueryClient interface {
 	// Params queries all parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// ModuleAccounts returns a map of module and its account address
-	AllModuleAccounts(ctx context.Context, in *QueryAllModuleAccountsRequest, opts ...grpc.CallOption) (*QueryAllModuleAccountsResponse, error)
+	ModuleAccounts(ctx context.Context, in *QueryModuleAccountsRequest, opts ...grpc.CallOption) (*QueryModuleAccountsResponse, error)
 }
 
 type queryClient struct {
@@ -374,9 +374,9 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) AllModuleAccounts(ctx context.Context, in *QueryAllModuleAccountsRequest, opts ...grpc.CallOption) (*QueryAllModuleAccountsResponse, error) {
-	out := new(QueryAllModuleAccountsResponse)
-	err := c.cc.Invoke(ctx, "/cosmos.auth.v1beta1.Query/AllModuleAccounts", in, out, opts...)
+func (c *queryClient) ModuleAccounts(ctx context.Context, in *QueryModuleAccountsRequest, opts ...grpc.CallOption) (*QueryModuleAccountsResponse, error) {
+	out := new(QueryModuleAccountsResponse)
+	err := c.cc.Invoke(ctx, "/cosmos.auth.v1beta1.Query/ModuleAccounts", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +390,7 @@ type QueryServer interface {
 	// Params queries all parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// ModuleAccounts returns a map of module and its account address
-	AllModuleAccounts(context.Context, *QueryAllModuleAccountsRequest) (*QueryAllModuleAccountsResponse, error)
+	ModuleAccounts(context.Context, *QueryModuleAccountsRequest) (*QueryModuleAccountsResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -403,8 +403,8 @@ func (*UnimplementedQueryServer) Account(ctx context.Context, req *QueryAccountR
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (*UnimplementedQueryServer) AllModuleAccounts(ctx context.Context, req *QueryAllModuleAccountsRequest) (*QueryAllModuleAccountsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AllModuleAccounts not implemented")
+func (*UnimplementedQueryServer) ModuleAccounts(ctx context.Context, req *QueryModuleAccountsRequest) (*QueryModuleAccountsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModuleAccounts not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -447,20 +447,20 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_AllModuleAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAllModuleAccountsRequest)
+func _Query_ModuleAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryModuleAccountsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).AllModuleAccounts(ctx, in)
+		return srv.(QueryServer).ModuleAccounts(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/cosmos.auth.v1beta1.Query/AllModuleAccounts",
+		FullMethod: "/cosmos.auth.v1beta1.Query/ModuleAccounts",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).AllModuleAccounts(ctx, req.(*QueryAllModuleAccountsRequest))
+		return srv.(QueryServer).ModuleAccounts(ctx, req.(*QueryModuleAccountsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -478,8 +478,8 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Params_Handler,
 		},
 		{
-			MethodName: "AllModuleAccounts",
-			Handler:    _Query_AllModuleAccounts_Handler,
+			MethodName: "ModuleAccounts",
+			Handler:    _Query_ModuleAccounts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -607,7 +607,7 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryAllModuleAccountsRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryModuleAccountsRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -617,12 +617,12 @@ func (m *QueryAllModuleAccountsRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryAllModuleAccountsRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryModuleAccountsRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryAllModuleAccountsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryModuleAccountsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -630,7 +630,7 @@ func (m *QueryAllModuleAccountsRequest) MarshalToSizedBuffer(dAtA []byte) (int, 
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryAllModuleAccountsResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryModuleAccountsResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -640,20 +640,20 @@ func (m *QueryAllModuleAccountsResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryAllModuleAccountsResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryModuleAccountsResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryAllModuleAccountsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryModuleAccountsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Account) > 0 {
-		for iNdEx := len(m.Account) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Accounts) > 0 {
+		for iNdEx := len(m.Accounts) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Account[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Accounts[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -724,7 +724,7 @@ func (m *QueryParamsResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryAllModuleAccountsRequest) Size() (n int) {
+func (m *QueryModuleAccountsRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -733,14 +733,14 @@ func (m *QueryAllModuleAccountsRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryAllModuleAccountsResponse) Size() (n int) {
+func (m *QueryModuleAccountsResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Account) > 0 {
-		for _, e := range m.Account {
+	if len(m.Accounts) > 0 {
+		for _, e := range m.Accounts {
 			l = e.Size()
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -1055,7 +1055,7 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryAllModuleAccountsRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryModuleAccountsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1078,10 +1078,10 @@ func (m *QueryAllModuleAccountsRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryAllModuleAccountsRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryModuleAccountsRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryAllModuleAccountsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryModuleAccountsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -1105,7 +1105,7 @@ func (m *QueryAllModuleAccountsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryAllModuleAccountsResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryModuleAccountsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1128,15 +1128,15 @@ func (m *QueryAllModuleAccountsResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryAllModuleAccountsResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryModuleAccountsResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryAllModuleAccountsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryModuleAccountsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Account", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Accounts", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1163,8 +1163,8 @@ func (m *QueryAllModuleAccountsResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Account = append(m.Account, &types.Any{})
-			if err := m.Account[len(m.Account)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Accounts = append(m.Accounts, &types.Any{})
+			if err := m.Accounts[len(m.Accounts)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

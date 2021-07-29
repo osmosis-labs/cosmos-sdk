@@ -54,7 +54,7 @@ func (ak AccountKeeper) Params(c context.Context, req *types.QueryParamsRequest)
 }
 
 // ModuleAccount returns the account of the module
-func (ak AccountKeeper) AllModuleAccounts(c context.Context, req *types.QueryAllModuleAccountsRequest) (*types.QueryAllModuleAccountsResponse, error) {
+func (ak AccountKeeper) ModuleAccounts(c context.Context, req *types.QueryModuleAccountsRequest) (*types.QueryModuleAccountsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -75,5 +75,5 @@ func (ak AccountKeeper) AllModuleAccounts(c context.Context, req *types.QueryAll
 		a = append(a, any)
 	}
 
-	return &types.QueryAllModuleAccountsResponse{Account: a}, nil
+	return &types.QueryModuleAccountsResponse{Accounts: a}, nil
 }

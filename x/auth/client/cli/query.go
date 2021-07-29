@@ -36,7 +36,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetAccountCmd(),
 		QueryParamsCmd(),
-		QueryAllModuleAccountsCmd(),
+		QueryModuleAccountsCmd(),
 	)
 
 	return cmd
@@ -205,20 +205,19 @@ func QueryTxCmd() *cobra.Command {
 	return cmd
 }
 
-// QueryAllModuleAccountCmd returns list of modules and its account address
-func QueryAllModuleAccountsCmd() *cobra.Command {
+// QueryModuleAccountCmd returns list of modules and its account address
+func QueryModuleAccountsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "all-module-accounts",
+		Use:   "module-accounts",
 		Short: "Query all module accounts",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
 			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 
-			res, err := queryClient.AllModuleAccounts(context.Background(), &types.QueryAllModuleAccountsRequest{})
+			res, err := queryClient.ModuleAccounts(context.Background(), &types.QueryModuleAccountsRequest{})
 			if err != nil {
 				return err
 			}
