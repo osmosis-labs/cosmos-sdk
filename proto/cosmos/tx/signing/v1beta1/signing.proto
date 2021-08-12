@@ -24,6 +24,14 @@ enum SignMode {
   // SIGN_MODE_LEGACY_AMINO_JSON is a backwards compatibility mode which uses
   // Amino JSON and will be removed in the future
   SIGN_MODE_LEGACY_AMINO_JSON = 127;
+
+  // SIGN_MODE_EIP191_JSON is a signing mode that is designed to verify
+  // signatures created using the Ethereum Signed Data standard specified in
+  // EIP 191 (https://eips.ethereum.org/EIPS/eip-191)
+  // It will use the LEGACY_AMINO_JSON format and then wrap it in the EIP 191 standard.
+  // In particular, this hex encodes the JSON string and then prepends it with
+  // "\x19Ethereum Signed Message:\n" + len(message)
+  SIGN_MODE_EIP191_LEGACY_JSON = 191;
 }
 
 // SignatureDescriptors wraps multiple SignatureDescriptor's.
