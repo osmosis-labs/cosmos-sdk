@@ -148,6 +148,10 @@
     - [PrivKey](#cosmos.crypto.ed25519.PrivKey)
     - [PubKey](#cosmos.crypto.ed25519.PubKey)
   
+- [cosmos/crypto/ethsecp256k1/keys.proto](#cosmos/crypto/ethsecp256k1/keys.proto)
+    - [PrivKey](#cosmos.crypto.ethsecp256k1.PrivKey)
+    - [PubKey](#cosmos.crypto.ethsecp256k1.PubKey)
+  
 - [cosmos/crypto/multisig/keys.proto](#cosmos/crypto/multisig/keys.proto)
     - [LegacyAminoPubKey](#cosmos.crypto.multisig.LegacyAminoPubKey)
   
@@ -2527,6 +2531,55 @@ Key is the compressed form of the pubkey. The first byte depends is a 0x02 byte
 if the y-coordinate is the lexicographically largest of the two associated with
 the x-coordinate. Otherwise the first byte is a 0x03.
 This prefix is followed with the x-coordinate.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/crypto/ethsecp256k1/keys.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/crypto/ethsecp256k1/keys.proto
+
+
+
+<a name="cosmos.crypto.ethsecp256k1.PrivKey"></a>
+
+### PrivKey
+PrivKey defines a type alias for an ecdsa.PrivateKey that implements
+Tendermint's PrivateKey interface.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="cosmos.crypto.ethsecp256k1.PubKey"></a>
+
+### PubKey
+PubKey defines a type alias for an ecdsa.PublicKey that implements
+Tendermint's PubKey interface. It represents the 33-byte compressed public
+key format.
 
 
 | Field | Type | Label | Description |
