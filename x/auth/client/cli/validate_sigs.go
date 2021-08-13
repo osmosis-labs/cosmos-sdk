@@ -47,7 +47,7 @@ func makeValidateSignaturesCmd() func(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		if !printAndValidateSigs(cmd, clientCtx, txBldr.ChainID(), stdTx, clientCtx.Offline) {
+		if !printAndValidateSigs(cmd, clientCtx, txBldr.ChainID(), txBldr.AccountNumber(), txBldr.Sequence(), stdTx, clientCtx.Offline) {
 			return fmt.Errorf("signatures validation failed")
 		}
 
@@ -59,7 +59,7 @@ func makeValidateSignaturesCmd() func(cmd *cobra.Command, args []string) error {
 // expected signers. In addition, if offline has not been supplied, the signature is
 // verified over the transaction sign bytes. Returns false if the validation fails.
 func printAndValidateSigs(
-	cmd *cobra.Command, clientCtx client.Context, chainID string, tx sdk.Tx, offline bool,
+	cmd *cobra.Command, clientCtx client.Context, chainID string, accountNumber, sequence uint64, tx sdk.Tx, offline bool,
 ) bool {
 	sigTx := tx.(authsigning.SigVerifiableTx)
 	signModeHandler := clientCtx.TxConfig.SignModeHandler()
@@ -96,20 +96,30 @@ func printAndValidateSigs(
 			success = false
 		}
 
-		// Validate the actual signature over the transaction bytes since we can
-		// reach out to a full node to query accounts.
-		if !offline && success {
-			accNum, accSeq, err := clientCtx.AccountRetriever.GetAccountNumberSequence(clientCtx, sigAddr)
+		var accNum, accSeq uint64
+
+		if !offline {
+			accNum, accSeq, err = clientCtx.AccountRetriever.GetAccountNumberSequence(clientCtx, sigAddr)
 			if err != nil {
 				cmd.Printf("failed to get account: %s\n", sigAddr)
 				return false
 			}
+		} else {
+			accNum = accountNumber
+			accSeq = sequence
+		}
+
+		// Validate the actual signature over the transaction bytes since we can
+		// reach out to a full node to query accounts.
+		if success {
 
 			signingData := authsigning.SignerData{
 				ChainID:       chainID,
 				AccountNumber: accNum,
 				Sequence:      accSeq,
 			}
+
+			fmt.Println(signingData)
 			err = authsigning.VerifySignature(pubKey, signingData, sig.Data, signModeHandler, sigTx)
 			if err != nil {
 				return false
