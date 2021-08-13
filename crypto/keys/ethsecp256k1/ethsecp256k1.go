@@ -170,8 +170,8 @@ func (pubKey PubKey) Address() tmcrypto.Address {
 	lHex := strings.ReplaceAll(ethHex, "1", "l")
 	lHex = strings.ReplaceAll(lHex, "b", "h")
 	// Convert this to bytes using bech32 charset
-	bz, err := toBytes(lHex)
-	converted, err := bech32.ConvertBits(bz, 5, 8, false)
+	bz, _ := toBytes(lHex)
+	converted, _ := bech32.ConvertBits(bz, 5, 8, false)
 	return tmcrypto.Address(converted)
 }
 
