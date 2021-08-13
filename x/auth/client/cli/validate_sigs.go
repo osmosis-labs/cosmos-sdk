@@ -119,7 +119,6 @@ func printAndValidateSigs(
 				Sequence:      accSeq,
 			}
 
-			fmt.Println(signingData)
 			err = authsigning.VerifySignature(pubKey, signingData, sig.Data, signModeHandler, sigTx)
 			if err != nil {
 				return false

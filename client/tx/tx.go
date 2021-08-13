@@ -441,8 +441,6 @@ func Sign(txf Factory, name string, txBuilder client.TxBuilder, overwriteSig boo
 		return err
 	}
 
-	fmt.Println(string(bytesToSign))
-
 	// Sign those bytes
 	sigBytes, _, err := txf.keybase.Sign(name, bytesToSign)
 	if err != nil {
