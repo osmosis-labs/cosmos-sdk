@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/subtle"
+	"encoding/hex"
 	"fmt"
+	"strings"
 
+	"github.com/enigmampc/btcutil/bech32"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -132,6 +135,23 @@ var (
 	_ codec.AminoMarshaler = &PubKey{}
 )
 
+const charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+
+// toBytes converts each character in the string 'chars' to the value of the
+// index of the correspoding character in 'charset'.
+func toBytes(chars string) ([]byte, error) {
+	decoded := make([]byte, 0, len(chars))
+	for i := 0; i < len(chars); i++ {
+		index := strings.IndexByte(charset, chars[i])
+		if index < 0 {
+			return nil, fmt.Errorf("invalid character not part of "+
+				"charset: %v", chars[i])
+		}
+		decoded = append(decoded, byte(index))
+	}
+	return decoded, nil
+}
+
 // Address returns the address of the ECDSA public key.
 // The function will panic if the public key is invalid.
 func (pubKey PubKey) Address() tmcrypto.Address {
@@ -140,7 +160,19 @@ func (pubKey PubKey) Address() tmcrypto.Address {
 		panic(err)
 	}
 
-	return tmcrypto.Address(ethcrypto.PubkeyToAddress(*pubk).Bytes())
+	// Get normal Ethereum Address Bytes from Pubkey
+	ethAddr := ethcrypto.PubkeyToAddress(*pubk).Bytes()
+	// Get hex string form eth address bytes
+	ethHex := hex.EncodeToString(ethAddr)
+	// Replace all `1`s in string to `l`s
+	// and all `b`s to `h`s
+	// (because 1 and b are not allowed in bech32)
+	lHex := strings.ReplaceAll(ethHex, "1", "l")
+	lHex = strings.ReplaceAll(lHex, "b", "h")
+	// Convert this to bytes using bech32 charset
+	bz, err := toBytes(lHex)
+	converted, err := bech32.ConvertBits(bz, 5, 8, false)
+	return tmcrypto.Address(converted)
 }
 
 // Bytes returns the raw bytes of the ECDSA public key.
