@@ -1,6 +1,7 @@
 package cachekv
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"sort"
@@ -19,15 +20,15 @@ import (
 // If value is nil but deleted is false, it means the parent doesn't have the
 // key.  (No need to delete upon Write())
 type cValue struct {
-	value   []byte
-	dirty   bool
+	value []byte
+	dirty bool
 }
 
 // Store wraps an in-memory cache around an underlying types.KVStore.
 type Store struct {
 	mtx           sync.Mutex
 	cache         map[string]*cValue
-  deleted       map[string]struct{}
+	deleted       map[string]struct{}
 	unsortedCache map[string]struct{}
 	sortedCache   *dbm.MemDB // always ascending sorted
 	parent        types.KVStore
@@ -39,7 +40,7 @@ var _ types.CacheKVStore = (*Store)(nil)
 func NewStore(parent types.KVStore) *Store {
 	return &Store{
 		cache:         make(map[string]*cValue),
-    deleted:       make(map[string]struct{}),
+		deleted:       make(map[string]struct{}),
 		unsortedCache: make(map[string]struct{}),
 		sortedCache:   dbm.NewMemDB(),
 		parent:        parent,
@@ -133,7 +134,7 @@ func (store *Store) Write() {
 
 	// Clear the cache
 	store.cache = make(map[string]*cValue)
-  store.deleted = make(map[string]struct{})
+	store.deleted = make(map[string]struct{})
 	store.unsortedCache = make(map[string]struct{})
 	store.sortedCache = dbm.NewMemDB()
 }
@@ -174,7 +175,7 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	}
 
 	store.dirtyItems(start, end)
-  cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
+	cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
 
 	return newCacheMergeIterator(parent, cache, ascending)
 }
@@ -201,8 +202,12 @@ func byteSliceToStr(b []byte) string {
 	return *(*string)(unsafe.Pointer(hdr))
 }
 
+var i = 0
+
 // Constructs a slice of dirty items, to use w/ memIterator.
 func (store *Store) dirtyItems(start, end []byte) {
+	fmt.Println("entering dirty items ", i)
+	i += 1
 	unsorted := make([]*kv.Pair, 0)
 
 	n := len(store.unsortedCache)
@@ -213,6 +218,7 @@ func (store *Store) dirtyItems(start, end []byte) {
 		}
 	}
 
+	fmt.Println("len(unsorted)", len(unsorted), "n", n)
 	if len(unsorted) == n { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
 		for key := range store.unsortedCache {
 			delete(store.unsortedCache, key)
@@ -223,18 +229,20 @@ func (store *Store) dirtyItems(start, end []byte) {
 		}
 	}
 
-  for _, item := range unsorted {
-    if item.Value == nil {
-      // deleted element, tracked by store.deleted
-      // setting arbitrary value
-      store.sortedCache.Set([]byte(item.Key), []byte{})
-      continue
-    }
-    err := store.sortedCache.Set([]byte(item.Key), item.Value)
-    if err != nil {
-      panic(err)
-    }
-  }
+	for _, item := range unsorted {
+		fmt.Println("set call", item.Key, item.Value)
+		if item.Value == nil {
+			// deleted element, tracked by store.deleted
+			// setting arbitrary value
+			store.sortedCache.Set([]byte(item.Key), []byte{})
+			continue
+		}
+		err := store.sortedCache.Set([]byte(item.Key), item.Value)
+		if err != nil {
+			panic(err)
+		}
+	}
+	fmt.Println("leaving dirty items")
 }
 
 //----------------------------------------
@@ -243,20 +251,20 @@ func (store *Store) dirtyItems(start, end []byte) {
 // Only entrypoint to mutate store.cache.
 func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
 	store.cache[string(key)] = &cValue{
-		value:   value,
-		dirty:   dirty,
+		value: value,
+		dirty: dirty,
 	}
-  if deleted {
-    store.deleted[string(key)] = struct{}{}
-  } else {
-    delete(store.deleted, string(key))
-  }
+	if deleted {
+		store.deleted[string(key)] = struct{}{}
+	} else {
+		delete(store.deleted, string(key))
+	}
 	if dirty {
 		store.unsortedCache[string(key)] = struct{}{}
 	}
 }
 
 func (store *Store) isDeleted(key string) bool {
-  _, ok := store.deleted[key]
-  return ok
+	_, ok := store.deleted[key]
+	return ok
 }
