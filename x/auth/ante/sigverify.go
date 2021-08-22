@@ -399,7 +399,7 @@ func DefaultSigVerificationGasConsumer(
 		return nil
 
 	case *ethsecp256k1.PubKey:
-		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: eth_secp256k1")
+		meter.ConsumeGas(params.SigVerifyCostSecp256k1, "ante verify: ethsecp256k1")
 		return nil
 
 	case multisig.PubKey:
