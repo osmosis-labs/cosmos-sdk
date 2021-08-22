@@ -9,6 +9,8 @@ import (
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
+
+	jsontoyaml "github.com/ghodss/yaml"
 )
 
 const EIP191MessagePrefix = "\x19Ethereum Signed Message:\n"
@@ -55,12 +57,17 @@ func (s signModeEIP191LegacyJSONHandler) GetSignBytes(mode signingtypes.SignMode
 		tx.GetMsgs(), protoTx.GetMemo(),
 	)
 
+	aminoYamlBz, err := jsontoyaml.JSONToYAML(aminoJSONBz)
+	if err != nil {
+		return nil, err
+	}
+
 	bz := append(
 		[]byte(EIP191MessagePrefix),
-		[]byte(strconv.Itoa(len(aminoJSONBz)))...,
+		[]byte(strconv.Itoa(len(aminoYamlBz)))...,
 	)
 
-	bz = append(bz, aminoJSONBz...)
+	bz = append(bz, aminoYamlBz...)
 
 	return bz, nil
 }

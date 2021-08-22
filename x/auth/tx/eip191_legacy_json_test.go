@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"testing"
 
+	jsontoyaml "github.com/ghodss/yaml"
 	"github.com/stretchr/testify/require"
 
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -39,9 +40,12 @@ func TestEIP191LegacyJSONHandler_GetSignBytes(t *testing.T) {
 		Gas:    gas,
 	}, []sdk.Msg{msg}, memo)
 
-	expectedSignBz := append(append([]byte(EIP191MessagePrefix), []byte(strconv.Itoa(len(aminoJSONBz)))...), aminoJSONBz...)
+	aminoYamlBz, err := jsontoyaml.JSONToYAML(aminoJSONBz)
+	require.NoError(t, err)
 
-	require.Equal(t, expectedSignBz, signBz)
+	expectedSignBz := append(append([]byte(EIP191MessagePrefix), []byte(strconv.Itoa(len(aminoYamlBz)))...), aminoYamlBz...)
+
+	require.Equal(t, expectedSignBz, signBz, string(expectedSignBz), string(signBz))
 
 	// expect error with wrong sign mode
 	_, err = handler.GetSignBytes(signingtypes.SignMode_SIGN_MODE_LEGACY_AMINO_JSON, signingData, tx)
