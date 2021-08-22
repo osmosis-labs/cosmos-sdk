@@ -148,6 +148,10 @@
     - [PrivKey](#cosmos.crypto.ed25519.PrivKey)
     - [PubKey](#cosmos.crypto.ed25519.PubKey)
   
+- [cosmos/crypto/ethsecp256k1/keys.proto](#cosmos/crypto/ethsecp256k1/keys.proto)
+    - [PrivKey](#cosmos.crypto.ethsecp256k1.PrivKey)
+    - [PubKey](#cosmos.crypto.ethsecp256k1.PubKey)
+  
 - [cosmos/crypto/multisig/keys.proto](#cosmos/crypto/multisig/keys.proto)
     - [LegacyAminoPubKey](#cosmos.crypto.multisig.LegacyAminoPubKey)
   
@@ -2527,6 +2531,55 @@ Key is the compressed form of the pubkey. The first byte depends is a 0x02 byte
 if the y-coordinate is the lexicographically largest of the two associated with
 the x-coordinate. Otherwise the first byte is a 0x03.
 This prefix is followed with the x-coordinate.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/crypto/ethsecp256k1/keys.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/crypto/ethsecp256k1/keys.proto
+
+
+
+<a name="cosmos.crypto.ethsecp256k1.PrivKey"></a>
+
+### PrivKey
+PrivKey defines a type alias for an ecdsa.PrivateKey that implements
+Tendermint's PrivateKey interface.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [bytes](#bytes) |  |  |
+
+
+
+
+
+
+<a name="cosmos.crypto.ethsecp256k1.PubKey"></a>
+
+### PubKey
+PubKey defines a type alias for an ecdsa.PublicKey that implements
+Tendermint's PubKey interface. It represents the 33-byte compressed public
+key format.
 
 
 | Field | Type | Label | Description |
@@ -6241,6 +6294,7 @@ SignMode represents a signing mode with its own security guarantees.
 | SIGN_MODE_DIRECT | 1 | SIGN_MODE_DIRECT specifies a signing mode which uses SignDoc and is verified with raw bytes from Tx |
 | SIGN_MODE_TEXTUAL | 2 | SIGN_MODE_TEXTUAL is a future signing mode that will verify some human-readable textual representation on top of the binary representation from SIGN_MODE_DIRECT |
 | SIGN_MODE_LEGACY_AMINO_JSON | 127 | SIGN_MODE_LEGACY_AMINO_JSON is a backwards compatibility mode which uses Amino JSON and will be removed in the future |
+| SIGN_MODE_EIP191_LEGACY_JSON | 191 | SIGN_MODE_EIP191_JSON is a signing mode that is designed to verify signatures created using the Ethereum Signed Data standard specified in EIP 191 (https://eips.ethereum.org/EIPS/eip-191) It will use the LEGACY_AMINO_JSON format and then wrap it in the EIP 191 standard. In particular, this hex encodes the JSON string and then prepends it with "\x19Ethereum Signed Message:\n" + len(message) |
 
 
  <!-- end enums -->
