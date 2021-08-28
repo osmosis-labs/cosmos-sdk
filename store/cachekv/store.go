@@ -1,6 +1,7 @@
 package cachekv
 
 import (
+	"bytes"
 	"io"
 	"reflect"
 	"sort"
@@ -19,15 +20,15 @@ import (
 // If value is nil but deleted is false, it means the parent doesn't have the
 // key.  (No need to delete upon Write())
 type cValue struct {
-	value   []byte
-	dirty   bool
+	value []byte
+	dirty bool
 }
 
 // Store wraps an in-memory cache around an underlying types.KVStore.
 type Store struct {
 	mtx           sync.Mutex
 	cache         map[string]*cValue
-  deleted       map[string]struct{}
+	deleted       map[string]struct{}
 	unsortedCache map[string]struct{}
 	sortedCache   *dbm.MemDB // always ascending sorted
 	parent        types.KVStore
@@ -39,7 +40,7 @@ var _ types.CacheKVStore = (*Store)(nil)
 func NewStore(parent types.KVStore) *Store {
 	return &Store{
 		cache:         make(map[string]*cValue),
-    deleted:       make(map[string]struct{}),
+		deleted:       make(map[string]struct{}),
 		unsortedCache: make(map[string]struct{}),
 		sortedCache:   dbm.NewMemDB(),
 		parent:        parent,
@@ -133,7 +134,7 @@ func (store *Store) Write() {
 
 	// Clear the cache
 	store.cache = make(map[string]*cValue)
-  store.deleted = make(map[string]struct{})
+	store.deleted = make(map[string]struct{})
 	store.unsortedCache = make(map[string]struct{})
 	store.sortedCache = dbm.NewMemDB()
 }
@@ -174,7 +175,7 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	}
 
 	store.dirtyItems(start, end)
-  cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
+	cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
 
 	return newCacheMergeIterator(parent, cache, ascending)
 }
@@ -203,16 +204,33 @@ func byteSliceToStr(b []byte) string {
 
 // Constructs a slice of dirty items, to use w/ memIterator.
 func (store *Store) dirtyItems(start, end []byte) {
-	unsorted := make([]*kv.Pair, 0)
-
 	n := len(store.unsortedCache)
-	for key := range store.unsortedCache {
-		if dbm.IsKeyInDomain(strToByte(key), start, end) {
+	unsorted := make([]*kv.Pair, 0)
+	// If the unsortedCache is too big, its costs too much to determine
+	// whats in the subset we are concerned about.
+	// If you are interleaving iterator calls with writes, this can easily become an
+	// O(N^2) overhead.
+	// Even without that, too many range checks eventually becomes more expensive
+	// than just not having the cache.
+	if n >= 1024 {
+		for key := range store.unsortedCache {
 			cacheValue := store.cache[key]
 			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
 		}
+	} else {
+		// else do a linear scan to determine if the unsorted pairs are in the pool.
+		for key := range store.unsortedCache {
+			if dbm.IsKeyInDomain(strToByte(key), start, end) {
+				cacheValue := store.cache[key]
+				unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+			}
+		}
 	}
+	store.clearUnsortedCacheSubset(unsorted)
+}
 
+func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair) {
+	n := len(store.unsortedCache)
 	if len(unsorted) == n { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
 		for key := range store.unsortedCache {
 			delete(store.unsortedCache, key)
@@ -222,20 +240,59 @@ func (store *Store) dirtyItems(start, end []byte) {
 			delete(store.unsortedCache, byteSliceToStr(kv.Key))
 		}
 	}
+	sort.Slice(unsorted, func(i, j int) bool {
+		return bytes.Compare(unsorted[i].Key, unsorted[j].Key) < 0
+	})
 
-  for _, item := range unsorted {
-    if item.Value == nil {
-      // deleted element, tracked by store.deleted
-      // setting arbitrary value
-      store.sortedCache.Set([]byte(item.Key), []byte{})
-      continue
-    }
-    err := store.sortedCache.Set([]byte(item.Key), item.Value)
-    if err != nil {
-      panic(err)
-    }
-  }
+	for _, item := range unsorted {
+		if item.Value == nil {
+			// deleted element, tracked by store.deleted
+			// setting arbitrary value
+			store.sortedCache.Set([]byte(item.Key), []byte{})
+			continue
+		}
+		err := store.sortedCache.Set([]byte(item.Key), item.Value)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
+
+// // Constructs a slice of dirty items, to use w/ memIterator.
+// func (store *Store) dirtyItems(start, end []byte) {
+// 	unsorted := make([]*kv.Pair, 0)
+
+// 	n := len(store.unsortedCache)
+// 	for key := range store.unsortedCache {
+// 		if dbm.IsKeyInDomain(strToByte(key), start, end) {
+// 			cacheValue := store.cache[key]
+// 			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+// 		}
+// 	}
+
+// 	if len(unsorted) == n { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
+// 		for key := range store.unsortedCache {
+// 			delete(store.unsortedCache, key)
+// 		}
+// 	} else { // Otherwise, normally delete the unsorted keys from the map.
+// 		for _, kv := range unsorted {
+// 			delete(store.unsortedCache, byteSliceToStr(kv.Key))
+// 		}
+// 	}
+
+//   for _, item := range unsorted {
+//     if item.Value == nil {
+//       // deleted element, tracked by store.deleted
+//       // setting arbitrary value
+//       store.sortedCache.Set([]byte(item.Key), []byte{})
+//       continue
+//     }
+//     err := store.sortedCache.Set([]byte(item.Key), item.Value)
+//     if err != nil {
+//       panic(err)
+//     }
+//   }
+// }
 
 //----------------------------------------
 // etc
@@ -243,20 +300,20 @@ func (store *Store) dirtyItems(start, end []byte) {
 // Only entrypoint to mutate store.cache.
 func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
 	store.cache[string(key)] = &cValue{
-		value:   value,
-		dirty:   dirty,
+		value: value,
+		dirty: dirty,
 	}
-  if deleted {
-    store.deleted[string(key)] = struct{}{}
-  } else {
-    delete(store.deleted, string(key))
-  }
+	if deleted {
+		store.deleted[string(key)] = struct{}{}
+	} else {
+		delete(store.deleted, string(key))
+	}
 	if dirty {
 		store.unsortedCache[string(key)] = struct{}{}
 	}
 }
 
 func (store *Store) isDeleted(key string) bool {
-  _, ok := store.deleted[key]
-  return ok
+	_, ok := store.deleted[key]
+	return ok
 }
