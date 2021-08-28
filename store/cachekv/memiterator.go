@@ -1,8 +1,6 @@
 package cachekv
 
 import (
-	"bytes"
-
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/store/types"
@@ -14,7 +12,6 @@ import (
 type memIterator struct {
 	types.Iterator
 
-	lastKey []byte
 	deleted map[string]struct{}
 }
 
@@ -32,25 +29,22 @@ func newMemIterator(start, end []byte, items *dbm.MemDB, deleted map[string]stru
 		panic(err)
 	}
 
+	newDeleted := make(map[string]struct{})
+	for k, v := range deleted {
+		newDeleted[k] = v
+	}
+
 	return &memIterator{
 		Iterator: iter,
 
-		lastKey: nil,
-		deleted: deleted,
+		deleted: newDeleted,
 	}
 }
 
 func (mi *memIterator) Value() []byte {
 	key := mi.Iterator.Key()
-	// We need to handle the case where deleted is modified and includes our current key
-	// We handle this by maintaining a lastKey object in the iterator.
-	// If the current key is the same as the last key (and last key is not nil / the start)
-	// then we are calling value on the same thing as last time.
-	// Therefore we don't check the mi.deleted to see if this key is included in there.
-	reCallingOnOldLastKey := (mi.lastKey != nil) && bytes.Equal(key, mi.lastKey)
-	if _, ok := mi.deleted[string(key)]; ok && !reCallingOnOldLastKey {
+	if _, ok := mi.deleted[string(key)]; ok {
 		return nil
 	}
-	mi.lastKey = key
 	return mi.Iterator.Value()
 }
