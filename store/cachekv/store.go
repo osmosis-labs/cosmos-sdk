@@ -248,51 +248,15 @@ func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair) {
 		if item.Value == nil {
 			// deleted element, tracked by store.deleted
 			// setting arbitrary value
-			store.sortedCache.Set([]byte(item.Key), []byte{})
+			store.sortedCache.Set(item.Key, []byte{})
 			continue
 		}
-		err := store.sortedCache.Set([]byte(item.Key), item.Value)
+		err := store.sortedCache.Set(item.Key, item.Value)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
-
-// // Constructs a slice of dirty items, to use w/ memIterator.
-// func (store *Store) dirtyItems(start, end []byte) {
-// 	unsorted := make([]*kv.Pair, 0)
-
-// 	n := len(store.unsortedCache)
-// 	for key := range store.unsortedCache {
-// 		if dbm.IsKeyInDomain(strToByte(key), start, end) {
-// 			cacheValue := store.cache[key]
-// 			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
-// 		}
-// 	}
-
-// 	if len(unsorted) == n { // This pattern allows the Go compiler to emit the map clearing idiom for the entire map.
-// 		for key := range store.unsortedCache {
-// 			delete(store.unsortedCache, key)
-// 		}
-// 	} else { // Otherwise, normally delete the unsorted keys from the map.
-// 		for _, kv := range unsorted {
-// 			delete(store.unsortedCache, byteSliceToStr(kv.Key))
-// 		}
-// 	}
-
-//   for _, item := range unsorted {
-//     if item.Value == nil {
-//       // deleted element, tracked by store.deleted
-//       // setting arbitrary value
-//       store.sortedCache.Set([]byte(item.Key), []byte{})
-//       continue
-//     }
-//     err := store.sortedCache.Set([]byte(item.Key), item.Value)
-//     if err != nil {
-//       panic(err)
-//     }
-//   }
-// }
 
 //----------------------------------------
 // etc
