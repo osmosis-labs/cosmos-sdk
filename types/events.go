@@ -33,13 +33,13 @@ func (em *EventManager) Events() Events { return em.events }
 // EmitEvent stores a single Event object.
 // Deprecated: Use EmitTypedEvent
 func (em *EventManager) EmitEvent(event Event) {
-	em.events = em.events.AppendEvent(event)
+	em.events = append(em.events, event)
 }
 
 // EmitEvents stores a series of Event objects.
 // Deprecated: Use EmitTypedEvents
 func (em *EventManager) EmitEvents(events Events) {
-	em.events = em.events.AppendEvents(events)
+	em.events = append(em.events, events...)
 }
 
 // ABCIEvents returns all stored Event objects as abci.Event objects.
