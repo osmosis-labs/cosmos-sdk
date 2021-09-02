@@ -175,6 +175,17 @@ func NewEvent(ty string, attrs ...Attribute) Event {
 	return e
 }
 
+// NewEventFromEventAttributes creates a new Event object with a given type
+// and slice of EventAttributes.
+// NOTE: This function is expected to take complete ownership of the attrs,
+// and they should not mutate.
+func NewEventFromEventAttributes(ty string, attrs []abci.EventAttribute) Event {
+	return Event{
+		Type:       ty,
+		Attributes: attrs,
+	}
+}
+
 // NewAttribute returns a new key/value Attribute object.
 func NewAttribute(k, v string) Attribute {
 	return Attribute{k, v}

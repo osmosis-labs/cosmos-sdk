@@ -9,3 +9,8 @@ const (
 
 	AttributeValueCategory = ModuleName
 )
+
+var (
+	AttributeKeyRecipientBytes = []byte(AttributeKeyRecipient)
+	AttributeKeySenderBytes    = []byte(AttributeKeySender)
+)
