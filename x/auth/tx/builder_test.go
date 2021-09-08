@@ -13,6 +13,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	txtypes "github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+
+	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 )
 
 func TestTxBuilder(t *testing.T) {
@@ -309,4 +312,65 @@ func TestBuilderFeeGranter(t *testing.T) {
 	// set fee granter
 	txBuilder.SetFeeGranter(addr1)
 	require.Equal(t, addr1, txBuilder.GetTx().FeeGranter())
+}
+
+func TestBuilderEip191(t *testing.T) {
+
+	_, pubkey, addr := testdata.KeyTestPubAddr()
+	interfaceRegistry := codectypes.NewInterfaceRegistry()
+	interfaceRegistry.RegisterImplementations((*sdk.Msg)(nil), &testdata.TestMsg{})
+	marshaler := codec.NewProtoCodec(interfaceRegistry)
+
+	txConfig := NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_EIP191_LEGACY_JSON})
+	txBuilder := txConfig.NewTxBuilder()
+
+	memo := "sometestmemo"
+	msgs := []sdk.Msg{testdata.NewTestMsg(addr)}
+	accSeq := uint64(2) // Arbitrary account sequence
+
+	sigData := &signingtypes.SingleSignatureData{
+		SignMode: signingtypes.SignMode_SIGN_MODE_EIP191_LEGACY_JSON,
+	}
+	sig := signingtypes.SignatureV2{
+		PubKey:   pubkey,
+		Data:     sigData,
+		Sequence: accSeq,
+	}
+
+	fee := txtypes.Fee{Amount: sdk.NewCoins(sdk.NewInt64Coin("atom", 150)), GasLimit: 20000}
+
+	err := txBuilder.SetMsgs(msgs...)
+	require.NoError(t, err)
+	txBuilder.SetMemo(memo)
+	txBuilder.SetFeeAmount(fee.Amount)
+	txBuilder.SetGasLimit(fee.GasLimit)
+
+	err = txBuilder.SetSignatures(sig)
+	require.NoError(t, err)
+
+	t.Log("verify modes and default-mode")
+
+	modeHandler := signModeEIP191LegacyJSONHandler{}
+
+	require.Equal(t, modeHandler.DefaultMode(), signingtypes.SignMode_SIGN_MODE_EIP191_LEGACY_JSON)
+	require.Len(t, modeHandler.Modes(), 1)
+
+	signingData := authsigning.SignerData{
+		ChainID:       "test-chain",
+		AccountNumber: 1,
+	}
+	signBytes, err := modeHandler.GetSignBytes(signingtypes.SignMode_SIGN_MODE_EIP191_LEGACY_JSON, signingData, txBuilder.GetTx())
+
+	require.NoError(t, err)
+	require.NotNil(t, signBytes)
+
+	anys := make([]*codectypes.Any, len(msgs))
+
+	for i, msg := range msgs {
+		var err error
+		anys[i], err = codectypes.NewAnyWithValue(msg)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
