@@ -1,6 +1,8 @@
 package tx
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -55,12 +57,18 @@ func (s signModeEIP191LegacyJSONHandler) GetSignBytes(mode signingtypes.SignMode
 		tx.GetMsgs(), protoTx.GetMemo(),
 	)
 
+	var out bytes.Buffer
+	if err := json.Indent(&out, aminoJSONBz, "", "  "); err != nil {
+		return nil, err
+	}
+
 	bz := append(
 		[]byte(EIP191MessagePrefix),
-		[]byte(strconv.Itoa(len(aminoJSONBz)))...,
+		[]byte(strconv.Itoa(len(out.Bytes())))...,
 	)
 
-	bz = append(bz, aminoJSONBz...)
+	bz = append(bz, out.Bytes()...)
+	// bz = append(bz, aminoJSONBz...)
 
 	return bz, nil
 }

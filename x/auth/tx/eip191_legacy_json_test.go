@@ -1,6 +1,8 @@
 package tx
 
 import (
+	"bytes"
+	"encoding/json"
 	"strconv"
 	"testing"
 
@@ -39,7 +41,11 @@ func TestEIP191LegacyJSONHandler_GetSignBytes(t *testing.T) {
 		Gas:    gas,
 	}, []sdk.Msg{msg}, memo)
 
-	expectedSignBz := append(append([]byte(EIP191MessagePrefix), []byte(strconv.Itoa(len(aminoJSONBz)))...), aminoJSONBz...)
+	var out bytes.Buffer
+	err = json.Indent(&out, aminoJSONBz, "", "  ")
+	require.NoError(t, err)
+
+	expectedSignBz := append(append([]byte(EIP191MessagePrefix), []byte(strconv.Itoa(len(out.Bytes())))...), out.Bytes()...)
 
 	require.Equal(t, expectedSignBz, signBz)
 
