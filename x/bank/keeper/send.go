@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -17,6 +19,7 @@ type SendKeeper interface {
 
 	InputOutputCoins(ctx sdk.Context, inputs []types.Input, outputs []types.Output) error
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
+	SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddrs []sdk.AccAddress, amts []sdk.Coins) error
 
 	SubtractCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
 	AddCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error
@@ -171,6 +174,53 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 		k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
 	}
 
+	return nil
+}
+
+// SendManyCoins transfer multiple amt coins from a sending account to multiple receiving accounts.
+// An error is returned upon failure.
+func (k BaseSendKeeper) SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddrs []sdk.AccAddress, amts []sdk.Coins) error {
+	if len(toAddrs) != len(amts) {
+		return fmt.Errorf("addresses and amounts numbers does not match")
+	}
+
+	totalAmt := sdk.Coins{}
+	for _, amt := range amts {
+		totalAmt = sdk.Coins.Add(totalAmt, amt...)
+	}
+
+	err := k.SubtractCoins(ctx, fromAddr, totalAmt)
+	if err != nil {
+		return err
+	}
+
+	fromAddrString := fromAddr.String()
+	for i, toAddr := range toAddrs {
+		amt := amts[i]
+
+		err := k.AddCoins(ctx, toAddr, amt)
+		if err != nil {
+			return err
+		}
+
+		acc := k.ak.GetAccount(ctx, toAddr)
+		if acc == nil {
+			defer telemetry.IncrCounter(1, "new", "account")
+			k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
+		}
+
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeTransfer,
+			sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
+			sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
+		))
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+	))
 	return nil
 }
 
