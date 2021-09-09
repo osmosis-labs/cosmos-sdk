@@ -127,6 +127,7 @@ func (suite *IntegrationTestSuite) TestSendCoinsFromModuleToAccount_Blacklist() 
 	authKeeper.SetAccount(ctx, baseAcc)
 
 	suite.Require().Error(keeper.SendCoinsFromModuleToAccount(ctx, holderAcc.GetName(), addr1, initCoins))
+	suite.Require().Error(keeper.SendCoinsFromModuleToManyAccounts(ctx, holderAcc.GetName(), []sdk.AccAddress{addr1}, []sdk.Coins{initCoins}))
 }
 
 func (suite *IntegrationTestSuite) TestSupply_SendCoins() {
@@ -171,8 +172,15 @@ func (suite *IntegrationTestSuite) TestSupply_SendCoins() {
 		keeper.SendCoinsFromModuleToAccount(ctx, "", baseAcc.GetAddress(), initCoins) // nolint:errcheck
 	})
 
+	suite.Require().Panics(func() {
+		keeper.SendCoinsFromModuleToManyAccounts(ctx, authtypes.Burner, []sdk.AccAddress{baseAcc.GetAddress()}, []sdk.Coins{initCoins, initCoins})
+	})
+
 	suite.Require().Error(
 		keeper.SendCoinsFromModuleToAccount(ctx, holderAcc.GetName(), baseAcc.GetAddress(), initCoins.Add(initCoins...)),
+	)
+	suite.Require().Error(
+		keeper.SendCoinsFromModuleToManyAccounts(ctx, holderAcc.GetName(), []sdk.AccAddress{baseAcc.GetAddress()}, []sdk.Coins{initCoins.Add(initCoins...)}),
 	)
 
 	suite.Require().NoError(
@@ -190,6 +198,12 @@ func (suite *IntegrationTestSuite) TestSupply_SendCoins() {
 	suite.Require().NoError(keeper.SendCoinsFromAccountToModule(ctx, baseAcc.GetAddress(), authtypes.Burner, initCoins))
 	suite.Require().Equal(sdk.Coins(nil), keeper.GetAllBalances(ctx, baseAcc.GetAddress()))
 	suite.Require().Equal(initCoins, getCoinsByName(ctx, keeper, authKeeper, authtypes.Burner))
+
+	suite.Require().NoError(
+		keeper.SendCoinsFromModuleToManyAccounts(ctx, authtypes.Burner, []sdk.AccAddress{baseAcc.GetAddress()}, []sdk.Coins{initCoins}),
+	)
+	suite.Require().Equal(sdk.Coins(nil), getCoinsByName(ctx, keeper, authKeeper, authtypes.Burner))
+	suite.Require().Equal(initCoins, keeper.GetAllBalances(ctx, baseAcc.GetAddress()))
 }
 
 func (suite *IntegrationTestSuite) TestSupply_MintCoins() {
