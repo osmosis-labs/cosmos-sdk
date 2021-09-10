@@ -296,10 +296,12 @@ func (m *Manager) RegisterServices(cfg Configurator) {
 // InitGenesis performs init genesis functionality for modules
 func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, genesisData map[string]json.RawMessage) abci.ResponseInitChain {
 	var validatorUpdates []abci.ValidatorUpdate
+	ctx.Logger().Info("initializing blockchain state from genesis.json")
 	for _, moduleName := range m.OrderInitGenesis {
 		if genesisData[moduleName] == nil {
 			continue
 		}
+		ctx.Logger().Info("running initialization for module", "module", moduleName)
 
 		moduleValUpdates := m.Modules[moduleName].InitGenesis(ctx, cdc, genesisData[moduleName])
 
@@ -312,6 +314,7 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, genesisD
 			validatorUpdates = moduleValUpdates
 		}
 	}
+	ctx.Logger().Info("Done init chaining")
 
 	return abci.ResponseInitChain{
 		Validators: validatorUpdates,
