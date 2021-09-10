@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"reflect"
 	"sort"
@@ -74,6 +75,7 @@ func (store *Store) Get(key []byte) (value []byte) {
 func (store *Store) Set(key []byte, value []byte) {
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
+	fmt.Println(" grep me cache kv set")
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
@@ -174,6 +176,8 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 
 	store.dirtyItems(start, end)
 	cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
+
+	fmt.Println(" grep me cache kv iterator")
 
 	return newCacheMergeIterator(parent, cache, ascending)
 }
