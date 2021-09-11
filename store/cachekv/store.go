@@ -210,17 +210,19 @@ func (store *Store) dirtyItems(start, end []byte) {
 	// O(N^2) overhead.
 	// Even without that, too many range checks eventually becomes more expensive
 	// than just not having the cache.
-	if n >= 1024 {
+	if n >= 256 {
 		for key := range store.unsortedCache {
 			cacheValue := store.cache[key]
-			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+			keyBz := strToByte(key)
+			unsorted = append(unsorted, &kv.Pair{Key: keyBz, Value: cacheValue.value})
 		}
 	} else {
 		// else do a linear scan to determine if the unsorted pairs are in the pool.
 		for key := range store.unsortedCache {
-			if dbm.IsKeyInDomain(strToByte(key), start, end) {
+			keyBz := strToByte(key)
+			if dbm.IsKeyInDomain(keyBz, start, end) {
 				cacheValue := store.cache[key]
-				unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+				unsorted = append(unsorted, &kv.Pair{Key: keyBz, Value: cacheValue.value})
 			}
 		}
 	}
@@ -261,17 +263,18 @@ func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair) {
 
 // Only entrypoint to mutate store.cache.
 func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
-	store.cache[string(key)] = &cValue{
+	keyStr := byteSliceToStr(key)
+	store.cache[keyStr] = &cValue{
 		value: value,
 		dirty: dirty,
 	}
 	if deleted {
-		store.deleted[string(key)] = struct{}{}
+		store.deleted[keyStr] = struct{}{}
 	} else {
-		delete(store.deleted, string(key))
+		delete(store.deleted, keyStr)
 	}
 	if dirty {
-		store.unsortedCache[string(key)] = struct{}{}
+		store.unsortedCache[keyStr] = struct{}{}
 	}
 }
 
