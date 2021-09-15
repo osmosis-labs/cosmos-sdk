@@ -235,6 +235,7 @@ func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair) {
 		for key := range store.unsortedCache {
 			delete(store.unsortedCache, key)
 		}
+		store.unsortedCache = make(map[string]struct{}, 300)
 	} else { // Otherwise, normally delete the unsorted keys from the map.
 		for _, kv := range unsorted {
 			delete(store.unsortedCache, byteSliceToStr(kv.Key))
