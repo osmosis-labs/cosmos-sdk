@@ -314,7 +314,7 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, genesisD
 			validatorUpdates = moduleValUpdates
 		}
 	}
-	ctx.Logger().Info("Done init chaining")
+	ctx.Logger().Info("Done init genesis")
 
 	return abci.ResponseInitChain{
 		Validators: validatorUpdates,
