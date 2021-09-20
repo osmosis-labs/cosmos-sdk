@@ -209,12 +209,12 @@ func (k BaseSendKeeper) SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, 
 			k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
 		}
 
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			types.EventTypeTransfer,
-			sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
-			sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
-			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
-		))
+		// ctx.EventManager().EmitEvent(sdk.NewEvent(
+		// 	types.EventTypeTransfer,
+		// 	sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
+		// 	sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+		// 	sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
+		// ))
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
