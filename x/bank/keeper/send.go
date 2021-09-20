@@ -141,18 +141,26 @@ func (k BaseSendKeeper) InputOutputCoins(ctx sdk.Context, inputs []types.Input, 
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
+	return k.sendCoinsEventsVariable(ctx, fromAddr, toAddr, amt, true)
+}
+
+// SendCoins transfers amt coins from a sending account to a receiving account.
+// An error is returned upon failure.
+func (k BaseSendKeeper) sendCoinsEventsVariable(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins, emitEvents bool) error {
 	// bech32 encoding is expensive! Only do it once for fromAddr
-	fromAddrString := fromAddr.String()
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeTransfer,
-		sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
-		sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
-		sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
-	))
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		sdk.EventTypeMessage,
-		sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
-	))
+	if emitEvents {
+		fromAddrString := fromAddr.String()
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeTransfer,
+			sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
+			sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
+		))
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+		))
+	}
 
 	err := k.SubtractCoins(ctx, fromAddr, amt)
 	if err != nil {

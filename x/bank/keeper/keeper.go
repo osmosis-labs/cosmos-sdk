@@ -246,6 +246,20 @@ func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metada
 func (k BaseKeeper) SendCoinsFromModuleToAccount(
 	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins,
 ) error {
+	return k.sendCoinsFromModuleToAccountEventField(ctx, senderModule, recipientAddr, amt, true)
+}
+
+// SendCoinsFromModuleToAccountNoEvents transfers coins from a ModuleAccount to an AccAddress.
+// It does not emit any events.
+func (k BaseKeeper) SendCoinsFromModuleToAccountNoEvents(
+	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins,
+) error {
+	return k.sendCoinsFromModuleToAccountEventField(ctx, senderModule, recipientAddr, amt, false)
+}
+
+func (k BaseKeeper) sendCoinsFromModuleToAccountEventField(
+	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins, useEvents bool,
+) error {
 
 	senderAddr := k.ak.GetModuleAddress(senderModule)
 	if senderAddr == nil {
@@ -256,7 +270,7 @@ func (k BaseKeeper) SendCoinsFromModuleToAccount(
 		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", recipientAddr)
 	}
 
-	return k.SendCoins(ctx, senderAddr, recipientAddr, amt)
+	return k.sendCoinsEventsVariable(ctx, senderAddr, recipientAddr, amt, useEvents)
 }
 
 // SendCoinsFromModuleToManyAccounts transfers coins from a ModuleAccount to multiple AccAddresses.
