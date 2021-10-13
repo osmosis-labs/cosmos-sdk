@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"sync"
 	"time"
 
 	ics23 "github.com/confio/ics23/go"
@@ -18,7 +17,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
@@ -374,8 +372,21 @@ func getProofFromTree(tree *iavl.MutableTree, key []byte, exists bool) *tmcrypto
 	return &tmcrypto.ProofOps{Ops: []tmcrypto.ProofOp{op.ProofOp()}}
 }
 
-//----------------------------------------
+type iavlIterator struct {
+  *iavl.Iterator
+}
 
+var _ types.Iterator = (*iavlIterator)(nil)
+
+func newIAVLIterator(tree *iavl.ImmutableTree, start, end []byte, ascending bool) *iavlIterator {
+  iter := &iavlIterator {
+    Iterator: tree.Iterator(start, end, ascending),
+  }
+  return iter
+}
+
+//----------------------------------------
+/*
 // Implements types.Iterator.
 type iavlIterator struct {
 	// Domain
@@ -547,3 +558,4 @@ func (iter *iavlIterator) assertIsValid(unlockMutex bool) {
 		panic("invalid iterator")
 	}
 }
+*/

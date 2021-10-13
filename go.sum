@@ -196,6 +196,14 @@ github.com/cosmos/iavl v0.15.0-rc5/go.mod h1:WqoPL9yPTQ85QBMT45OOUzPxG/U/JcJoN7u
 github.com/cosmos/iavl v0.15.3/go.mod h1:OLjQiAQ4fGD2KDZooyJG9yz+p2ao2IAYSbke8mVvSA4=
 github.com/cosmos/iavl v0.17.1 h1:b/Cl8h1PRMvsu24+TYNlKchIu7W6tmxIBGe6E9u2Ybw=
 github.com/cosmos/iavl v0.17.1/go.mod h1:7aisPZK8yCpQdy3PMvKeO+bhq1NwDjUwjzxwwROUxFk=
+github.com/cosmos/iavl v0.17.2-0.20211013120412-4b30f083f4e0 h1:haC+YOcbbzkI6IlhYDteBtYy0g2FDLeDqPLN476wq/8=
+github.com/cosmos/iavl v0.17.2-0.20211013120412-4b30f083f4e0/go.mod h1:nEyKvca8rpXDwVoO305EBafOr3TAxdbrxxfVCwlaFf8=
+github.com/cosmos/iavl v0.17.2-0.20211013144438-82d9a9d4a23b h1:qEvOS5miATB/7B0oSUCcb9P4PyLojfskyV25zBI39C4=
+github.com/cosmos/iavl v0.17.2-0.20211013144438-82d9a9d4a23b/go.mod h1:nEyKvca8rpXDwVoO305EBafOr3TAxdbrxxfVCwlaFf8=
+github.com/cosmos/iavl v0.17.2-0.20211013152315-bd8137a572a8 h1:pDE7AACRLRUkbaQLbZBfjpt+SIc3+yu7f+biogkC90M=
+github.com/cosmos/iavl v0.17.2-0.20211013152315-bd8137a572a8/go.mod h1:nEyKvca8rpXDwVoO305EBafOr3TAxdbrxxfVCwlaFf8=
+github.com/cosmos/iavl v0.17.2-0.20211013152702-a06214cc05ca h1:dTw5vo27S21UvT8eWRRQ+5hZCXhB/Pp4+2d2mV2cC1w=
+github.com/cosmos/iavl v0.17.2-0.20211013152702-a06214cc05ca/go.mod h1:nEyKvca8rpXDwVoO305EBafOr3TAxdbrxxfVCwlaFf8=
 github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76 h1:DdzS1m6o/pCqeZ8VOAit/gyATedRgjvkVI+UCrLpyuU=
 github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76/go.mod h1:0mkLWIoZuQ7uBoospo5Q9zIpqq6rYCPJDSUdeCJvPM8=
 github.com/cosmos/ledger-cosmos-go v0.11.1 h1:9JIYsGnXP613pb2vPjFeMMjBI5lEDsEaF6oYorTy6J4=
