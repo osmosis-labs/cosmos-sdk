@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -23,13 +24,16 @@ type Keeper interface {
 
 	InitGenesis(sdk.Context, *types.GenesisState)
 	ExportGenesis(sdk.Context) *types.GenesisState
+
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
+	HasSupply(ctx sdk.Context, denom string) bool
 	GetPaginatedTotalSupply(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
 	IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bool)
 	GetDenomMetaData(ctx sdk.Context, denom string) (types.Metadata, bool)
 	HasDenomMetaData(ctx sdk.Context, denom string) bool
 	SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata)
 	IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool)
+
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToManyAccounts(
 		ctx sdk.Context, senderModule string, recipientAddrs []sdk.AccAddress, amts []sdk.Coins,
@@ -41,6 +45,7 @@ type Keeper interface {
 	UndelegateCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
+
 	DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr sdk.AccAddress, amt sdk.Coins) error
 	UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAddr sdk.AccAddress, amt sdk.Coins) error
 
@@ -53,12 +58,46 @@ type BaseKeeper struct {
 
 	ak         types.AccountKeeper
 	cdc        codec.BinaryCodec
-	storeKey   sdk.StoreKey
+	storeKey   storetypes.StoreKey
 	paramSpace paramtypes.Subspace
 }
 
+// GetPaginatedTotalSupply queries for the supply, ignoring 0 coins, with a given pagination
+func (k BaseKeeper) GetPaginatedTotalSupply(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
+	store := ctx.KVStore(k.storeKey)
+	supplyStore := prefix.NewStore(store, types.SupplyKey)
+
+	supply := sdk.NewCoins()
+
+	pageRes, err := query.Paginate(supplyStore, pagination, func(key, value []byte) error {
+		var amount sdk.Int
+		err := amount.Unmarshal(value)
+		if err != nil {
+			return fmt.Errorf("unable to convert amount string to Int %v", err)
+		}
+
+		// `Add` omits the 0 coins addition to the `supply`.
+		supply = supply.Add(sdk.NewCoin(string(key), amount))
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return supply, pageRes, nil
+}
+
+// NewBaseKeeper returns a new BaseKeeper object with a given codec, dedicated
+// store key, an AccountKeeper implementation, and a parameter Subspace used to
+// store and fetch module parameters. The BaseKeeper also accepts a
+// blocklist map. This blocklist describes the set of addresses that are not allowed
+// to receive funds through direct and explicit actions, for example, by using a MsgSend or
+// by using a SendCoinsFromModuleToAccount execution.
 func NewBaseKeeper(
-	cdc codec.BinaryCodec, storeKey sdk.StoreKey, ak types.AccountKeeper, paramSpace paramtypes.Subspace,
+	cdc codec.BinaryCodec,
+	storeKey storetypes.StoreKey,
+	ak types.AccountKeeper,
+	paramSpace paramtypes.Subspace,
 	blockedAddrs map[string]bool,
 ) BaseKeeper {
 
@@ -181,22 +220,12 @@ func (k BaseKeeper) GetSupply(ctx sdk.Context, denom string) sdk.Coin {
 	}
 }
 
-// setSupply sets the supply for the given coin
-func (k BaseKeeper) setSupply(ctx sdk.Context, coin sdk.Coin) {
-	intBytes, err := coin.Amount.Marshal()
-	if err != nil {
-		panic(fmt.Errorf("unable to marshal amount value %v", err))
-	}
 
+// HasSupply checks if the supply coin exists in store.
+func (k BaseKeeper) HasSupply(ctx sdk.Context, denom string) bool {
 	store := ctx.KVStore(k.storeKey)
 	supplyStore := prefix.NewStore(store, types.SupplyKey)
-
-	// Bank invariants and IBC requires to remove zero coins.
-	if coin.IsZero() {
-		supplyStore.Delete([]byte(coin.GetDenom()))
-	} else {
-		supplyStore.Set([]byte(coin.GetDenom()), intBytes)
-	}
+	return supplyStore.Has([]byte(denom))
 }
 
 // GetDenomMetaData retrieves the denomination metadata. returns the metadata and true if the denom exists,
@@ -285,7 +314,7 @@ func (k BaseKeeper) IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metad
 // SetDenomMetaData sets the denominations metadata
 func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata) {
 	store := ctx.KVStore(k.storeKey)
-	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataKey(denomMetaData.Base))
+	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataPrefix)
 
 	m := k.cdc.MustMarshal(&denomMetaData)
 	denomMetaDataStore.Set([]byte(denomMetaData.Base), m)
@@ -494,6 +523,42 @@ func (k BaseKeeper) BurnCoins(ctx sdk.Context, moduleName string, amounts sdk.Co
 	return nil
 }
 
+// setSupply sets the supply for the given coin
+func (k BaseKeeper) setSupply(ctx sdk.Context, coin sdk.Coin) {
+	intBytes, err := coin.Amount.Marshal()
+	if err != nil {
+		panic(fmt.Errorf("unable to marshal amount value %v", err))
+	}
+
+	store := ctx.KVStore(k.storeKey)
+	supplyStore := prefix.NewStore(store, types.SupplyKey)
+
+	// Bank invariants and IBC requires to remove zero coins.
+	if coin.IsZero() {
+		supplyStore.Delete([]byte(coin.GetDenom()))
+	} else {
+		supplyStore.Set([]byte(coin.GetDenom()), intBytes)
+	}
+}
+
+// trackDelegation tracks the delegation of the given account if it is a vesting account
+func (k BaseKeeper) trackDelegation(ctx sdk.Context, addr sdk.AccAddress, balance, amt sdk.Coins) error {
+	acc := k.ak.GetAccount(ctx, addr)
+	if acc == nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "account %s does not exist", addr)
+	}
+
+	vacc, ok := acc.(vestexported.VestingAccount)
+	if ok {
+		// TODO: return error on account.TrackDelegation
+		vacc.TrackDelegation(ctx.BlockHeader().Time, balance, amt)
+		k.ak.SetAccount(ctx, acc)
+	}
+
+	return nil
+}
+
+// trackUndelegation trakcs undelegation of the given account if it is a vesting account
 func (k BaseKeeper) trackUndelegation(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error {
 	acc := k.ak.GetAccount(ctx, addr)
 	if acc == nil {
@@ -504,7 +569,36 @@ func (k BaseKeeper) trackUndelegation(ctx sdk.Context, addr sdk.AccAddress, amt 
 	if ok {
 		// TODO: return error on account.TrackUndelegation
 		vacc.TrackUndelegation(amt)
+		k.ak.SetAccount(ctx, acc)
 	}
 
 	return nil
+}
+
+// IterateTotalSupply iterates over the total supply calling the given cb (callback) function
+// with the balance of each coin.
+// The iteration stops if the callback returns true.
+func (k BaseViewKeeper) IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bool) {
+	store := ctx.KVStore(k.storeKey)
+	supplyStore := prefix.NewStore(store, types.SupplyKey)
+
+	iterator := supplyStore.Iterator(nil, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var amount sdk.Int
+		err := amount.Unmarshal(iterator.Value())
+		if err != nil {
+			panic(fmt.Errorf("unable to unmarshal supply value %v", err))
+		}
+
+		balance := sdk.Coin{
+			Denom:  string(iterator.Key()),
+			Amount: amount,
+		}
+
+		if cb(balance) {
+			break
+		}
+	}
 }

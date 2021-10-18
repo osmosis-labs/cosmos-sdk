@@ -30,6 +30,7 @@ package module
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 
 	"github.com/gorilla/mux"
@@ -296,13 +297,17 @@ func (m *Manager) RegisterServices(cfg Configurator) {
 	}
 }
 
-// InitGenesis performs init genesis functionality for modules
+// InitGenesis performs init genesis functionality for modules. Exactly one
+// module must return a non-empty validator set update to correctly initialize
+// the chain.
 func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData map[string]json.RawMessage) abci.ResponseInitChain {
 	var validatorUpdates []abci.ValidatorUpdate
+	ctx.Logger().Info("initializing blockchain state from genesis.json")
 	for _, moduleName := range m.OrderInitGenesis {
 		if genesisData[moduleName] == nil {
 			continue
 		}
+		ctx.Logger().Debug("running initialization for module", "module", moduleName)
 
 		moduleValUpdates := m.Modules[moduleName].InitGenesis(ctx, cdc, genesisData[moduleName])
 
@@ -314,6 +319,11 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 			}
 			validatorUpdates = moduleValUpdates
 		}
+	}
+
+	// a chain must initialize with a non-empty validator set
+	if len(validatorUpdates) == 0 {
+		panic(fmt.Sprintf("validator set is empty after InitGenesis, please ensure at least one validator is initialized with a delegation greater than or equal to the DefaultPowerReduction (%d)", sdk.DefaultPowerReduction))
 	}
 
 	return abci.ResponseInitChain{

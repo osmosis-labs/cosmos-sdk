@@ -46,13 +46,15 @@ type IntegrationTestSuite struct {
 
 func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
-	s.app = simapp.Setup(false)
+	s.app = simapp.Setup(s.T(), false)
 	s.cfg = network.DefaultConfig()
 	s.cfg.NumValidators = 1
-	s.network = network.New(s.T(), s.cfg)
-	s.Require().NotNil(s.network)
 
-	_, err := s.network.WaitForHeight(2)
+	var err error
+	s.network, err = network.New(s.T(), s.T().TempDir(), s.cfg)
+	s.Require().NoError(err)
+
+	_, err = s.network.WaitForHeight(2)
 	s.Require().NoError(err)
 
 	val0 := s.network.Validators[0]
@@ -105,7 +107,7 @@ func (s *IntegrationTestSuite) TestGRPCServer_BankBalance() {
 	)
 	s.Require().NoError(err)
 	blockHeight = header.Get(grpctypes.GRPCBlockHeightHeader)
-	s.Require().NotEmpty(blockHeight[0]) // blockHeight is []string, first element is block height.
+	s.Require().Equal([]string{"1"}, blockHeight)
 }
 
 func (s *IntegrationTestSuite) TestGRPCServer_Reflection() {
@@ -200,9 +202,9 @@ func (s *IntegrationTestSuite) TestGRPCServerInvalidHeaderHeights() {
 		value   string
 		wantErr string
 	}{
-		{"-1", "\"x-cosmos-block-height\" must be >= 0"},
+		{"-1", "height < 0"},
 		{"9223372036854775808", "value out of range"}, // > max(int64) by 1
-		{"-10", "\"x-cosmos-block-height\" must be >= 0"},
+		{"-10", "height < 0"},
 		{"18446744073709551615", "value out of range"}, // max uint64, which is  > max(int64)
 		{"-9223372036854775809", "value out of range"}, // Out of the range of for negative int64
 	}

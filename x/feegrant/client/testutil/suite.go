@@ -51,9 +51,11 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		s.T().Skip("skipping test in unit-tests mode.")
 	}
 
-	s.network = network.New(s.T(), s.cfg)
+	var err error
+	s.network, err = network.New(s.T(), s.T().TempDir(), s.cfg)
+	s.Require().NoError(err)
 
-	_, err := s.network.WaitForHeight(1)
+	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
 
 	val := s.network.Validators[0]
@@ -659,9 +661,11 @@ func (s *IntegrationTestSuite) TestTxWithFeeGrant() {
 	granter := val.Address
 
 	// creating an account manually (This account won't be exist in state)
-	info, _, err := val.ClientCtx.Keyring.NewMnemonic("grantee", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, hd.Secp256k1)
+	k, _, err := val.ClientCtx.Keyring.NewMnemonic("grantee", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, hd.Secp256k1)
 	s.Require().NoError(err)
-	grantee := sdk.AccAddress(info.GetPubKey().Address())
+	pub, err := k.GetPubKey()
+	s.Require().NoError(err)
+	grantee := sdk.AccAddress(pub.Address())
 
 	commonFlags := []string{
 		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
@@ -706,9 +710,11 @@ func (s *IntegrationTestSuite) TestFilteredFeeAllowance() {
 	val := s.network.Validators[0]
 
 	granter := val.Address
-	info, _, err := val.ClientCtx.Keyring.NewMnemonic("grantee1", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, hd.Secp256k1)
+	k, _, err := val.ClientCtx.Keyring.NewMnemonic("grantee1", keyring.English, sdk.FullFundraiserPath, keyring.DefaultBIP39Passphrase, hd.Secp256k1)
 	s.Require().NoError(err)
-	grantee := sdk.AccAddress(info.GetPubKey().Address())
+	pub, err := k.GetPubKey()
+	s.Require().NoError(err)
+	grantee := sdk.AccAddress(pub.Address())
 
 	clientCtx := val.ClientCtx
 

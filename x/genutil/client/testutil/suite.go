@@ -3,7 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -35,9 +35,11 @@ func NewIntegrationTestSuite(cfg network.Config) *IntegrationTestSuite {
 func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
-	s.network = network.New(s.T(), s.cfg)
+	var err error
+	s.network, err = network.New(s.T(), s.T().TempDir(), s.cfg)
+	s.Require().NoError(err)
 
-	_, err := s.network.WaitForHeight(1)
+	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
 }
 
@@ -76,7 +78,7 @@ func (s *IntegrationTestSuite) TestGenTxCmd() {
 	open, err := os.Open(genTxFile)
 	s.Require().NoError(err)
 
-	all, err := ioutil.ReadAll(open)
+	all, err := io.ReadAll(open)
 	s.Require().NoError(err)
 
 	tx, err := val.ClientCtx.TxConfig.TxJSONDecoder()(all)
@@ -86,7 +88,7 @@ func (s *IntegrationTestSuite) TestGenTxCmd() {
 	s.Require().Len(msgs, 1)
 
 	s.Require().Equal(sdk.MsgTypeURL(&types.MsgCreateValidator{}), sdk.MsgTypeURL(msgs[0]))
-	s.Require().Equal([]sdk.AccAddress{val.Address}, msgs[0].GetSigners())
+	s.Require().True(val.Address.Equals(msgs[0].GetSigners()[0]))
 	s.Require().Equal(amount, msgs[0].(*types.MsgCreateValidator).Value)
 	s.Require().NoError(tx.ValidateBasic())
 }
