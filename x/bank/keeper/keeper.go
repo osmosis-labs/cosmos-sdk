@@ -220,7 +220,6 @@ func (k BaseKeeper) GetSupply(ctx sdk.Context, denom string) sdk.Coin {
 	}
 }
 
-
 // HasSupply checks if the supply coin exists in store.
 func (k BaseKeeper) HasSupply(ctx sdk.Context, denom string) bool {
 	store := ctx.KVStore(k.storeKey)
@@ -541,23 +540,6 @@ func (k BaseKeeper) setSupply(ctx sdk.Context, coin sdk.Coin) {
 	}
 }
 
-// trackDelegation tracks the delegation of the given account if it is a vesting account
-func (k BaseKeeper) trackDelegation(ctx sdk.Context, addr sdk.AccAddress, balance, amt sdk.Coins) error {
-	acc := k.ak.GetAccount(ctx, addr)
-	if acc == nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "account %s does not exist", addr)
-	}
-
-	vacc, ok := acc.(vestexported.VestingAccount)
-	if ok {
-		// TODO: return error on account.TrackDelegation
-		vacc.TrackDelegation(ctx.BlockHeader().Time, balance, amt)
-		k.ak.SetAccount(ctx, acc)
-	}
-
-	return nil
-}
-
 // trackUndelegation trakcs undelegation of the given account if it is a vesting account
 func (k BaseKeeper) trackUndelegation(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) error {
 	acc := k.ak.GetAccount(ctx, addr)
@@ -573,32 +555,4 @@ func (k BaseKeeper) trackUndelegation(ctx sdk.Context, addr sdk.AccAddress, amt 
 	}
 
 	return nil
-}
-
-// IterateTotalSupply iterates over the total supply calling the given cb (callback) function
-// with the balance of each coin.
-// The iteration stops if the callback returns true.
-func (k BaseViewKeeper) IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bool) {
-	store := ctx.KVStore(k.storeKey)
-	supplyStore := prefix.NewStore(store, types.SupplyKey)
-
-	iterator := supplyStore.Iterator(nil, nil)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var amount sdk.Int
-		err := amount.Unmarshal(iterator.Value())
-		if err != nil {
-			panic(fmt.Errorf("unable to unmarshal supply value %v", err))
-		}
-
-		balance := sdk.Coin{
-			Denom:  string(iterator.Key()),
-			Amount: amount,
-		}
-
-		if cb(balance) {
-			break
-		}
-	}
 }
