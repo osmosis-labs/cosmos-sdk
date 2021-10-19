@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
@@ -298,6 +299,7 @@ func (cgts consumeTxSizeGasTxHandler) simulateSigGasCost(ctx context.Context, tx
 func (cgts consumeTxSizeGasTxHandler) consumeTxSizeGas(ctx context.Context, tx sdk.Tx, txBytes []byte, simulate bool) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params := cgts.ak.GetParams(sdkCtx)
+	fmt.Println(tx)
 	sdkCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(txBytes)), "txSize")
 
 	return nil
