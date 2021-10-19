@@ -300,6 +300,7 @@ func (cgts consumeTxSizeGasTxHandler) consumeTxSizeGas(ctx context.Context, tx s
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params := cgts.ak.GetParams(sdkCtx)
 	fmt.Println(tx)
+	fmt.Println(simulate)
 	sdkCtx.GasMeter().ConsumeGas(params.TxSizeCostPerByte*sdk.Gas(len(txBytes)), "txSize")
 
 	return nil

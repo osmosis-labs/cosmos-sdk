@@ -494,8 +494,7 @@ func (ks keystore) List() ([]*Record, error) {
 		return nil, err
 	}
 
-	res := []*Record
-
+	var res []*Record
 
 	sort.Strings(keys)
 	for _, key := range keys {
