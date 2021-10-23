@@ -127,6 +127,7 @@ func SimulateMsgCreateValidator(ak types.AccountKeeper, bk types.BankKeeper, k k
 		coins, hasNeg := spendable.SafeSub(sdk.Coins{selfDelegation})
 		if !hasNeg {
 			feeCoins := coins.FilterDenoms([]string{sdk.DefaultBondDenom})
+			fmt.Println(feeCoins.String())
 			fees, err = simtypes.RandomFees(r, ctx, feeCoins)
 			if err != nil {
 				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgCreateValidator, "unable to generate fees"), nil, err
