@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/magiconair/properties v1.8.5
 	github.com/mattn/go-isatty v0.0.12
-	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/otiai10/copy v1.6.0
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
