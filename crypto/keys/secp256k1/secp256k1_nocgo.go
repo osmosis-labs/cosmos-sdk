@@ -29,10 +29,16 @@ func (privKey *PrivKey) Sign(msg []byte) ([]byte, error) {
 	return sigBytes, nil
 }
 
-// VerifyBytes verifies a signature of the form R || S.
+// VerifySignature verifies signatures of the forms:
+// * (R || S), using sha256 hashing
+// * (R || S || V), using keccak256 hashing
+// where V is an ECRecover byte compatible with Ethereum.
+// EIP-191 signatures from metamask return V as one of {27, 28}
 // It rejects signatures which are not in lower-S form.
 func (pubKey *PubKey) VerifySignature(msg []byte, sigStr []byte) bool {
-	if len(sigStr) != 64 {
+	sigLen := len(sigStr)
+	// Invalid signature length
+	if sigLen != 64 && sigLen != 65 {
 		return false
 	}
 	pub, err := secp256k1.ParsePubKey(pubKey.Key, secp256k1.S256())
@@ -43,18 +49,23 @@ func (pubKey *PubKey) VerifySignature(msg []byte, sigStr []byte) bool {
 	signature := signatureFromBytes(sigStr)
 	// Reject malleable signatures. libsecp256k1 does this check but btcec doesn't.
 	// see: https://github.com/ethereum/go-ethereum/blob/f9401ae011ddf7f8d2d95020b7446c17f8d98dc1/crypto/signature_nocgo.go#L90-L93
+	// This check is also part of the Ethereum signature verification specification,
+	// see: https://ethereum.github.io/yellowpaper/paper.pdf, Berlin version, page 29
 	if signature.S.Cmp(secp256k1halfN) > 0 {
 		return false
 	}
-	return signature.Verify(crypto.Sha256(msg), pub)
-}
-
-// Read Signature struct from R || S. Caller needs to ensure
-// that len(sigStr) == 64.
-func signatureFromBytes(sigStr []byte) *secp256k1.Signature {
-	return &secp256k1.Signature{
-		R: new(big.Int).SetBytes(sigStr[:32]),
-		S: new(big.Int).SetBytes(sigStr[32:64]),
+	if sigLen == 64 { // Use sha256 hashing for (R,S) signature form
+		return signature.Verify(crypto.Sha256(msg), pub)
+	} else {
+		// Ensure that "v" is canonical
+		v := sigStr[64]
+		ecRecoverValid := isECRecoverByteValid(v, pub)
+		if !ecRecoverValid {
+			return false
+		}
+		// Use keccak256 hashing for (R,S) signature form
+		validSig := signature.Verify(sha3Hash(msg), pub)
+		return validSig
 	}
 }
 
