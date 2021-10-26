@@ -4,7 +4,6 @@
 package secp256k1
 
 import (
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -47,14 +46,19 @@ func eip191MsgTransform(msg string) string {
 	return "\x19Ethereum Signed Message:\n" + fmt.Sprintf("%d", len(msg)) + msg
 }
 
+// TODO: Cleanup this test, separate into multiple tests
+// TODO: Make a test in x/auth for testing initializing pubkey from metamask.
+// TODO: Make a test in x/auth for accepting multiple sig types
+// TODO: Update cgo implementation
 func TestEthSignatureVerification(t *testing.T) {
-	metamaskDemoPubkey := "BDGnzLx3JYDk5sBm9iNxufEs4BKE3pneA3FacHAV98mK1s0Pykt8ADZSuhO8o/7xyGigjsuyyPDtJLi2ePF2Dm0="
-	metamaskDemoPubkeyBz, _ := base64.StdEncoding.DecodeString(metamaskDemoPubkey)
+	metamaskDemoPubkeyB64 := "BDGnzLx3JYDk5sBm9iNxufEs4BKE3pneA3FacHAV98mK1s0Pykt8ADZSuhO8o/7xyGigjsuyyPDtJLi2ePF2Dm0="
+	metamaskDemoPubkeyBz, _ := base64.StdEncoding.DecodeString(metamaskDemoPubkeyB64)
+	metamaskDemoPubkey, err := PubkeyFromBytes(metamaskDemoPubkeyBz)
+	require.NoError(t, err)
 	// This message appears to not be the message getting signed
 	metamaskDemoSignMsg := `{
-  "chain_id": "testing",
   "account_number": "0",
-  "sequence": "0",
+  "chain_id": "testing",
   "fee": {
     "amount": [
       {
@@ -79,13 +83,12 @@ func TestEthSignatureVerification(t *testing.T) {
         "to_address": "cosmos1tru96ya986ta2lruqeh9fsleca7ucuzpwqjhvr"
       }
     }
-  ]
+  ],
+  "sequence": "0"
 }`
-	fmt.Println(sha256.Sum256([]byte(metamaskDemoSignMsg)))
-	metamaskDemoPubkey = metamaskDemoPubkey
-	metamaskDemoSignMsg = metamaskDemoSignMsg
 
-	metamaskDemoSig := "f0992543f357cfb6e614271b37867377fd8027833579a10967f0282d894e3efd797f950bd342ad519c229740c6017d43f1ebd9186e2baca32dfbd31fa0c4fcf91b"
+	// TODO: Reget this signature, not sure if I have the right one or not.
+	metamaskDemoSig := "f0992543f357cfb6e614271b37867377fd8027833579a10967f0282d894e3efd797f950bd342ad519c229740c6017d43f1ebd9186e2baca32dfbd31fa0c4fcf91c"
 	//// Metamask test vector setup from https://github.com/MetaMask/eth-sig-util/blob/main/src/personal-sign.test.ts
 	metamask69PrivkeyBz, _ := hex.DecodeString("6969696969696969696969696969696969696969696969696969696969696969")
 	metamask69Privkey := PrivKey{Key: metamask69PrivkeyBz}
@@ -108,7 +111,7 @@ func TestEthSignatureVerification(t *testing.T) {
 		{eip191MsgTransform("hello world"), metamask69Pubkey,
 			"ce909e8ea6851bc36c007a0072d0524b07a3ff8d4e623aca4c71ca8e57250c4d0a3fc38fa8fbaaa81ead4b9f6bd03356b6f8bf18bccad167d78891636e1d69561b",
 			true, "metamask test vector #1"},
-		{eip191MsgTransform(metamaskDemoSignMsg), &PubKey{metamaskDemoPubkeyBz}, metamaskDemoSig, true, "metamask Demo EIP 191 test case"},
+		{eip191MsgTransform(metamaskDemoSignMsg), metamaskDemoPubkey, metamaskDemoSig, true, "metamask Demo EIP 191 test case"},
 	}
 
 	for _, tc := range cases {
