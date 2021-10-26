@@ -145,6 +145,9 @@ var _ codec.AminoMarshaler = &PubKey{}
 // (the x-coordinate), plus one byte for the parity of the y-coordinate.
 const PubKeySize = 33
 
+// uncompressedPubKeySize = 65 bytes
+const uncompressedPubKeySize = secp256k1.PubKeyBytesLenUncompressed
+
 // Address returns a Bitcoin style addresses: RIPEMD160(SHA256(pubkey))
 func (pubKey *PubKey) Address() crypto.Address {
 	if len(pubKey.Key) != PubKeySize {
@@ -182,12 +185,31 @@ func (pubKey PubKey) MarshalAmino() ([]byte, error) {
 	return pubKey.Key, nil
 }
 
+// PubkeyFromBytes returns a secp256k1 pubkey from its byte representation.
+// It acccepts
+func PubkeyFromBytes(bz []byte) (*PubKey, error) {
+	if len(bz) == uncompressedPubKeySize {
+		key, err := secp256k1.ParsePubKey(bz, secp256k1.S256())
+		if err != nil {
+			return nil, err
+		}
+		bz = key.SerializeCompressed()
+	}
+	if len(bz) != PubKeySize {
+		return nil, errors.Wrap(errors.ErrInvalidPubKey, "invalid pubkey size")
+	}
+	pk := PubKey{Key: bz}
+
+	return &pk, nil
+}
+
 // UnmarshalAmino overrides Amino binary marshalling.
 func (pubKey *PubKey) UnmarshalAmino(bz []byte) error {
-	if len(bz) != PubKeySize {
-		return errors.Wrap(errors.ErrInvalidPubKey, "invalid pubkey size")
+	pk, err := PubkeyFromBytes(bz)
+	if err != nil {
+		return err
 	}
-	pubKey.Key = bz
+	pubKey.Key = pk.Key
 
 	return nil
 }
