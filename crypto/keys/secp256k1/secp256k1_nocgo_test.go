@@ -88,7 +88,7 @@ func TestEthSignatureVerification(t *testing.T) {
 }`
 
 	// TODO: Reget this signature, not sure if I have the right one or not.
-	metamaskDemoSig := "f0992543f357cfb6e614271b37867377fd8027833579a10967f0282d894e3efd797f950bd342ad519c229740c6017d43f1ebd9186e2baca32dfbd31fa0c4fcf91c"
+	metamaskDemoSig := "f0992543f357cfb6e614271b37867377fd8027833579a10967f0282d894e3efd797f950bd342ad519c229740c6017d43f1ebd9186e2baca32dfbd31fa0c4fcf91b"
 	//// Metamask test vector setup from https://github.com/MetaMask/eth-sig-util/blob/main/src/personal-sign.test.ts
 	metamask69PrivkeyBz, _ := hex.DecodeString("6969696969696969696969696969696969696969696969696969696969696969")
 	metamask69Privkey := PrivKey{Key: metamask69PrivkeyBz}

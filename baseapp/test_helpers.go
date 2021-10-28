@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,6 +37,10 @@ func (app *BaseApp) NewContext(isCheckTx bool, header tmproto.Header) sdk.Contex
 	if isCheckTx {
 		return sdk.NewContext(app.checkState.ms, header, true, app.logger).
 			WithMinGasPrices(app.minGasPrices)
+	}
+
+	if app.deliverState == nil {
+		app.BeginBlock(abci.RequestBeginBlock{Header: header})
 	}
 
 	return sdk.NewContext(app.deliverState.ms, header, false, app.logger)
