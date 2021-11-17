@@ -298,12 +298,11 @@ func (d Dec) MulTruncate(d2 Dec) Dec {
 // mutable multiplication truncage
 func (d Dec) MulTruncateMut(d2 Dec) Dec {
 	d.i.Mul(d.i, d2.i)
-	chopped := chopPrecisionAndTruncate(d.i)
+	chopPrecisionAndTruncate(d.i)
 
-	if chopped.BitLen() > maxDecBitLen {
+	if d.i.BitLen() > maxDecBitLen {
 		panic("Int overflow")
 	}
-	*d.i = *chopped
 	return d
 }
 
@@ -620,7 +619,7 @@ func chopPrecisionAndRoundUp(d *big.Int) *big.Int {
 		// make d positive, compute chopped value, and then un-mutate d
 		d = d.Neg(d)
 		// truncate since d is negative...
-		d = chopPrecisionAndTruncate(d)
+		chopPrecisionAndTruncate(d)
 		d = d.Neg(d)
 		return d
 	}
@@ -657,13 +656,19 @@ func (d Dec) RoundInt() Int {
 
 // chopPrecisionAndTruncate is similar to chopPrecisionAndRound,
 // but always rounds down. It does not mutate the input.
-func chopPrecisionAndTruncate(d *big.Int) *big.Int {
-	return new(big.Int).Quo(d, precisionReuse)
+func chopPrecisionAndTruncate(d *big.Int) {
+	d.Quo(d, precisionReuse)
+}
+
+func chopPrecisionAndTruncateNonMutative(d *big.Int) *big.Int {
+	tmp := new(big.Int).Set(d)
+	chopPrecisionAndTruncate(tmp)
+	return tmp
 }
 
 // TruncateInt64 truncates the decimals from the number and returns an int64
 func (d Dec) TruncateInt64() int64 {
-	chopped := chopPrecisionAndTruncate(d.i)
+	chopped := chopPrecisionAndTruncateNonMutative(d.i)
 	if !chopped.IsInt64() {
 		panic("Int64() out of bound")
 	}
@@ -672,12 +677,12 @@ func (d Dec) TruncateInt64() int64 {
 
 // TruncateInt truncates the decimals from the number and returns an Int
 func (d Dec) TruncateInt() Int {
-	return NewIntFromBigInt(chopPrecisionAndTruncate(d.i))
+	return NewIntFromBigInt(chopPrecisionAndTruncateNonMutative(d.i))
 }
 
 // TruncateDec truncates the decimals from the number and returns a Dec
 func (d Dec) TruncateDec() Dec {
-	return NewDecFromBigInt(chopPrecisionAndTruncate(d.i))
+	return NewDecFromBigInt(chopPrecisionAndTruncateNonMutative(d.i))
 }
 
 // Ceil returns the smallest interger value (as a decimal) that is greater than
