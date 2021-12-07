@@ -46,17 +46,7 @@ func eip191MsgTransform(msg string) string {
 	return "\x19Ethereum Signed Message:\n" + fmt.Sprintf("%d", len(msg)) + msg
 }
 
-// TODO: Cleanup this test, separate into multiple tests
-// TODO: Make a test in x/auth for testing initializing pubkey from metamask.
-// TODO: Make a test in x/auth for accepting multiple sig types
-// TODO: Update cgo implementation
-func TestEthSignatureVerification(t *testing.T) {
-	metamaskDemoPubkeyB64 := "BDGnzLx3JYDk5sBm9iNxufEs4BKE3pneA3FacHAV98mK1s0Pykt8ADZSuhO8o/7xyGigjsuyyPDtJLi2ePF2Dm0="
-	metamaskDemoPubkeyBz, _ := base64.StdEncoding.DecodeString(metamaskDemoPubkeyB64)
-	metamaskDemoPubkey, err := PubkeyFromBytes(metamaskDemoPubkeyBz)
-	require.NoError(t, err)
-	// This message appears to not be the message getting signed
-	metamaskDemoSignMsg := `{
+const metamaskDemo1SignMsg = `{
   "account_number": "0",
   "chain_id": "testing",
   "fee": {
@@ -87,12 +77,65 @@ func TestEthSignatureVerification(t *testing.T) {
   "sequence": "0"
 }`
 
-	// TODO: Reget this signature, not sure if I have the right one or not.
-	metamaskDemoSig := "f0992543f357cfb6e614271b37867377fd8027833579a10967f0282d894e3efd797f950bd342ad519c229740c6017d43f1ebd9186e2baca32dfbd31fa0c4fcf91c"
+const metamaskDemo2SignMsg = `{
+  "account_number": "0",
+  "chain_id": "testing",
+  "fee": {
+    "amount": [
+      {
+        "amount": "100",
+        "denom": "ucosm"
+      }
+    ],
+    "gas": "250"
+  },
+  "memo": "Some memo",
+  "msgs": [
+    {
+      "type": "cosmos-sdk/MsgSend",
+      "value": {
+        "amount": [
+          {
+            "amount": "1234567",
+            "denom": "ucosm"
+          }
+        ],
+        "from_address": "cosmos1j5qe634z3rpulqkgzz5hmqxhcf309l6hy3rfz8",
+        "to_address": "cosmos1j5qe634z3rpulqkgzz5hmqxhcf309l6hy3rfz8"
+      }
+    }
+  ],
+  "sequence": "0"
+}`
+
+// TODO: Cleanup this test, separate into multiple tests
+// TODO: Make a test in x/auth for testing initializing pubkey from metamask.
+// TODO: Make a test in x/auth for accepting multiple sig types
+// TODO: Update cgo implementation
+func TestEthSignatureVerification(t *testing.T) {
+	metamaskDemo1PubkeyB64 := "BDGnzLx3JYDk5sBm9iNxufEs4BKE3pneA3FacHAV98mK1s0Pykt8ADZSuhO8o/7xyGigjsuyyPDtJLi2ePF2Dm0="
+	metamaskDemo1PubkeyBz, _ := base64.StdEncoding.DecodeString(metamaskDemo1PubkeyB64)
+	metamaskDemo1Pubkey, err := PubkeyFromBytes(metamaskDemo1PubkeyBz)
+	require.NoError(t, err)
+
+	metamaskDemo1Sig := "f0992543f357cfb6e614271b37867377fd8027833579a10967f0282d894e3efd797f950bd342ad519c229740c6017d43f1ebd9186e2baca32dfbd31fa0c4fcf91b"
+
+	metamaskDemo2PubkeyB64 := "A1NcqgsoETyhc5dsIwKYibgHav7Jp2iASmPhpvEcp6QR"
+	metamaskDemo2PubkeyBz, _ := base64.StdEncoding.DecodeString(metamaskDemo2PubkeyB64)
+	metamaskDemo2Pubkey, err := PubkeyFromBytes(metamaskDemo2PubkeyBz)
+	require.NoError(t, err)
+
+	metamaskDemo2Sig := "9a6892cb94a24bd754289c347346be7142d50826d0ee7d92ca3f620464f36a8510836bbf731717b2666a1468708015e281f6d2f0fa256de3a2e6abf859cabf4c1c"
+
 	//// Metamask test vector setup from https://github.com/MetaMask/eth-sig-util/blob/main/src/personal-sign.test.ts
+	//// Oddly, this ECRecoverByte is correct, while all the ones obtained from doing signs ourselves on wallets are wrong.
+	//// Per advice from multiple folks, we are assuming there is some undocumented issue in the ECRecover or EIP191 standards
+	//// and making the chain accept what the wallets produce.
 	metamask69PrivkeyBz, _ := hex.DecodeString("6969696969696969696969696969696969696969696969696969696969696969")
 	metamask69Privkey := PrivKey{Key: metamask69PrivkeyBz}
 	metamask69Pubkey := metamask69Privkey.PubKey()
+	// metamask69Sig := "ce909e8ea6851bc36c007a0072d0524b07a3ff8d4e623aca4c71ca8e57250c4d0a3fc38fa8fbaaa81ead4b9f6bd03356b6f8bf18bccad167d78891636e1d69561b"
+	metamask69SigEcRecoverFlipped := "ce909e8ea6851bc36c007a0072d0524b07a3ff8d4e623aca4c71ca8e57250c4d0a3fc38fa8fbaaa81ead4b9f6bd03356b6f8bf18bccad167d78891636e1d69561c"
 
 	// gethtestmsg, _ := hex.DecodeString("ce0677bb30baa8cf067c88db9811f4333d131bf8bcf12fe7065d211dce971008")
 	// gethtestsig := "90f27b8b488db00b00606796d2987f6a5f59ae62ea05effe84fef5b8b0e549984a691139ad57a3f0b906637673aa2f63d1f55cb1a69199d4009eea23ceaddc931c"
@@ -109,9 +152,11 @@ func TestEthSignatureVerification(t *testing.T) {
 		// {string(gethtestmsg), &PubKey{Key: testpubkey}, gethtestsig, true, "geth test vector #0  -- require hashing disabled"},
 		// {string(testmsg), &PubKey{testpubkeyc}, testsig, true, "geth test vector #1 -- require hashing disabled"},
 		{eip191MsgTransform("hello world"), metamask69Pubkey,
-			"ce909e8ea6851bc36c007a0072d0524b07a3ff8d4e623aca4c71ca8e57250c4d0a3fc38fa8fbaaa81ead4b9f6bd03356b6f8bf18bccad167d78891636e1d69561b",
-			true, "metamask test vector #1"},
-		{eip191MsgTransform(metamaskDemoSignMsg), metamaskDemoPubkey, metamaskDemoSig, true, "metamask Demo EIP 191 test case"},
+			metamask69SigEcRecoverFlipped, true, "metamask test vector #1"},
+		{eip191MsgTransform(metamaskDemo1SignMsg), metamaskDemo1Pubkey,
+			metamaskDemo1Sig, true, "metamask Demo #1 EIP 191 test case"},
+		{eip191MsgTransform(metamaskDemo2SignMsg), metamaskDemo2Pubkey,
+			metamaskDemo2Sig, true, "metamask Demo #2 EIP 191 test case"},
 	}
 
 	for _, tc := range cases {

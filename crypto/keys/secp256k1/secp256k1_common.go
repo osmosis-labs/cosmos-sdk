@@ -25,6 +25,7 @@ func isECRecoverByteValid(v byte, pubkey *secp256k1.PublicKey) bool {
 	v_parity := 1 - (v % 2)
 	v_parity_bool := v_parity == 1
 	if EIP_191_ECRecoverStandard {
+		v_parity = 1 - v_parity
 		v_parity_bool = !v_parity_bool
 	}
 	actual_parity := pubkey.Y.Bit(0)
