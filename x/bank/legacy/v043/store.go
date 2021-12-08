@@ -1,6 +1,8 @@
 package v043
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,8 +62,10 @@ func migrateBalanceKeys(store sdk.KVStore) {
 
 	for ; oldStoreIter.Valid(); oldStoreIter.Next() {
 		addr := v040bank.AddressFromBalancesStore(oldStoreIter.Key())
+		fmt.Println("LOOK AT ME")
 		denom := oldStoreIter.Key()[v040auth.AddrLen:]
 		newStoreKey := append(types.CreateAccountBalancesPrefix(addr), denom...)
+		fmt.Println(oldStoreIter.Key(), addr, denom, newStoreKey)
 
 		// Set new key on store. Values don't change.
 		store.Set(newStoreKey, oldStoreIter.Value())
