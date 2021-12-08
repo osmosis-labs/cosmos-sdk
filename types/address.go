@@ -265,6 +265,9 @@ func (aa AccAddress) String() string {
 	if aa.Empty() {
 		return ""
 	}
+	if len(aa.Bytes()) == 21 {
+		return "0x" + hex.EncodeToString(aa.Bytes()[:20])
+	}
 
 	var key = conv.UnsafeBytesToStr(aa)
 	accAddrMu.Lock()
@@ -572,6 +575,7 @@ func (ca ConsAddress) String() string {
 	}
 
 	var key = conv.UnsafeBytesToStr(ca)
+
 	consAddrMu.Lock()
 	defer consAddrMu.Unlock()
 	addr, ok := consAddrCache.Get(key)
