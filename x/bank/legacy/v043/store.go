@@ -65,7 +65,8 @@ func migrateBalanceKeys(store sdk.KVStore) {
 		fmt.Println("LOOK AT ME")
 		denom := oldStoreIter.Key()[v040auth.AddrLen:]
 		newStoreKey := append(types.CreateAccountBalancesPrefix(addr), denom...)
-		fmt.Println(oldStoreIter.Key(), addr, denom, newStoreKey)
+		fmt.Println("old key", oldStoreIter.Key(), "denom", string(denom), "new key", newStoreKey)
+		fmt.Println("addr raw", addr, "addr str", addr.String())
 
 		// Set new key on store. Values don't change.
 		store.Set(newStoreKey, oldStoreIter.Value())
