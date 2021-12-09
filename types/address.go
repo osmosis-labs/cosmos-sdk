@@ -163,18 +163,12 @@ func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
 	if address[:2] == "0x" {
 		bz, err := hex.DecodeString(address[2:])
-		if err != nil {
-			return nil, err
-		}
-		return AccAddress(append(bz, 0)), nil
-	}
 
-	if address[:2] == "0x" {
-		bz, err := hex.DecodeString(address[2:])
 		if err != nil {
 			return nil, err
 		}
-		return AccAddress(append(bz, 0)), nil
+		b := append(bz, 0)
+		return AccAddress(b), nil
 	}
 
 	bz, err := GetFromBech32(address, bech32PrefixAccAddr)
