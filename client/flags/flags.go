@@ -35,6 +35,8 @@ const (
 	SignModeDirect = "direct"
 	// SignModeLegacyAminoJSON is the value of the --sign-mode flag for SIGN_MODE_LEGACY_AMINO_JSON
 	SignModeLegacyAminoJSON = "amino-json"
+	// SignModeEIP191LegacyJSON is the value of the --sign-mode flag for SIGN_MODE_EIP191_LEGACY_JSON
+	SignModeEIP191LegacyJSON = "eip191-json"
 )
 
 // List of CLI flags

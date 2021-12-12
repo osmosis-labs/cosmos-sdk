@@ -33,7 +33,7 @@ func (s *addressTestSuite) SetupSuite() {
 
 var invalidStrs = []string{
 	"hello, world!",
-	"0xAA",
+	//"0xAA",
 	"AAA",
 	types.Bech32PrefixAccAddr + "AB0C",
 	types.Bech32PrefixAccPub + "1234",
