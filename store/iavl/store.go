@@ -21,8 +21,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
+
+// I know this seems like a lot, but we were very successful relaying with this setting. We were also very successful validating with this setting: no more epoch pause at all.
 const (
-	defaultIAVLCacheSize = 1500000
+	defaultIAVLCacheSize = 10000000
 )
 
 var (
