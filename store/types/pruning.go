@@ -11,12 +11,12 @@ const (
 )
 
 var (
-	// PruneDefault defines a pruning strategy where the last 10000 heights are
+	// PruneDefault defines a pruning strategy where the last 100000 heights are
 	// kept where to-be pruned heights are pruned at every 10th height.
-	// The last 10000 heights are kept assuming the typical
+	// The last 100000 heights are kept(approximately 1 week worth of state) assuming the typical
 	// block time is 5s and typical unbonding period is 21 days. If these values
 	// do not match the applications' requirements, use the "custom" option.
-	PruneDefault = NewPruningOptions(10000, 0, 10)
+	PruneDefault = NewPruningOptions(100000, 0, 10)
 
 	// PruneEverything defines a pruning strategy where all committed heights are
 	// deleted, storing only the current height and where to-be pruned heights are

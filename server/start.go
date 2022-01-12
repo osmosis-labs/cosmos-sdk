@@ -86,7 +86,7 @@ Pruning options can be provided via the '--pruning' flag or alternatively with '
 
 For '--pruning' the options are as follows:
 
-default: only the last 10000 states are kept; pruning at 10 block intervals
+default: only the last 100000 states(approximately 1 week worth of state) are kept; pruning at 10 block intervals
 nothing: all historic states will be saved, nothing will be deleted (i.e. archiving node)
 everything: all saved states will be deleted, storing only the current state; pruning at 10 block intervals
 custom: allow pruning options to be manually specified through 'pruning-keep-recent', 'pruning-keep-every', and 'pruning-interval'
