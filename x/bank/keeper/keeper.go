@@ -21,6 +21,7 @@ var _ Keeper = (*BaseKeeper)(nil)
 type Keeper interface {
 	SendKeeper
 	WithMintCoinsRestriction(BankMintingRestrictionFn) BaseKeeper
+	NewDenomMintCoinsRestriction(allowedDenoms ...string) BankMintingRestrictionFn
 
 	InitGenesis(sdk.Context, *types.GenesisState)
 	ExportGenesis(sdk.Context) *types.GenesisState
@@ -137,7 +138,7 @@ func (k BaseKeeper) WithMintCoinsRestriction(NewRestrictionFn BankMintingRestric
 }
 
 // NewDenomMintCoinsRestriction creates and returns a BankMintingRestrictionFn that blocks minting any denom that was not included in the parameter.
-func (k BaseKeeper) NewDenomMintCoinsRestriction(ctx sdk.Context, allowedDenoms ...string) BankMintingRestrictionFn {
+func (k BaseKeeper) NewDenomMintCoinsRestriction(allowedDenoms ...string) BankMintingRestrictionFn {
 	allowedDenomMap := make(map[string]bool)
 	for _, denom := range allowedDenoms {
 		allowedDenomMap[denom] = true
