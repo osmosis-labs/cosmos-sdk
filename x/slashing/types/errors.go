@@ -13,4 +13,6 @@ var (
 	ErrMissingSelfDelegation        = sdkerrors.Register(ModuleName, 6, "validator has no self-delegation; cannot be unjailed")
 	ErrSelfDelegationTooLowToUnjail = sdkerrors.Register(ModuleName, 7, "validator's self delegation less than minimum; cannot be unjailed")
 	ErrNoSigningInfoFound           = sdkerrors.Register(ModuleName, 8, "no validator signing info found")
+	ErrBadSlashingFactor            = sdkerrors.Register(ModuleName, 9, "slashing factor should be in range of (0,1]")
+	ErrSlashUnbondedValidator       = sdkerrors.Register(ModuleName, 10, "slashing validator should not be in unbonded state")
 )
