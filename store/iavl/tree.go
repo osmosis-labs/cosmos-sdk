@@ -90,5 +90,6 @@ func (it *immutableTree) GetImmutable(version int64) (*iavl.ImmutableTree, error
 		return nil, fmt.Errorf("version mismatch on immutable IAVL tree; got: %d, expected: %d", version, it.Version())
 	}
 
+	
 	return it.ImmutableTree, nil
 }
