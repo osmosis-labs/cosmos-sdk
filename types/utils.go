@@ -17,11 +17,7 @@ var (
 )
 
 const (
-	cache = 16
-
-	// minHandles is the minimum number of files handles to allocate to the open
-	// database files.
-	handles = 16
+	cache = 24
 )
 
 func init() {
@@ -103,7 +99,6 @@ func NewLevelDB(name, dir string) (db dbm.DB, err error) {
 
 	if backend == "goleveldb" {
 		o := opt.Options{}
-		o.OpenFilesCacheCapacity = handles
 		o.BlockCacheCapacity = cache / 2 * opt.MiB
 		o.WriteBuffer = cache / 4 * opt.MiB // Two of these are used internally
 		o.DisableSeeksCompaction = true
