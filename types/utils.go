@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -13,6 +14,14 @@ var (
 	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
 	DBBackend = ""
 	backend   = dbm.GoLevelDBBackend
+)
+
+const (
+	cache = 16
+
+	// minHandles is the minimum number of files handles to allocate to the open
+	// database files.
+	handles = 16
 )
 
 func init() {
@@ -92,7 +101,16 @@ func NewLevelDB(name, dir string) (db dbm.DB, err error) {
 		}
 	}()
 
-	return dbm.NewDB(name, backend, dir)
+	if backend == "goleveldb" {
+		o := opt.Options{}
+		o.OpenFilesCacheCapacity = handles
+		o.BlockCacheCapacity = cache / 2 * opt.MiB
+		o.WriteBuffer = cache / 4 * opt.MiB // Two of these are used internally
+		o.DisableSeeksCompaction = true
+		return dbm.NewGoLevelDBWithOpts(name, dir, &o)
+	} else {
+		return dbm.NewDB(name, backend, dir)
+	}
 }
 
 // copy bytes

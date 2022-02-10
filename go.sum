@@ -618,8 +618,6 @@ github.com/ory/dockertest v3.3.5+incompatible h1:iLLK6SQwIhcbrG783Dghaaa3WPzGc+4
 github.com/ory/dockertest v3.3.5+incompatible/go.mod h1:1vX4m9wsvi00u5bseYwXaSnhNrne+V0E6LAcBILJdPs=
 github.com/osmosis-labs/iavl v0.17.3-fast.1.0.20220207021926-5f889f6b44d5 h1:Yxj5CB5vnE2BSWbfWlDFzmyccDQmaFVGTms5RlD2Rgo=
 github.com/osmosis-labs/iavl v0.17.3-fast.1.0.20220207021926-5f889f6b44d5/go.mod h1:lJEOIlsd3sVO0JDyXWIXa9/Ur5FBscP26zJx0KxHjto=
-github.com/osmosis-labs/iavl v0.17.3-fast.2 h1:8jCq1xaZq5KiQzo86fOHF0TkiAEdxUKe5MJ/Xmwz4b8=
-github.com/osmosis-labs/iavl v0.17.3-fast.2/go.mod h1:lJEOIlsd3sVO0JDyXWIXa9/Ur5FBscP26zJx0KxHjto=
 github.com/osmosis-labs/tm-db v0.6.5-0.20210911033928-ba9154613417 h1:otchJDd2SjFWfs7Tse3ULblGcVWqMJ50BE02XCaqXOo=
 github.com/osmosis-labs/tm-db v0.6.5-0.20210911033928-ba9154613417/go.mod h1:dptYhIpJ2M5kUuenLr+Yyf3zQOv1SgBZcl8/BmWlMBw=
 github.com/otiai10/copy v1.6.0 h1:IinKAryFFuPONZ7cm6T6E2QX/vcJwSnlaA5lfoaXIiQ=
