@@ -24,5 +24,8 @@ func ConsensusParamsKeyTable() types.KeyTable {
 		types.NewParamSetPair(
 			baseapp.ParamStoreKeyValidatorParams, tmproto.ValidatorParams{}, baseapp.ValidateValidatorParams,
 		),
+		NewParamSetPair(
+			baseapp.ParamStoreKeyVersionParams, tmproto.VersionParams{}, baseapp.ValidateValidatorParams,
+		),
 	)
 }
