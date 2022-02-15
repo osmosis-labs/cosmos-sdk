@@ -31,7 +31,7 @@ type Keeper struct {
 	storeKey           sdk.StoreKey                    // key to access x/upgrade store
 	cdc                codec.BinaryCodec               // App-wide binary codec
 	upgradeHandlers    map[string]types.UpgradeHandler // map of plan name to upgrade handler
-	versionSetter      xp.ProtocolVersionSetter        // implements setting the protocol version field on BaseApp
+	VersionSetter      xp.ProtocolVersionSetter        // implements setting the protocol version field on BaseApp
 }
 
 // NewKeeper constructs an upgrade Keeper which requires the following arguments:
@@ -47,7 +47,7 @@ func NewKeeper(skipUpgradeHeights map[int64]bool, storeKey sdk.StoreKey, cdc cod
 		storeKey:           storeKey,
 		cdc:                cdc,
 		upgradeHandlers:    map[string]types.UpgradeHandler{},
-		versionSetter:      vs,
+		VersionSetter:      vs,
 	}
 }
 
@@ -66,8 +66,8 @@ func (k Keeper) setProtocolVersion(ctx sdk.Context, v uint64) {
 	store.Set([]byte{types.ProtocolVersionByte}, versionBytes)
 }
 
-// getProtocolVersion gets the protocol version from state
-func (k Keeper) getProtocolVersion(ctx sdk.Context) uint64 {
+// GetProtocolVersion gets the protocol version from state
+func (k Keeper) GetProtocolVersion(ctx sdk.Context) uint64 {
 	store := ctx.KVStore(k.storeKey)
 	ok := store.Has([]byte{types.ProtocolVersionByte})
 	if ok {
@@ -305,12 +305,12 @@ func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
 
 	k.SetModuleVersionMap(ctx, updatedVM)
 
-	// incremement the protocol version and set it in state and baseapp
-	nextProtocolVersion := k.getProtocolVersion(ctx) + 1
+	// increment the protocol version and set it in state and baseapp
+	nextProtocolVersion := k.GetProtocolVersion(ctx) + 1
 	k.setProtocolVersion(ctx, nextProtocolVersion)
-	if k.versionSetter != nil {
+	if k.VersionSetter != nil {
 		// set protocol version on BaseApp
-		k.versionSetter.SetProtocolVersion(nextProtocolVersion)
+		k.VersionSetter.SetProtocolVersion(nextProtocolVersion)
 	}
 
 	// Must clear IBC state after upgrade is applied as it is stored separately from the upgrade plan.
