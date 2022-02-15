@@ -120,6 +120,8 @@ type BaseApp struct { // nolint: maligned
 	// recovery handler for app.runTx method
 	runTxRecoveryMiddleware recoveryMiddleware
 
+	// application's protocol version that increments on every upgrade
+	// if BaseApp is passed to the upgrade keeper's NewKeeper method.
 	appVersion uint64
 
 	// trace set will return full stack traces for errors in ABCI Log field
