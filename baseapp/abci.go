@@ -107,10 +107,11 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
+	appVersion := app.GetProtocolVersion()
 	return abci.ResponseInfo{
 		Data:             app.name,
 		Version:          app.version,
-		AppVersion:       app.appVersion,
+		AppVersion:       appVersion,
 		LastBlockHeight:  lastCommitID.Version,
 		LastBlockAppHash: lastCommitID.Hash,
 	}
