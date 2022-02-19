@@ -382,11 +382,11 @@ func (rs *Store) Commit() types.CommitID {
 
 	rs.lastCommitInfo = commitStores(version, rs.stores)
 
-	var err error
+	var pruneErr error
 	defer func ()  {
 		flushMetadata(rs.db, version, rs.lastCommitInfo, rs.pruneHeights)
-		if err != nil {
-			panic(err)
+		if pruneErr != nil {
+			panic(pruneErr)
 		}
 	}()
 
@@ -406,7 +406,7 @@ func (rs *Store) Commit() types.CommitID {
 
 	// batch prune if the current height is a pruning interval height
 	if rs.pruningOpts.Interval > 0 && version%int64(rs.pruningOpts.Interval) == 0 {
-		err = rs.pruneStores()
+		pruneErr = rs.pruneStores()
 	}
 
 	return types.CommitID{
