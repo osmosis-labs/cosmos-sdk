@@ -33,12 +33,6 @@ func (k Keeper) HistoricalEntries(ctx sdk.Context) (res uint32) {
 	return
 }
 
-// BondDenom - Bondable coin denomination
-func (k Keeper) BondDenom(ctx sdk.Context) (res string) {
-	k.paramstore.Get(ctx, types.KeyBondDenom, &res)
-	return
-}
-
 // PowerReduction - is the amount of staking tokens required for 1 unit of consensus-engine power.
 // Currently, this returns a global variable that the app developer can tweak.
 // TODO: we might turn this into an on-chain param:
@@ -54,7 +48,6 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		k.MaxValidators(ctx),
 		k.MaxEntries(ctx),
 		k.HistoricalEntries(ctx),
-		k.BondDenom(ctx),
 	)
 }
 

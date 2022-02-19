@@ -33,7 +33,7 @@ func TestDelegationString(t *testing.T) {
 
 func TestUnbondingDelegationEqual(t *testing.T) {
 	ubd1 := types.NewUnbondingDelegation(sdk.AccAddress(valAddr1), valAddr2, 0,
-		time.Unix(0, 0), sdk.NewInt(0))
+		time.Unix(0, 0), sdk.NewCoins())
 	ubd2 := ubd1
 
 	ok := ubd1.String() == ubd2.String()
@@ -48,17 +48,17 @@ func TestUnbondingDelegationEqual(t *testing.T) {
 
 func TestUnbondingDelegationString(t *testing.T) {
 	ubd := types.NewUnbondingDelegation(sdk.AccAddress(valAddr1), valAddr2, 0,
-		time.Unix(0, 0), sdk.NewInt(0))
+		time.Unix(0, 0), sdk.NewCoins())
 
 	require.NotEmpty(t, ubd.String())
 }
 
 func TestRedelegationEqual(t *testing.T) {
 	r1 := types.NewRedelegation(sdk.AccAddress(valAddr1), valAddr2, valAddr3, 0,
-		time.Unix(0, 0), sdk.NewInt(0),
+		time.Unix(0, 0), sdk.NewCoins(),
 		sdk.NewDec(0))
 	r2 := types.NewRedelegation(sdk.AccAddress(valAddr1), valAddr2, valAddr3, 0,
-		time.Unix(0, 0), sdk.NewInt(0),
+		time.Unix(0, 0), sdk.NewCoins(),
 		sdk.NewDec(0))
 
 	ok := r1.String() == r2.String()
@@ -73,7 +73,7 @@ func TestRedelegationEqual(t *testing.T) {
 
 func TestRedelegationString(t *testing.T) {
 	r := types.NewRedelegation(sdk.AccAddress(valAddr1), valAddr2, valAddr3, 0,
-		time.Unix(0, 0), sdk.NewInt(0),
+		time.Unix(0, 0), sdk.NewCoins(),
 		sdk.NewDec(10))
 
 	require.NotEmpty(t, r.String())

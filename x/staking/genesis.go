@@ -21,8 +21,8 @@ func InitGenesis(
 	ctx sdk.Context, keeper keeper.Keeper, accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper, data *types.GenesisState,
 ) (res []abci.ValidatorUpdate) {
-	bondedTokens := sdk.ZeroInt()
-	notBondedTokens := sdk.ZeroInt()
+	bondedTokens := sdk.NewCoins()
+	notBondedTokens := sdk.NewCoins()
 
 	// We need to pretend to be "n blocks before genesis", where "n" is the
 	// validator update delay, so that e.g. slashing periods are correctly
@@ -55,9 +55,9 @@ func InitGenesis(
 
 		switch validator.GetStatus() {
 		case types.Bonded:
-			bondedTokens = bondedTokens.Add(validator.GetTokens())
+			bondedTokens = bondedTokens.Add(validator.GetTokens()...)
 		case types.Unbonding, types.Unbonded:
-			notBondedTokens = notBondedTokens.Add(validator.GetTokens())
+			notBondedTokens = notBondedTokens.Add(validator.GetTokens()...)
 		default:
 			panic("invalid validator status")
 		}
@@ -90,7 +90,7 @@ func InitGenesis(
 
 		for _, entry := range ubd.Entries {
 			keeper.InsertUBDQueue(ctx, ubd, entry.CompletionTime)
-			notBondedTokens = notBondedTokens.Add(entry.Balance)
+			notBondedTokens = notBondedTokens.Add(entry.Balance...)
 		}
 	}
 
@@ -101,9 +101,6 @@ func InitGenesis(
 			keeper.InsertRedelegationQueue(ctx, red, entry.CompletionTime)
 		}
 	}
-
-	bondedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.BondDenom, bondedTokens))
-	notBondedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.BondDenom, notBondedTokens))
 
 	// check if the unbonded and bonded pools accounts exists
 	bondedPool := keeper.GetBondedPool(ctx)
@@ -116,8 +113,8 @@ func InitGenesis(
 		accountKeeper.SetModuleAccount(ctx, bondedPool)
 	}
 	// if balance is different from bonded coins panic because genesis is most likely malformed
-	if !bondedBalance.IsEqual(bondedCoins) {
-		panic(fmt.Sprintf("bonded pool balance is different from bonded coins: %s <-> %s", bondedBalance, bondedCoins))
+	if !bondedBalance.IsEqual(bondedTokens) {
+		panic(fmt.Sprintf("bonded pool balance is different from bonded coins: %s <-> %s", bondedBalance, bondedTokens))
 	}
 	notBondedPool := keeper.GetNotBondedPool(ctx)
 	if notBondedPool == nil {
@@ -129,8 +126,8 @@ func InitGenesis(
 		accountKeeper.SetModuleAccount(ctx, notBondedPool)
 	}
 	// if balance is different from non bonded coins panic because genesis is most likely malformed
-	if !notBondedBalance.IsEqual(notBondedCoins) {
-		panic(fmt.Sprintf("not bonded pool balance is different from not bonded coins: %s <-> %s", notBondedBalance, notBondedCoins))
+	if !notBondedBalance.IsEqual(notBondedTokens) {
+		panic(fmt.Sprintf("not bonded pool balance is different from not bonded coins: %s <-> %s", notBondedBalance, notBondedTokens))
 	}
 	// don't need to run Tendermint updates if we exported
 	if data.Exported {

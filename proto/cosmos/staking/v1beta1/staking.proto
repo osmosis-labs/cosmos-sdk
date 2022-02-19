@@ -94,8 +94,8 @@ message Validator {
   bool jailed = 3;
   // status is the validator status (bonded/unbonding/unbonded).
   BondStatus status = 4;
-  // tokens define the delegated tokens (incl. self-delegation).
-  string tokens = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  // DEPRECATED.  Used to be sdk.Int to represent delegated tokens
+  reserved 5;
   // delegator_shares defines total shares issued to a validator's delegators.
   string delegator_shares = 6 [
     (gogoproto.moretags)   = "yaml:\"delegator_shares\"",
@@ -117,6 +117,9 @@ message Validator {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false
   ];
+  // tokens define the delegated tokens (incl. self-delegation).
+  repeated cosmos.base.v1beta1.Coin tokens = 12
+      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
 }
 
 // BondStatus is the status of a validator.
@@ -218,14 +221,16 @@ message UnbondingDelegationEntry {
   // completion_time is the unix time for unbonding completion.
   google.protobuf.Timestamp completion_time = 2
       [(gogoproto.nullable) = false, (gogoproto.stdtime) = true, (gogoproto.moretags) = "yaml:\"completion_time\""];
-  // initial_balance defines the tokens initially scheduled to receive at completion.
-  string initial_balance = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable)   = false,
-    (gogoproto.moretags)   = "yaml:\"initial_balance\""
+  reserved 3;
+  reserved 4;
+  repeated cosmos.base.v1beta1.Coin initial_balance = 5 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.moretags)     = "yaml:\"initial_balance\""
   ];
   // balance defines the tokens to receive at completion.
-  string balance = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  repeated cosmos.base.v1beta1.Coin balance = 6
+      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
 }
 
 // RedelegationEntry defines a redelegation object with relevant metadata.
@@ -238,15 +243,17 @@ message RedelegationEntry {
   // completion_time defines the unix time for redelegation completion.
   google.protobuf.Timestamp completion_time = 2
       [(gogoproto.nullable) = false, (gogoproto.stdtime) = true, (gogoproto.moretags) = "yaml:\"completion_time\""];
-  // initial_balance defines the initial balance when redelegation started.
-  string initial_balance = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable)   = false,
-    (gogoproto.moretags)   = "yaml:\"initial_balance\""
-  ];
+  // DEPRECATED: Used to be sdk.Int form of initial_balance
+  reserved 3;
   // shares_dst is the amount of destination-validator shares created by redelegation.
   string shares_dst = 4
       [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+  // initial_balance defines the initial balance when redelegation started.
+  repeated cosmos.base.v1beta1.Coin initial_balance = 5 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.moretags)     = "yaml:\"initial_balance\""
+  ];
 }
 
 // Redelegation contains the list of a particular delegator's redelegating bonds
@@ -280,8 +287,24 @@ message Params {
   uint32 max_entries = 3 [(gogoproto.moretags) = "yaml:\"max_entries\""];
   // historical_entries is the number of historical entries to persist.
   uint32 historical_entries = 4 [(gogoproto.moretags) = "yaml:\"historical_entries\""];
-  // bond_denom defines the bondable coin denomination.
-  string bond_denom = 5 [(gogoproto.moretags) = "yaml:\"bond_denom\""];
+  // Used to be `bond_denom` which defined defines the bondable coin denomination. Has been DEPRECATED
+  reserved 5;
+}
+
+// BondDenom defines a specific bond denom and its multiplier to convert it to staking power
+message BondDenom {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = false;
+
+  // denom defines the bondable coin denomination.
+  string denom = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
+
+  // multiplier defines the multiplier for the bond denom
+  string multiplier = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"multiplier\""
+  ];
 }
 
 // DelegationResponse is equivalent to Delegation except that it contains a
@@ -302,7 +325,9 @@ message RedelegationEntryResponse {
   option (gogoproto.equal) = true;
 
   RedelegationEntry redelegation_entry = 1 [(gogoproto.nullable) = false];
-  string balance = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  reserved 4;
+  repeated cosmos.base.v1beta1.Coin balance = 5
+      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
 }
 
 // RedelegationResponse is equivalent to a Redelegation except that its entries

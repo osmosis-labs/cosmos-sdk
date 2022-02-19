@@ -5,14 +5,16 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // NewGenesisState creates a new GenesisState instanc e
-func NewGenesisState(params Params, validators []Validator, delegations []Delegation) *GenesisState {
+func NewGenesisState(params Params, validators []Validator, delegations []Delegation, bondDenoms []BondDenom) *GenesisState {
 	return &GenesisState{
 		Params:      params,
 		Validators:  validators,
 		Delegations: delegations,
+		BondDenoms:  bondDenoms,
 	}
 }
 
@@ -20,6 +22,12 @@ func NewGenesisState(params Params, validators []Validator, delegations []Delega
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params: DefaultParams(),
+		BondDenoms: []BondDenom{
+			BondDenom{
+				Denom:      sdk.DefaultBondDenom,
+				Multiplier: sdk.OneDec(),
+			},
+		},
 	}
 }
 

@@ -1,9 +1,7 @@
 package types
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
@@ -36,7 +34,6 @@ var (
 	KeyUnbondingTime     = []byte("UnbondingTime")
 	KeyMaxValidators     = []byte("MaxValidators")
 	KeyMaxEntries        = []byte("MaxEntries")
-	KeyBondDenom         = []byte("BondDenom")
 	KeyHistoricalEntries = []byte("HistoricalEntries")
 	KeyPowerReduction    = []byte("PowerReduction")
 )
@@ -49,13 +46,12 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params instance
-func NewParams(unbondingTime time.Duration, maxValidators, maxEntries, historicalEntries uint32, bondDenom string) Params {
+func NewParams(unbondingTime time.Duration, maxValidators, maxEntries, historicalEntries uint32) Params {
 	return Params{
 		UnbondingTime:     unbondingTime,
 		MaxValidators:     maxValidators,
 		MaxEntries:        maxEntries,
 		HistoricalEntries: historicalEntries,
-		BondDenom:         bondDenom,
 	}
 }
 
@@ -66,7 +62,6 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyMaxValidators, &p.MaxValidators, validateMaxValidators),
 		paramtypes.NewParamSetPair(KeyMaxEntries, &p.MaxEntries, validateMaxEntries),
 		paramtypes.NewParamSetPair(KeyHistoricalEntries, &p.HistoricalEntries, validateHistoricalEntries),
-		paramtypes.NewParamSetPair(KeyBondDenom, &p.BondDenom, validateBondDenom),
 	}
 }
 
@@ -77,7 +72,6 @@ func DefaultParams() Params {
 		DefaultMaxValidators,
 		DefaultMaxEntries,
 		DefaultHistoricalEntries,
-		sdk.DefaultBondDenom,
 	)
 }
 
@@ -118,10 +112,6 @@ func (p Params) Validate() error {
 	}
 
 	if err := validateMaxEntries(p.MaxEntries); err != nil {
-		return err
-	}
-
-	if err := validateBondDenom(p.BondDenom); err != nil {
 		return err
 	}
 
@@ -176,22 +166,22 @@ func validateHistoricalEntries(i interface{}) error {
 	return nil
 }
 
-func validateBondDenom(i interface{}) error {
-	v, ok := i.(string)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
+// func validateBondDenom(i interface{}) error {
+// 	v, ok := i.(string)
+// 	if !ok {
+// 		return fmt.Errorf("invalid parameter type: %T", i)
+// 	}
 
-	if strings.TrimSpace(v) == "" {
-		return errors.New("bond denom cannot be blank")
-	}
+// 	if strings.TrimSpace(v) == "" {
+// 		return errors.New("bond denom cannot be blank")
+// 	}
 
-	if err := sdk.ValidateDenom(v); err != nil {
-		return err
-	}
+// 	if err := sdk.ValidateDenom(v); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func ValidatePowerReduction(i interface{}) error {
 	v, ok := i.(sdk.Int)

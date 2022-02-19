@@ -503,7 +503,7 @@ func (v Validator) GetConsAddr() (sdk.ConsAddress, error) {
 	return sdk.ConsAddress(pk.Address()), nil
 }
 
-func (v Validator) GetTokens() sdk.Int       { return v.Tokens }
+func (v Validator) GetTokens() sdk.Coins     { return v.Tokens }
 func (v Validator) GetBondedTokens() sdk.Int { return v.BondedTokens() }
 func (v Validator) GetConsensusPower(r sdk.Int) int64 {
 	return v.ConsensusPower(r)

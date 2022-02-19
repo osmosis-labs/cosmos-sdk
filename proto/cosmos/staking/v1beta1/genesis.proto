@@ -38,6 +38,8 @@ message GenesisState {
   repeated Redelegation redelegations = 7 [(gogoproto.nullable) = false];
 
   bool exported = 8;
+
+  repeated BondDenom bond_denoms = 9 [(gogoproto.nullable) = false];
 }
 
 // LastValidatorPower required for validator set update logic.

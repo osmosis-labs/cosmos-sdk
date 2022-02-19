@@ -517,6 +517,7 @@
     - [AuthorizationType](#cosmos.staking.v1beta1.AuthorizationType)
   
 - [cosmos/staking/v1beta1/staking.proto](#cosmos/staking/v1beta1/staking.proto)
+    - [BondDenom](#cosmos.staking.v1beta1.BondDenom)
     - [Commission](#cosmos.staking.v1beta1.Commission)
     - [CommissionRates](#cosmos.staking.v1beta1.CommissionRates)
     - [DVPair](#cosmos.staking.v1beta1.DVPair)
@@ -7325,6 +7326,22 @@ AuthorizationType defines the type of staking module authorization type
 
 
 
+<a name="cosmos.staking.v1beta1.BondDenom"></a>
+
+### BondDenom
+BondDenom defines a specific bond denom and its multiplier to convert it to staking power
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `denom` | [string](#string) |  | denom defines the bondable coin denomination. |
+| `multiplier` | [string](#string) |  | multiplier defines the multiplier for the bond denom |
+
+
+
+
+
+
 <a name="cosmos.staking.v1beta1.Commission"></a>
 
 ### Commission
@@ -7513,7 +7530,6 @@ Params defines the parameters for the staking module.
 | `max_validators` | [uint32](#uint32) |  | max_validators is the maximum number of validators. |
 | `max_entries` | [uint32](#uint32) |  | max_entries is the max entries for either unbonding delegation or redelegation (per pair/trio). |
 | `historical_entries` | [uint32](#uint32) |  | historical_entries is the number of historical entries to persist. |
-| `bond_denom` | [string](#string) |  | bond_denom defines the bondable coin denomination. |
 
 
 
@@ -7568,8 +7584,8 @@ RedelegationEntry defines a redelegation object with relevant metadata.
 | ----- | ---- | ----- | ----------- |
 | `creation_height` | [int64](#int64) |  | creation_height defines the height which the redelegation took place. |
 | `completion_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | completion_time defines the unix time for redelegation completion. |
-| `initial_balance` | [string](#string) |  | initial_balance defines the initial balance when redelegation started. |
 | `shares_dst` | [string](#string) |  | shares_dst is the amount of destination-validator shares created by redelegation. |
+| `initial_balance` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated | initial_balance defines the initial balance when redelegation started. |
 
 
 
@@ -7587,7 +7603,7 @@ responses.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `redelegation_entry` | [RedelegationEntry](#cosmos.staking.v1beta1.RedelegationEntry) |  |  |
-| `balance` | [string](#string) |  |  |
+| `balance` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
 
 
 
@@ -7642,8 +7658,8 @@ UnbondingDelegationEntry defines an unbonding object with relevant metadata.
 | ----- | ---- | ----- | ----------- |
 | `creation_height` | [int64](#int64) |  | creation_height is the height which the unbonding took place. |
 | `completion_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | completion_time is the unix time for unbonding completion. |
-| `initial_balance` | [string](#string) |  | initial_balance defines the tokens initially scheduled to receive at completion. |
-| `balance` | [string](#string) |  | balance defines the tokens to receive at completion. |
+| `initial_balance` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
+| `balance` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated | balance defines the tokens to receive at completion. |
 
 
 
@@ -7684,13 +7700,13 @@ multiplied by exchange rate.
 | `consensus_pubkey` | [google.protobuf.Any](#google.protobuf.Any) |  | consensus_pubkey is the consensus public key of the validator, as a Protobuf Any. |
 | `jailed` | [bool](#bool) |  | jailed defined whether the validator has been jailed from bonded status or not. |
 | `status` | [BondStatus](#cosmos.staking.v1beta1.BondStatus) |  | status is the validator status (bonded/unbonding/unbonded). |
-| `tokens` | [string](#string) |  | tokens define the delegated tokens (incl. self-delegation). |
 | `delegator_shares` | [string](#string) |  | delegator_shares defines total shares issued to a validator's delegators. |
 | `description` | [Description](#cosmos.staking.v1beta1.Description) |  | description defines the description terms for the validator. |
 | `unbonding_height` | [int64](#int64) |  | unbonding_height defines, if unbonding, the height at which this validator has begun unbonding. |
 | `unbonding_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | unbonding_time defines, if unbonding, the min time for the validator to complete unbonding. |
 | `commission` | [Commission](#cosmos.staking.v1beta1.Commission) |  | commission defines the commission parameters. |
 | `min_self_delegation` | [string](#string) |  | min_self_delegation is the validator's self declared minimum self delegation. |
+| `tokens` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated | tokens define the delegated tokens (incl. self-delegation). |
 
 
 
@@ -7743,6 +7759,7 @@ GenesisState defines the staking module's genesis state.
 | `unbonding_delegations` | [UnbondingDelegation](#cosmos.staking.v1beta1.UnbondingDelegation) | repeated | unbonding_delegations defines the unbonding delegations active at genesis. |
 | `redelegations` | [Redelegation](#cosmos.staking.v1beta1.Redelegation) | repeated | redelegations defines the redelegations active at genesis. |
 | `exported` | [bool](#bool) |  |  |
+| `bond_denoms` | [BondDenom](#cosmos.staking.v1beta1.BondDenom) | repeated |  |
 
 
 
