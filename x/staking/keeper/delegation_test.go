@@ -177,6 +177,7 @@ func TestUnbondingDelegation(t *testing.T) {
 	require.Equal(t, 0, len(resUnbonds))
 }
 
+// TODO: Document what this test is doing, or add more in-line comments.
 func TestInstantUndelegate(t *testing.T) {
 	_, app, ctx := createTestInput()
 
