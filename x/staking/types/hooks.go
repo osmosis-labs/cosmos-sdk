@@ -56,8 +56,8 @@ func (h MultiStakingHooks) AfterDelegationModified(ctx sdk.Context, delAddr sdk.
 		h[i].AfterDelegationModified(ctx, delAddr, valAddr)
 	}
 }
-func (h MultiStakingHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, infractionHeight int64, slashFactor sdk.Dec) {
+func (h MultiStakingHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, infractionHeight int64, slashFactor sdk.Dec, effectiveSlashFactor sdk.Dec) {
 	for i := range h {
-		h[i].BeforeValidatorSlashed(ctx, valAddr, infractionHeight, slashFactor)
+		h[i].BeforeValidatorSlashed(ctx, valAddr, infractionHeight, slashFactor, effectiveSlashFactor)
 	}
 }

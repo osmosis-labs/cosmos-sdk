@@ -114,7 +114,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 			effectiveFraction = sdk.OneDec()
 		}
 		// call the before-slashed hook
-		k.BeforeValidatorSlashed(ctx, operatorAddress, infractionHeight, effectiveFraction)
+		k.BeforeValidatorSlashed(ctx, operatorAddress, infractionHeight, slashFactor, effectiveFraction)
 	}
 
 	// Deduct from validator's bonded tokens and update the validator.
