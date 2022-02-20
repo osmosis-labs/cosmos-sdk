@@ -771,19 +771,15 @@ func (k Keeper) InstantUndelegate(
 	amt := sdk.NewCoin(bondDenom, returnAmount)
 	res := sdk.NewCoins(amt)
 
+	moduleName := types.NotBondedPoolName    
 	if validator.IsBonded() {
-		err = k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.BondedPoolName, delAddr, res)
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
-	} else {
-		err = k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.NotBondedPoolName, delAddr, res)
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
+		moduleName = types.BondedPoolName
 	}
+	err = k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, moduleName, delAddr, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 
 }
 
