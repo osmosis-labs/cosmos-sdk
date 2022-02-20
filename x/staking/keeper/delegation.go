@@ -751,6 +751,42 @@ func (k Keeper) Undelegate(
 	return completionTime, nil
 }
 
+// InstantUndelegate allows another module account to undelegate while bypassing unbonding time
+func (k Keeper) InstantUndelegate(
+	ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, sharesAmount sdk.Dec,
+) (sdk.Coins, error) {
+
+	validator, found := k.GetValidator(ctx, valAddr)
+	if !found {
+		return nil, types.ErrNoDelegatorForAddress
+	}
+
+	returnAmount, err := k.Unbond(ctx, delAddr, valAddr, sharesAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	bondDenom := k.GetParams(ctx).BondDenom
+
+	amt := sdk.NewCoin(bondDenom, returnAmount)
+	res := sdk.NewCoins(amt)
+
+	if validator.IsBonded() {
+		err = k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.BondedPoolName, delAddr, res)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	} else {
+		err = k.bankKeeper.UndelegateCoinsFromModuleToAccount(ctx, types.NotBondedPoolName, delAddr, res)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	}
+
+}
+
 // CompleteUnbonding completes the unbonding of all mature entries in the
 // retrieved unbonding delegation object and returns the total unbonding balance
 // or an error upon failure.
