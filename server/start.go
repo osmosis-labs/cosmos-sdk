@@ -234,12 +234,6 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		}
 	}
 
-	go func() {
-		address := "localhost:6060"
-		ctx.Logger.Info("Starting pprof server", "laddr", address)
-		ctx.Logger.Error("pprof server error", "err", http.ListenAndServe(address, nil))
-	}()
-
 	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
 	db, err := openDB(home)
 	if err != nil {
