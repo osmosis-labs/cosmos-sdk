@@ -751,7 +751,9 @@ func (k Keeper) Undelegate(
 	return completionTime, nil
 }
 
-// InstantUndelegate allows another module account to undelegate while bypassing unbonding time
+// InstantUndelegate allows another module account to undelegate while bypassing unbonding time.
+// This function is a combination of Undelegate and CompleteUnbonding,
+// but skips the creation and deletion of UnbondingDelegationEntry
 func (k Keeper) InstantUndelegate(
 	ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, sharesAmount sdk.Dec,
 ) (sdk.Coins, error) {
