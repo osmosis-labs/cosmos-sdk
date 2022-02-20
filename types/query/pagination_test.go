@@ -3,6 +3,7 @@ package query_test
 import (
 	gocontext "context"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/log"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -217,7 +218,7 @@ func setupTest() (*simapp.SimApp, sdk.Context, codec.Marshaler) {
 	appCodec := app.AppCodec()
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger())
 
 	ms.LoadLatestVersion()
 

@@ -3,6 +3,7 @@ package iavl
 import (
 	"errors"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/log"
 	"io"
 	"sync"
 	"time"
@@ -14,6 +15,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
+	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -23,7 +25,7 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 10000
+	DefaultIAVLCacheSize = 500000
 )
 
 var (
@@ -42,18 +44,28 @@ type Store struct {
 // LoadStore returns an IAVL Store as a CommitKVStore. Internally, it will load the
 // store's version (id) from the provided DB. An error is returned if the version
 // fails to load, or if called with a positive version on an empty tree.
-func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool) (types.CommitKVStore, error) {
-	return LoadStoreWithInitialVersion(db, id, lazyLoading, 0)
+func LoadStore(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, lazyLoading bool, cacheSize int) (types.CommitKVStore, error) {
+	return LoadStoreWithInitialVersion(db, logger, key, id, lazyLoading, 0, cacheSize)
 }
 
 // LoadStoreWithInitialVersion returns an IAVL Store as a CommitKVStore setting its initialVersion
 // to the one given. Internally, it will load the store's version (id) from the
 // provided DB. An error is returned if the version fails to load, or if called with a positive
 // version on an empty tree.
-func LoadStoreWithInitialVersion(db dbm.DB, id types.CommitID, lazyLoading bool, initialVersion uint64) (types.CommitKVStore, error) {
-	tree, err := iavl.NewMutableTreeWithOpts(db, defaultIAVLCacheSize, &iavl.Options{InitialVersion: initialVersion})
+func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, lazyLoading bool, initialVersion uint64, cacheSize int) (types.CommitKVStore, error) {
+	tree, err := iavl.NewMutableTreeWithOpts(db, cacheSize, &iavl.Options{InitialVersion: initialVersion})
 	if err != nil {
 		return nil, err
+	}
+
+	if tree.IsUpgradeable() && logger != nil {
+		logger.Info(
+			"Upgrading IAVL storage for faster queries + execution on live state. This may take a while",
+			"store_key", key.String(),
+			"version", initialVersion,
+			"commit", fmt.Sprintf("%X", id),
+			"is_lazy", lazyLoading,
+		)
 	}
 
 	if lazyLoading {
@@ -64,6 +76,10 @@ func LoadStoreWithInitialVersion(db dbm.DB, id types.CommitID, lazyLoading bool,
 
 	if err != nil {
 		return nil, err
+	}
+
+	if logger != nil {
+		logger.Debug("Finished loading IAVL tree")
 	}
 
 	return &Store{
@@ -159,6 +175,11 @@ func (st *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.Ca
 	return cachekv.NewStore(tracekv.NewStore(st, w, tc))
 }
 
+// CacheWrapWithListeners implements the CacheWrapper interface.
+func (st *Store) CacheWrapWithListeners(storeKey types.StoreKey, listeners []types.WriteListener) types.CacheWrap {
+	return cachekv.NewStore(listenkv.NewStore(st, storeKey, listeners))
+}
+
 // Implements types.KVStore.
 func (st *Store) Set(key, value []byte) {
 	types.AssertValidKey(key)
@@ -169,8 +190,7 @@ func (st *Store) Set(key, value []byte) {
 // Implements types.KVStore.
 func (st *Store) Get(key []byte) []byte {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "get")
-	_, value := st.tree.Get(key)
-	return value
+	return st.tree.Get(key)
 }
 
 // Implements types.KVStore.
@@ -193,31 +213,19 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 }
 
 // Implements types.KVStore.
+// CONTRACT: Caller must release the iavlIterator, as each one creates a new
+// goroutine.
+// CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	var iTree *iavl.ImmutableTree
-
-	switch tree := st.tree.(type) {
-	case *immutableTree:
-		iTree = tree.ImmutableTree
-	case *iavl.MutableTree:
-		iTree = tree.ImmutableTree
-	}
-
-	return newIAVLIterator(iTree, start, end, true)
+	return st.tree.Iterator(start, end, true)
 }
 
 // Implements types.KVStore.
+// CONTRACT: Caller must release the iavlIterator, as each one creates a new
+// goroutine.
+// CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	var iTree *iavl.ImmutableTree
-
-	switch tree := st.tree.(type) {
-	case *immutableTree:
-		iTree = tree.ImmutableTree
-	case *iavl.MutableTree:
-		iTree = tree.ImmutableTree
-	}
-
-	return newIAVLIterator(iTree, start, end, false)
+	return st.tree.Iterator(start, end, false)
 }
 
 // SetInitialVersion sets the initial version of the IAVL tree. It is used when
@@ -292,7 +300,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 			break
 		}
 
-		_, res.Value = tree.GetVersioned(key, res.Height)
+		res.Value = tree.GetVersioned(key, res.Height)
 		if !req.Prove {
 			break
 		}
@@ -372,172 +380,7 @@ func getProofFromTree(tree *iavl.MutableTree, key []byte, exists bool) *tmcrypto
 
 // Implements types.Iterator.
 type iavlIterator struct {
-	// Domain
-	start, end []byte
-
-	key   []byte // The current key (mutable)
-	value []byte // The current value (mutable)
-
-	// Underlying store
-	tree *iavl.ImmutableTree
-
-	// Channel to push iteration values.
-	iterCh chan kv.Pair
-
-	// Close this to release goroutine.
-	quitCh chan struct{}
-
-	// Close this to signal that state is initialized.
-	initCh chan struct{}
-
-	mtx sync.Mutex
-
-	ascending bool // Iteration order
-
-	invalid bool // True once, true forever (mutable)
+	dbm.Iterator
 }
 
 var _ types.Iterator = (*iavlIterator)(nil)
-
-// newIAVLIterator will create a new iavlIterator.
-// CONTRACT: Caller must release the iavlIterator, as each one creates a new
-// goroutine.
-func newIAVLIterator(tree *iavl.ImmutableTree, start, end []byte, ascending bool) *iavlIterator {
-	iter := &iavlIterator{
-		tree:      tree,
-		start:     sdk.CopyBytes(start),
-		end:       sdk.CopyBytes(end),
-		ascending: ascending,
-		iterCh:    make(chan kv.Pair), // Set capacity > 0?
-		quitCh:    make(chan struct{}),
-		initCh:    make(chan struct{}),
-	}
-	go iter.iterateRoutine()
-	go iter.initRoutine()
-	return iter
-}
-
-// Run this to funnel items from the tree to iterCh.
-func (iter *iavlIterator) iterateRoutine() {
-	iter.tree.IterateRange(
-		iter.start, iter.end, iter.ascending,
-		func(key, value []byte) bool {
-			select {
-			case <-iter.quitCh:
-				return true // done with iteration.
-			case iter.iterCh <- kv.Pair{Key: key, Value: value}:
-				return false // yay.
-			}
-		},
-	)
-	close(iter.iterCh) // done.
-}
-
-// Run this to fetch the first item.
-func (iter *iavlIterator) initRoutine() {
-	iter.receiveNext()
-	close(iter.initCh)
-}
-
-// Implements types.Iterator.
-func (iter *iavlIterator) Domain() (start, end []byte) {
-	return iter.start, iter.end
-}
-
-// Implements types.Iterator.
-func (iter *iavlIterator) Valid() bool {
-	iter.waitInit()
-	iter.mtx.Lock()
-
-	validity := !iter.invalid
-	iter.mtx.Unlock()
-	return validity
-}
-
-// Implements types.Iterator.
-func (iter *iavlIterator) Next() {
-	iter.waitInit()
-	iter.mtx.Lock()
-	iter.assertIsValid(true)
-
-	iter.receiveNext()
-	iter.mtx.Unlock()
-}
-
-// Implements types.Iterator.
-func (iter *iavlIterator) Key() []byte {
-	iter.waitInit()
-	iter.mtx.Lock()
-	iter.assertIsValid(true)
-
-	key := iter.key
-	iter.mtx.Unlock()
-	return key
-}
-
-// Implements types.Iterator.
-func (iter *iavlIterator) Value() []byte {
-	iter.waitInit()
-	iter.mtx.Lock()
-	iter.assertIsValid(true)
-
-	val := iter.value
-	iter.mtx.Unlock()
-	return val
-}
-
-// Close closes the IAVL iterator by closing the quit channel and waiting for
-// the iterCh to finish/close.
-func (iter *iavlIterator) Close() error {
-	close(iter.quitCh)
-	// wait iterCh to close
-	for range iter.iterCh {
-	}
-
-	return nil
-}
-
-// Error performs a no-op.
-func (iter *iavlIterator) Error() error {
-	return nil
-}
-
-//----------------------------------------
-
-func (iter *iavlIterator) setNext(key, value []byte) {
-	iter.assertIsValid(false)
-
-	iter.key = key
-	iter.value = value
-}
-
-func (iter *iavlIterator) setInvalid() {
-	iter.assertIsValid(false)
-
-	iter.invalid = true
-}
-
-func (iter *iavlIterator) waitInit() {
-	<-iter.initCh
-}
-
-func (iter *iavlIterator) receiveNext() {
-	kvPair, ok := <-iter.iterCh
-	if ok {
-		iter.setNext(kvPair.Key, kvPair.Value)
-	} else {
-		iter.setInvalid()
-	}
-}
-
-// assertIsValid panics if the iterator is invalid. If unlockMutex is true,
-// it also unlocks the mutex before panicing, to prevent deadlocks in code that
-// recovers from panics
-func (iter *iavlIterator) assertIsValid(unlockMutex bool) {
-	if iter.invalid {
-		if unlockMutex {
-			iter.mtx.Unlock()
-		}
-		panic("invalid iterator")
-	}
-}
