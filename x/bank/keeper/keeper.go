@@ -30,6 +30,9 @@ type Keeper interface {
 	HasSupply(ctx sdk.Context, denom string) bool
 	GetPaginatedTotalSupply(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
 	IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bool)
+	GetSupplyWithOffset(ctx sdk.Context, denom string) sdk.Coin
+	GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
+	IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(sdk.Coin) bool)
 	GetDenomMetaData(ctx sdk.Context, denom string) (types.Metadata, bool)
 	SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata)
 	IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool)
