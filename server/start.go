@@ -22,7 +22,6 @@ import (
 	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
 	"github.com/tendermint/tendermint/rpc/client/local"
-
 	"github.com/cosmos/cosmos-sdk/server/rosetta"
 	crgserver "github.com/cosmos/cosmos-sdk/server/rosetta/lib/server"
 
@@ -33,6 +32,7 @@ import (
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	_ "net/http/pprof"
 )
 
 // Tendermint full-node start flags
@@ -233,6 +233,11 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 			f.Close()
 		}
 	}
+
+	go func() {
+		ctx.Logger.Info("starting pprof in SDK - localhost:6060")
+		http.ListenAndServe("localhost:6060", nil)
+	}()
 
 	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
 	db, err := openDB(home)
