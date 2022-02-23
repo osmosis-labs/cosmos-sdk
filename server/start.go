@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"runtime/pprof"
 	"time"
 
@@ -215,6 +216,14 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	cfg := ctx.Config
 	home := cfg.RootDir
 	var cpuProfileCleanup func()
+
+	go func() {
+		t := time.Tick(time.Second)
+		for {
+			<-t
+			debug.FreeOSMemory()
+		}
+	}()
 
 	if cpuProfile := ctx.Viper.GetString(flagCPUProfile); cpuProfile != "" {
 		f, err := os.Create(cpuProfile)
