@@ -67,6 +67,9 @@ replace github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210
 // TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 replace github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 
+// Testing tendermint changes from williambanfield
+replace github.com/tendermint/tendermint => github.com/joeabbey/tendermint v0.34.14-starving-waiters
+
 replace github.com/tendermint/tm-db => github.com/osmosis-labs/tm-db v0.6.5-0.20210911033928-ba9154613417
 
 replace github.com/cosmos/iavl => github.com/osmosis-labs/iavl v0.17.3-osmo-v4
