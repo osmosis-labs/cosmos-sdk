@@ -56,8 +56,7 @@ func TestMigrate(t *testing.T) {
     "max_entries": 0,
     "max_validators": 0,
     "min_commission_rate": "0.000000000000000000",
-    "unbonding_time": "0s",
-    "min_self_delegation": 0
+    "unbonding_time": "0s"
   },
   "redelegations": [],
   "unbonding_delegations": [],

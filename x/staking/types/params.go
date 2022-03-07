@@ -38,7 +38,7 @@ var (
 )
 
 var (
-	// DefaultMinSelfDelegation is set to 0%
+	// DefaultMinSelfDelegation is set to 0
 	DefaultMinSelfDelegation = sdk.ZeroInt()
 )
 
