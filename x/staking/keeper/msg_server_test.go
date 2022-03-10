@@ -67,7 +67,7 @@ func TestCreateValidatorWithLessThanMinSelfDelegation(t *testing.T) {
 	params.MinCommissionRate = sdk.NewDecWithPrec(1, 2)
 	app.StakingKeeper.SetParams(ctx, params)
 
-	// create validator with 0% commission
+	// create two validators with 0% commission and self delegations that are above and below the minimum, respectively
 	msg1, err := stakingtypes.NewMsgCreateValidator(
 		sdk.ValAddress(addrs[0]),
 		valConsPk1,
