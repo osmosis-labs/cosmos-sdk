@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -205,7 +205,7 @@ func DefaultConfig() *Config {
 		BaseConfig: BaseConfig{
 			MinGasPrices:      defaultMinGasPrices,
 			InterBlockCache:   true,
-			Pruning:           storetypes.PruningOptionDefault,
+			Pruning:           pruningTypes.PruningOptionDefault,
 			PruningKeepRecent: "0",
 			PruningKeepEvery:  "0",
 			PruningInterval:   "0",

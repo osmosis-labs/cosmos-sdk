@@ -20,6 +20,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/cachemulti"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
@@ -49,7 +50,7 @@ type Store struct {
 	db             dbm.DB
 	logger         log.Logger
 	lastCommitInfo *types.CommitInfo
-	pruningOpts    types.PruningOptions
+	pruningOpts    pruningTypes.PruningOptions
 	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
 	stores         map[types.StoreKey]types.CommitKVStore
@@ -79,7 +80,7 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 	return &Store{
 		db:           db,
 		logger:       logger,
-		pruningOpts:  types.PruneNothing,
+		pruningOpts:  pruningTypes.PruneNothing,
 		iavlCacheSize: iavl.DefaultIAVLCacheSize,
 		storesParams: make(map[types.StoreKey]storeParams),
 		stores:       make(map[types.StoreKey]types.CommitKVStore),
@@ -90,14 +91,14 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 }
 
 // GetPruning fetches the pruning strategy from the root store.
-func (rs *Store) GetPruning() types.PruningOptions {
+func (rs *Store) GetPruning() pruningTypes.PruningOptions {
 	return rs.pruningOpts
 }
 
 // SetPruning sets the pruning strategy on the root store and all the sub-stores.
 // Note, calling SetPruning on the root store prior to LoadVersion or
 // LoadLatestVersion performs a no-op as the stores aren't mounted yet.
-func (rs *Store) SetPruning(pruningOpts types.PruningOptions) {
+func (rs *Store) SetPruning(pruningOpts pruningTypes.PruningOptions) {
 	rs.pruningOpts = pruningOpts
 }
 

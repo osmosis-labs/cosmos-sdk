@@ -25,7 +25,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
-	store "github.com/cosmos/cosmos-sdk/store/types"
+	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -206,7 +207,7 @@ func TestMountStores(t *testing.T) {
 // Test that LoadLatestVersion actually does.
 func TestLoadVersion(t *testing.T) {
 	logger := defaultLogger()
-	pruningOpt := SetPruning(store.PruneNothing)
+	pruningOpt := SetPruning(pruningTypes.PruneNothing)
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -259,15 +260,15 @@ func useDefaultLoader(app *BaseApp) {
 
 func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
 	rs := rootmulti.NewStore(db, log.NewNopLogger())
-	rs.SetPruning(store.PruneNothing)
+	rs.SetPruning(pruningTypes.PruneNothing)
 	key := sdk.NewKVStoreKey(storeKey)
-	rs.MountStoreWithDB(key, store.StoreTypeIAVL, nil)
+	rs.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, nil)
 	err := rs.LoadLatestVersion()
 	require.Nil(t, err)
 	require.Equal(t, int64(0), rs.LastCommitID().Version)
 
 	// write some data in substore
-	kv, _ := rs.GetStore(key).(store.KVStore)
+	kv, _ := rs.GetStore(key).(storeTypes.KVStore)
 	require.NotNil(t, kv)
 	kv.Set(k, v)
 	commitID := rs.Commit()
@@ -276,15 +277,15 @@ func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
 
 func checkStore(t *testing.T, db dbm.DB, ver int64, storeKey string, k, v []byte) {
 	rs := rootmulti.NewStore(db, log.NewNopLogger())
-	rs.SetPruning(store.PruneDefault)
+	rs.SetPruning(pruningTypes.PruneDefault)
 	key := sdk.NewKVStoreKey(storeKey)
-	rs.MountStoreWithDB(key, store.StoreTypeIAVL, nil)
+	rs.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, nil)
 	err := rs.LoadLatestVersion()
 	require.Nil(t, err)
 	require.Equal(t, ver, rs.LastCommitID().Version)
 
 	// query data in substore
-	kv, _ := rs.GetStore(key).(store.KVStore)
+	kv, _ := rs.GetStore(key).(storeTypes.KVStore)
 	require.NotNil(t, kv)
 	require.Equal(t, v, kv.Get(k))
 }
@@ -319,7 +320,7 @@ func TestSetLoader(t *testing.T) {
 			initStore(t, db, tc.origStoreKey, k, v)
 
 			// load the app with the existing db
-			opts := []func(*BaseApp){SetPruning(store.PruneNothing)}
+			opts := []func(*BaseApp){SetPruning(pruningTypes.PruneNothing)}
 			if tc.setLoader != nil {
 				opts = append(opts, tc.setLoader)
 			}
@@ -342,7 +343,7 @@ func TestSetLoader(t *testing.T) {
 
 func TestVersionSetterGetter(t *testing.T) {
 	logger := defaultLogger()
-	pruningOpt := SetPruning(store.PruneDefault)
+	pruningOpt := SetPruning(pruningTypes.PruneDefault)
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -362,7 +363,7 @@ func TestVersionSetterGetter(t *testing.T) {
 
 func TestLoadVersionInvalid(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOpt := SetPruning(store.PruneNothing)
+	pruningOpt := SetPruning(pruningTypes.PruneNothing)
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -394,7 +395,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 
 func TestLoadVersionPruning(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOptions := store.PruningOptions{
+	pruningOptions := pruningTypes.PruningOptions{
 		KeepRecent: 2,
 		KeepEvery:  3,
 		Interval:   1,
@@ -2065,28 +2066,28 @@ func TestBaseApp_Init(t *testing.T) {
 		},
 		"pruning but no snapshot": {
 			NewBaseApp(name, logger, db, nil,
-				SetPruning(store.NewPruningOptions(1, 1, 1)),
+				SetPruning(pruningTypes.NewPruningOptions(1, 1, 1)),
 			),
 			nil,
 		},
 		"pruning-keep-every is a multiple of snapshot-interval": {
 			NewBaseApp(name, logger, db, nil,
 				SetSnapshot(snapshotStore, 9, 2),
-				SetPruning(store.NewPruningOptions(1, 3, 1)),
+				SetPruning(pruningTypes.NewPruningOptions(1, 3, 1)),
 			),
 			nil,
 		},
 		"pruning-keep-every is 0 when snapshot is enabled": {
 			NewBaseApp(name, logger, db, nil,
 				SetSnapshot(snapshotStore, 9, 2),
-				SetPruning(store.NewPruningOptions(1, 0, 1)),
+				SetPruning(pruningTypes.NewPruningOptions(1, 0, 1)),
 			),
 			errOptsZeroKeepRecentWithSnapshot(9),
 		},
 		"pruning-keep-every is not a multiple of snapshot-interval": {
 			NewBaseApp(name, logger, db, nil,
 				SetSnapshot(snapshotStore, 9, 2),
-				SetPruning(store.NewPruningOptions(1, 2, 1)),
+				SetPruning(pruningTypes.NewPruningOptions(1, 2, 1)),
 			),
 			errOptsNotMutipleKeepRecentWithSnapshot(9, 2),
 		},

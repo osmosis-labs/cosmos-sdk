@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/store/types"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
-	PruningOptions = types.PruningOptions
+	PruningOptions = pruningTypes.PruningOptions
 )
 
 type (
