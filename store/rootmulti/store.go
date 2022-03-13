@@ -50,7 +50,7 @@ type Store struct {
 	db             dbm.DB
 	logger         log.Logger
 	lastCommitInfo *types.CommitInfo
-	pruningOpts    pruningTypes.PruningOptions
+	pruningOpts    *pruningTypes.PruningOptions
 	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
 	stores         map[types.StoreKey]types.CommitKVStore
@@ -91,14 +91,14 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 }
 
 // GetPruning fetches the pruning strategy from the root store.
-func (rs *Store) GetPruning() pruningTypes.PruningOptions {
+func (rs *Store) GetPruning() *pruningTypes.PruningOptions {
 	return rs.pruningOpts
 }
 
 // SetPruning sets the pruning strategy on the root store and all the sub-stores.
 // Note, calling SetPruning on the root store prior to LoadVersion or
 // LoadLatestVersion performs a no-op as the stores aren't mounted yet.
-func (rs *Store) SetPruning(pruningOpts pruningTypes.PruningOptions) {
+func (rs *Store) SetPruning(pruningOpts *pruningTypes.PruningOptions) {
 	rs.pruningOpts = pruningOpts
 }
 

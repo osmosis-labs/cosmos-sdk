@@ -46,8 +46,7 @@ type restoreDone struct {
 //    errors via io.Pipe.CloseWithError().
 type Manager struct {
 	store  *Store
-	snapshotInterval   uint64 // block interval between state sync snapshots
-	snapshotKeepRecent uint32 // recent state sync snapshots to keep
+	opts *types.SnapshotOptions
 	target types.Snapshotter
 	logger            log.Logger
 
@@ -60,11 +59,10 @@ type Manager struct {
 }
 
 // NewManager creates a new manager.
-func NewManager(store *Store, interval uint64, keepRecent uint32, target types.Snapshotter, logger log.Logger) *Manager {
+func NewManager(store *Store, opts *types.SnapshotOptions, target types.Snapshotter, logger log.Logger) *Manager {
 	return &Manager{
 		store:  store,
-		snapshotInterval: interval,
-		snapshotKeepRecent: keepRecent,
+		opts:  opts,
 		target: target,
 		logger: logger,
 	}
@@ -110,12 +108,12 @@ func (m *Manager) endLocked() {
 
 // GetInterval returns snapshot interval.
 func (m *Manager) GetInterval() uint64 {
-	return m.snapshotInterval
+	return m.opts.Interval
 }
 
 // GetKeepRecent returns snapshot keep-recent.
 func (m *Manager) GetKeepRecent() uint32 {
-	return m.snapshotKeepRecent
+	return m.opts.KeepRecent
 }
 
 // Create creates a snapshot and returns its metadata.
@@ -286,7 +284,7 @@ func (m *Manager) Snapshot(height int64) {
 
 // shouldTakeSnapshot returns true is snapshot should be taken at height.
 func (m *Manager) shouldTakeSnapshot(height int64) bool {
-	return m.snapshotInterval > 0 && uint64(height)%m.snapshotInterval == 0
+	return m.opts.Interval > 0 && uint64(height)%m.opts.Interval == 0
 }
 
 func (m *Manager) snapshot(height int64) {
@@ -304,10 +302,10 @@ func (m *Manager) snapshot(height int64) {
 
 	m.logger.Info("completed state snapshot", "height", height, "format", snapshot.Format)
 
-	if m.snapshotKeepRecent > 0 {  // TODO: make snapshotKeepRecent a member of snapshots.Manager
+	if m.opts.KeepRecent > 0 {  // TODO: make snapshotKeepRecent a member of snapshots.Manager
 		m.logger.Debug("pruning state snapshots")
 
-		pruned, err := m.Prune(m.snapshotKeepRecent)
+		pruned, err := m.Prune(m.opts.KeepRecent)
 		if err != nil {
 			m.logger.Error("Failed to prune state snapshots", "err", err)
 			return

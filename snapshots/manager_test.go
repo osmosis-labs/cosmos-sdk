@@ -12,14 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 )
 
-const (
-	defaultSnapshotInterval = 1500
-	defaltSnapshitKeepRecent = 2
-)
+var opts = types.NewSnapshotOptions(1500, 2)
 
 func TestManager_List(t *testing.T) {
 	store := setupStore(t)
-	manager := snapshots.NewManager(store, defaultSnapshotInterval, defaltSnapshitKeepRecent, nil, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, nil, log.NewNopLogger())
 
 	mgrList, err := manager.List()
 	require.NoError(t, err)
@@ -38,7 +35,7 @@ func TestManager_List(t *testing.T) {
 
 func TestManager_LoadChunk(t *testing.T) {
 	store := setupStore(t)
-	manager := snapshots.NewManager(store, defaultSnapshotInterval, defaltSnapshitKeepRecent, nil, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, nil, log.NewNopLogger())
 
 	// Existing chunk should return body
 	chunk, err := manager.LoadChunk(2, 1, 1)
@@ -66,7 +63,7 @@ func TestManager_Take(t *testing.T) {
 			{7, 8, 9},
 		},
 	}
-	manager := snapshots.NewManager(store, defaultSnapshotInterval, defaltSnapshitKeepRecent, snapshotter, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, snapshotter, log.NewNopLogger())
 
 	// nil manager should return error
 	_, err := (*snapshots.Manager)(nil).Create(1)
@@ -103,7 +100,7 @@ func TestManager_Take(t *testing.T) {
 
 func TestManager_Prune(t *testing.T) {
 	store := setupStore(t)
-	manager := snapshots.NewManager(store, defaultSnapshotInterval, defaltSnapshitKeepRecent, nil, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, nil, log.NewNopLogger())
 
 	pruned, err := manager.Prune(2)
 	require.NoError(t, err)
@@ -122,7 +119,7 @@ func TestManager_Prune(t *testing.T) {
 func TestManager_Restore(t *testing.T) {
 	store := setupStore(t)
 	target := &mockSnapshotter{}
-	manager := snapshots.NewManager(store, defaultSnapshotInterval, defaltSnapshitKeepRecent, target, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, target, log.NewNopLogger())
 
 	chunks := [][]byte{
 		{1, 2, 3},

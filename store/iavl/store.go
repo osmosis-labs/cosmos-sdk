@@ -144,13 +144,13 @@ func (st *Store) LastCommitID() types.CommitID {
 
 // SetPruning panics as pruning options should be provided at initialization
 // since IAVl accepts pruning options directly.
-func (st *Store) SetPruning(_ pruningTypes.PruningOptions) {
+func (st *Store) SetPruning(_ *pruningTypes.PruningOptions) {
 	panic("cannot set pruning options on an initialized IAVL store")
 }
 
 // SetPruning panics as pruning options should be provided at initialization
 // since IAVl accepts pruning options directly.
-func (st *Store) GetPruning() pruningTypes.PruningOptions {
+func (st *Store) GetPruning() *pruningTypes.PruningOptions {
 	panic("cannot get pruning options on an initialized IAVL store")
 }
 

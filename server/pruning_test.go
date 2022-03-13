@@ -13,7 +13,7 @@ func TestGetPruningOptionsFromFlags(t *testing.T) {
 	tests := []struct {
 		name            string
 		initParams      func() *viper.Viper
-		expectedOptions pruningTypes.PruningOptions
+		expectedOptions *pruningTypes.PruningOptions
 		wantErr         bool
 	}{
 		{
@@ -36,11 +36,7 @@ func TestGetPruningOptionsFromFlags(t *testing.T) {
 
 				return v
 			},
-			expectedOptions: pruningTypes.PruningOptions{
-				KeepRecent: 1234,
-				KeepEvery:  4321,
-				Interval:   10,
-			},
+			expectedOptions: pruningTypes.NewPruningOptions(1234, 4321, 10),
 		},
 		{
 			name: pruningTypes.PruningOptionDefault,

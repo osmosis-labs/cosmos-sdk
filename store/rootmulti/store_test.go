@@ -329,11 +329,7 @@ func TestParsePath(t *testing.T) {
 
 func TestMultiStoreRestart(t *testing.T) {
 	db := dbm.NewMemDB()
-	pruning := pruningTypes.PruningOptions{
-		KeepRecent: 2,
-		KeepEvery:  3,
-		Interval:   1,
-	}
+	pruning := pruningTypes.NewPruningOptions(2, 3, 1)
 	multi := newMultiStoreWithMounts(db, pruning)
 	err := multi.LoadLatestVersion()
 	require.Nil(t, err)
@@ -484,7 +480,7 @@ func TestMultiStore_Pruning(t *testing.T) {
 	testCases := []struct {
 		name        string
 		numVersions int64
-		po          pruningTypes.PruningOptions
+		po          *pruningTypes.PruningOptions
 		deleted     []int64
 		saved       []int64
 	}{
@@ -888,7 +884,7 @@ var (
 	testStoreKey3 = types.NewKVStoreKey("store3")
 )
 
-func newMultiStoreWithMounts(db dbm.DB, pruningOpts pruningTypes.PruningOptions) *Store {
+func newMultiStoreWithMounts(db dbm.DB, pruningOpts *pruningTypes.PruningOptions) *Store {
 	store := NewStore(db, log.NewNopLogger())
 	store.pruningOpts = pruningOpts
 
@@ -968,7 +964,7 @@ func newMultiStoreWithGeneratedData(db dbm.DB, stores uint8, storeKeys uint64) *
 	return multiStore
 }
 
-func newMultiStoreWithModifiedMounts(db dbm.DB, pruningOpts pruningTypes.PruningOptions) (*Store, *types.StoreUpgrades) {
+func newMultiStoreWithModifiedMounts(db dbm.DB, pruningOpts *pruningTypes.PruningOptions) (*Store, *types.StoreUpgrades) {
 	store := NewStore(db, log.NewNopLogger())
 	store.pruningOpts = pruningOpts
 

@@ -145,8 +145,8 @@ func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options 
 	}
 
 	app := setupBaseApp(t, append(options,
-		SetSnapshot(snapshotStore, snapshotInterval, 2),
-		SetPruning(sdk.PruningOptions{KeepEvery: 1}),
+		SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(snapshotInterval, 2)),
+		SetPruning(sdk.NewPruningOptions(0, 1, 0)),
 		routerOpt)...)
 
 	app.InitChain(abci.RequestInitChain{})
@@ -395,11 +395,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 
 func TestLoadVersionPruning(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOptions := pruningTypes.PruningOptions{
-		KeepRecent: 2,
-		KeepEvery:  3,
-		Interval:   1,
-	}
+	pruningOptions := sdk.NewPruningOptions(2, 3, 1)
 	pruningOpt := SetPruning(pruningOptions)
 	db := dbm.NewMemDB()
 	name := t.Name()
@@ -2060,34 +2056,34 @@ func TestBaseApp_Init(t *testing.T) {
 		},
 		"snapshot but no pruning": {
 			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, 1500, 2), // if no pruning is set, the default is keep-every=1
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)), // if no pruning is set, the default is keep-every=1
 			),
 			nil,
 		},
 		"pruning but no snapshot": {
 			NewBaseApp(name, logger, db, nil,
-				SetPruning(pruningTypes.NewPruningOptions(1, 1, 1)),
+				SetPruning(sdk.NewPruningOptions(1, 1, 1)),
 			),
 			nil,
 		},
 		"pruning-keep-every is a multiple of snapshot-interval": {
 			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, 9, 2),
-				SetPruning(pruningTypes.NewPruningOptions(1, 3, 1)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(9, 2)),
+				SetPruning(sdk.NewPruningOptions(1, 3, 1)),
 			),
 			nil,
 		},
 		"pruning-keep-every is 0 when snapshot is enabled": {
 			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, 9, 2),
-				SetPruning(pruningTypes.NewPruningOptions(1, 0, 1)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(9, 2)),
+				SetPruning(sdk.NewPruningOptions(1, 0, 1)),
 			),
 			errOptsZeroKeepRecentWithSnapshot(9),
 		},
 		"pruning-keep-every is not a multiple of snapshot-interval": {
 			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, 9, 2),
-				SetPruning(pruningTypes.NewPruningOptions(1, 2, 1)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(9, 2)),
+				SetPruning(sdk.NewPruningOptions(1, 2, 1)),
 			),
 			errOptsNotMutipleKeepRecentWithSnapshot(9, 2),
 		},

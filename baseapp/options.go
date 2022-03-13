@@ -16,7 +16,7 @@ import (
 // for options that need access to non-exported fields of the BaseApp
 
 // SetPruning sets a pruning option on the multistore associated with the app
-func SetPruning(opts sdk.PruningOptions) func(*BaseApp) {
+func SetPruning(opts *sdk.PruningOptions) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetPruning(opts) }
 }
 
@@ -69,8 +69,8 @@ func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
 }
 
 // SetSnapshot sets the snapshot store.
-func SetSnapshot(snapshotStore *snapshots.Store, interval uint64, keepRecent uint32) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshot(snapshotStore, interval, keepRecent) }
+func SetSnapshot(snapshotStore *snapshots.Store, opts *sdk.SnapshotOptions) func(*BaseApp) {
+	return func(app *BaseApp) { app.SetSnapshot(snapshotStore, opts) }
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -199,7 +199,7 @@ func (app *BaseApp) SetRouter(router sdk.Router) {
 }
 
 // SetSnapshot sets the snapshot store.
-func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, interval uint64, keepRecent uint32) {
+func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, opts *sdk.SnapshotOptions) {
 	if app.sealed {
 		panic("SetSnapshot() on sealed BaseApp")
 	}
@@ -207,7 +207,7 @@ func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, interval uint64,
 		app.snapshotManager = nil
 		return
 	}
-	app.snapshotManager = snapshots.NewManager(snapshotStore, interval, keepRecent, app.cms, app.logger)
+	app.snapshotManager = snapshots.NewManager(snapshotStore, opts, app.cms, app.logger)
 }
 
 // SetInterfaceRegistry sets the InterfaceRegistry.

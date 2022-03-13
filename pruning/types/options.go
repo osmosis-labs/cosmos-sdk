@@ -25,6 +25,9 @@ var (
 
 	// PruneNothing defines a pruning strategy where all heights are kept on disk.
 	PruneNothing = NewPruningOptions(0, 1, 0)
+
+	// PruneEmpty defines an undefined pruning strategy. It is to be returned by stores that do not support pruning. 
+	PruneUndefined = NewPruningOptions(0, 0, 0)
 )
 
 // PruningOptions defines the pruning strategy used when determining which
@@ -40,8 +43,8 @@ type PruningOptions struct {
 	Interval uint64
 }
 
-func NewPruningOptions(keepRecent, keepEvery, interval uint64) PruningOptions {
-	return PruningOptions{
+func NewPruningOptions(keepRecent, keepEvery, interval uint64) *PruningOptions {
+	return &PruningOptions{
 		KeepRecent: keepRecent,
 		KeepEvery:  keepEvery,
 		Interval:   interval,
@@ -62,7 +65,7 @@ func (po PruningOptions) Validate() error {
 	return nil
 }
 
-func NewPruningOptionsFromString(strategy string) PruningOptions {
+func NewPruningOptionsFromString(strategy string) *PruningOptions {
 	switch strategy {
 	case PruningOptionEverything:
 		return PruneEverything

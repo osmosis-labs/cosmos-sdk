@@ -7,11 +7,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/types"
 	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
+	snapshotTypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
 	PruningOptions = pruningTypes.PruningOptions
+	SnapshotOptions = snapshotTypes.SnapshotOptions
 )
 
 type (
@@ -193,4 +195,12 @@ type (
 
 func NewInfiniteGasMeter() GasMeter {
 	return types.NewInfiniteGasMeter()
+}
+
+func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshotTypes.SnapshotOptions {
+	return snapshotTypes.NewSnapshotOptions(interval, keepRecent)
+}
+
+func NewPruningOptions(keepRecent, keepEvery, interval uint64) *pruningTypes.PruningOptions {
+	return pruningTypes.NewPruningOptions(keepRecent, keepEvery, interval)
 }

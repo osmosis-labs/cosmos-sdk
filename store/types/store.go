@@ -23,8 +23,8 @@ type Committer interface {
 	Commit() CommitID
 	LastCommitID() CommitID
 
-	SetPruning(pruningTypes.PruningOptions)
-	GetPruning() pruningTypes.PruningOptions
+	SetPruning(*pruningTypes.PruningOptions)
+	GetPruning() *pruningTypes.PruningOptions
 }
 
 // Stores of MultiStore must implement CommitStore.
