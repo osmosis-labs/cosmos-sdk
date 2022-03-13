@@ -334,8 +334,10 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 		app.halt()
 	}
 
-	if app.snapshotInterval > 0 && uint64(header.Height)%app.snapshotInterval == 0 {
-		go app.snapshot(header.Height)
+	if app.snapshotManager == nil {
+		app.logger.Debug("snapshot manager is not configured")
+	} else {
+		app.snapshotManager.Snapshot(header.Height)
 	}
 
 	app.logger.Info("commited - baseapp", "height", commitID.Version, "commit_hash", commitID.Hash, "retain_height", retainHeight)
@@ -365,36 +367,6 @@ func (app *BaseApp) halt() {
 	// via SIGINT/SIGTERM signals.
 	app.logger.Info("failed to send SIGINT/SIGTERM; exiting...")
 	os.Exit(0)
-}
-
-// snapshot takes a snapshot of the current state and prunes any old snapshottypes.
-func (app *BaseApp) snapshot(height int64) {
-	if app.snapshotManager == nil {
-		app.logger.Info("snapshot manager not configured")
-		return
-	}
-
-	app.logger.Info("creating state snapshot", "height", height)
-
-	snapshot, err := app.snapshotManager.Create(uint64(height))
-	if err != nil {
-		app.logger.Error("failed to create state snapshot", "height", height, "err", err)
-		return
-	}
-
-	app.logger.Info("completed state snapshot", "height", height, "format", snapshot.Format)
-
-	if app.snapshotKeepRecent > 0 {
-		app.logger.Debug("pruning state snapshots")
-
-		pruned, err := app.snapshotManager.Prune(app.snapshotKeepRecent)
-		if err != nil {
-			app.logger.Error("Failed to prune state snapshots", "err", err)
-			return
-		}
-
-		app.logger.Debug("pruned state snapshots", "pruned", pruned)
-	}
 }
 
 // Query implements the ABCI interface. It delegates to CommitMultiStore if it
@@ -723,9 +695,13 @@ func (app *BaseApp) GetBlockRetentionHeight(commitHeight int64) int64 {
 		}
 	}
 
-	if app.snapshotInterval > 0 && app.snapshotKeepRecent > 0 {
-		v := commitHeight - int64((app.snapshotInterval * uint64(app.snapshotKeepRecent)))
-		retentionHeight = minNonZero(retentionHeight, v)
+	if app.snapshotManager != nil {
+		snapshotInterval := app.snapshotManager.GetInterval()
+		snapshotKeepRecent := app.snapshotManager.GetKeepRecent()
+		if snapshotInterval > 0 && snapshotKeepRecent > 0 {
+			v := commitHeight - int64((snapshotInterval * uint64(snapshotKeepRecent)))
+			retentionHeight = minNonZero(retentionHeight, v)
+		}
 	}
 
 	v := commitHeight - int64(app.minRetainBlocks)

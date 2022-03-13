@@ -6,15 +6,16 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/log"
 	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
+	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 )
 
 func checksums(slice [][]byte) [][]byte {
@@ -101,17 +102,12 @@ func (m *mockSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.Read
 // setupBusyManager creates a manager with an empty store that is busy creating a snapshot at height 1.
 // The snapshot will complete when the returned closer is called.
 func setupBusyManager(t *testing.T) *snapshots.Manager {
-	// ioutil.TempDir() is used instead of testing.T.TempDir()
-	// see https://github.com/cosmos/cosmos-sdk/pull/8475 for
-	// this change's rationale.
-	tempdir, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = os.RemoveAll(tempdir) })
+	tempdir := snaphotsTestUtil.GetTempDir(t)
 
 	store, err := snapshots.NewStore(db.NewMemDB(), tempdir)
 	require.NoError(t, err)
 	hung := newHungSnapshotter()
-	mgr := snapshots.NewManager(store, hung)
+	mgr := snapshots.NewManager(store, defaultSnapshotInterval, defaltSnapshitKeepRecent, hung, log.NewNopLogger())
 
 	go func() {
 		_, err := mgr.Create(1)

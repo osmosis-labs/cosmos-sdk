@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/tendermint/tendermint/libs/log"
+
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -44,7 +46,10 @@ type restoreDone struct {
 //    errors via io.Pipe.CloseWithError().
 type Manager struct {
 	store  *Store
+	snapshotInterval   uint64 // block interval between state sync snapshots
+	snapshotKeepRecent uint32 // recent state sync snapshots to keep
 	target types.Snapshotter
+	logger            log.Logger
 
 	mtx                sync.Mutex
 	operation          operation
@@ -55,10 +60,13 @@ type Manager struct {
 }
 
 // NewManager creates a new manager.
-func NewManager(store *Store, target types.Snapshotter) *Manager {
+func NewManager(store *Store, interval uint64, keepRecent uint32, target types.Snapshotter, logger log.Logger) *Manager {
 	return &Manager{
 		store:  store,
+		snapshotInterval: interval,
+		snapshotKeepRecent: keepRecent,
 		target: target,
+		logger: logger,
 	}
 }
 
@@ -98,6 +106,16 @@ func (m *Manager) endLocked() {
 	m.chRestoreDone = nil
 	m.restoreChunkHashes = nil
 	m.restoreChunkIndex = 0
+}
+
+// GetInterval returns snapshot interval.
+func (m *Manager) GetInterval() uint64 {
+	return m.snapshotInterval
+}
+
+// GetKeepRecent returns snapshot keep-recent.
+func (m *Manager) GetKeepRecent() uint32 {
+	return m.snapshotKeepRecent
 }
 
 // Create creates a snapshot and returns its metadata.
@@ -256,4 +274,45 @@ func (m *Manager) RestoreChunk(chunk []byte) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+// Snapshot takes a snapshot of the current state and prunes any old snapshottypes.
+func (m *Manager) Snapshot(height int64) {
+	if !m.shouldTakeSnapshot(height) {
+		return
+	}
+	go m.snapshot(height)
+}
+
+// shouldTakeSnapshot returns true is snapshot should be taken at height.
+func (m *Manager) shouldTakeSnapshot(height int64) bool {
+	return m.snapshotInterval > 0 && uint64(height)%m.snapshotInterval == 0
+}
+
+func (m *Manager) snapshot(height int64) {
+	if !m.shouldTakeSnapshot(height) {
+		return
+	}
+
+	m.logger.Info("creating state snapshot", "height", height)
+
+	snapshot, err := m.Create(uint64(height))
+	if err != nil {
+		m.logger.Error("failed to create state snapshot", "height", height, "err", err)
+		return
+	}
+
+	m.logger.Info("completed state snapshot", "height", height, "format", snapshot.Format)
+
+	if m.snapshotKeepRecent > 0 {  // TODO: make snapshotKeepRecent a member of snapshots.Manager
+		m.logger.Debug("pruning state snapshots")
+
+		pruned, err := m.Prune(m.snapshotKeepRecent)
+		if err != nil {
+			m.logger.Error("Failed to prune state snapshots", "err", err)
+			return
+		}
+
+		m.logger.Debug("pruned state snapshots", "pruned", pruned)
+	}
 }

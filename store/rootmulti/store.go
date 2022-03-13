@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"compress/zlib"
 	"encoding/binary"
-	"fmt"
 	"github.com/tendermint/tendermint/libs/log"
 	"io"
 	"math"
 	"sort"
 	"strings"
+	"fmt"
 
 	iavltree "github.com/cosmos/iavl"
 	protoio "github.com/gogo/protobuf/io"
@@ -390,7 +390,9 @@ func (rs *Store) Commit() types.CommitID {
 
 	var pruneErr error
 	defer func ()  {
+		rs.logger.Info("flushing metadata")
 		flushMetadata(rs.db, version, rs.lastCommitInfo, rs.pruneHeights)
+		rs.logger.Info("flushing metadata finished")
 		if pruneErr != nil {
 			panic(pruneErr)
 		}
@@ -414,6 +416,7 @@ func (rs *Store) Commit() types.CommitID {
 	if rs.pruningOpts.Interval > 0 && version%int64(rs.pruningOpts.Interval) == 0 {
 		rs.logger.Info("pruning", "height", version, "to_prune", rs.pruneHeights)
 		pruneErr = rs.pruneStores()
+		rs.logger.Info(fmt.Sprintf("prune end, height - %d\n", version))
 	}
 
 	hash, keys := rs.lastCommitInfo.Hash()

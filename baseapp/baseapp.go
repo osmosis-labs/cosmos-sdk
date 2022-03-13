@@ -30,6 +30,18 @@ const (
 )
 
 var (
+	errOptsSnapshotReqMultistore = errors.New("state sync snapshots require a rootmulti store")
+	errOptsZeroKeepRecentWithSnapshot = func(snapshotInterval uint64) error {
+		return fmt.Errorf(
+			"pruning-keep-every is 0. if snapspot interval (%v) is enabled, pruning-keep-every must be greater than 0 and snapsot interval is the multiple of pruning-keep-every",
+			snapshotInterval)
+	}
+	errOptsNotMutipleKeepRecentWithSnapshot = func(snapshotInterval, pruningKeepEvery uint64) error {
+		return fmt.Errorf(
+			"state sync snapshot interval %v must be a multiple of pruning keep every interval %v",
+			snapshotInterval, pruningKeepEvery)
+	}
+
 	_ abci.Application = (*BaseApp)(nil)
 )
 
@@ -69,8 +81,6 @@ type BaseApp struct { // nolint: maligned
 
 	// manages snapshots, i.e. dumps of app state at certain intervals
 	snapshotManager    *snapshots.Manager
-	snapshotInterval   uint64 // block interval between state sync snapshots
-	snapshotKeepRecent uint32 // recent state sync snapshots to keep
 
 	// volatile states:
 	//
@@ -303,17 +313,24 @@ func (app *BaseApp) init() error {
 	app.setCheckState(tmproto.Header{})
 	app.Seal()
 
-	// make sure the snapshot interval is a multiple of the pruning KeepEvery interval
-	if app.snapshotManager != nil && app.snapshotInterval > 0 {
-		rms, ok := app.cms.(*rootmulti.Store)
-		if !ok {
-			return errors.New("state sync snapshots require a rootmulti store")
-		}
-		pruningOpts := rms.GetPruning()
-		if pruningOpts.KeepEvery > 0 && app.snapshotInterval%pruningOpts.KeepEvery != 0 {
-			return fmt.Errorf(
-				"state sync snapshot interval %v must be a multiple of pruning keep every interval %v",
-				app.snapshotInterval, pruningOpts.KeepEvery)
+	if app.snapshotManager != nil {
+		snapshotInterval := app.snapshotManager.GetInterval()
+		if snapshotInterval > 0 {
+			rms, ok := app.cms.(*rootmulti.Store)
+			if !ok {
+				return errOptsSnapshotReqMultistore
+			}
+			pruningOpts := rms.GetPruning()
+	
+			// pruning-keep-every must be enabled if snapshot is on
+			if pruningOpts.KeepEvery == 0 {
+				return errOptsZeroKeepRecentWithSnapshot(snapshotInterval)
+			}
+	
+			// make sure the snapshot interval is a multiple of the pruning KeepEvery interval
+			if snapshotInterval%pruningOpts.KeepEvery != 0 {
+				return errOptsNotMutipleKeepRecentWithSnapshot(snapshotInterval, pruningOpts.KeepEvery)
+			}
 		}
 	}
 

@@ -26,6 +26,7 @@ import (
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	store "github.com/cosmos/cosmos-sdk/store/types"
+	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -143,8 +144,7 @@ func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options 
 	}
 
 	app := setupBaseApp(t, append(options,
-		SetSnapshotStore(snapshotStore),
-		SetSnapshotInterval(snapshotInterval),
+		SetSnapshot(snapshotStore, snapshotInterval, 2),
 		SetPruning(sdk.PruningOptions{KeepEvery: 1}),
 		routerOpt)...)
 
@@ -2039,4 +2039,60 @@ func TestBaseApp_EndBlock(t *testing.T) {
 	require.Len(t, res.GetValidatorUpdates(), 1)
 	require.Equal(t, int64(100), res.GetValidatorUpdates()[0].Power)
 	require.Equal(t, cp.Block.MaxGas, res.ConsensusParamUpdates.Block.MaxGas)
+}
+
+func TestBaseApp_Init(t *testing.T) {
+	db := dbm.NewMemDB()
+	name := t.Name()
+	logger := defaultLogger()
+
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	require.NoError(t, err)
+
+	testCases := map[string]struct {
+		bapp     *BaseApp
+		expected error
+	}{
+		"nil options": {
+			NewBaseApp(name, logger, db, nil),
+			nil,
+		},
+		"snapshot but no pruning": {
+			NewBaseApp(name, logger, db, nil,
+				SetSnapshot(snapshotStore, 1500, 2), // if no pruning is set, the default is keep-every=1
+			),
+			nil,
+		},
+		"pruning but no snapshot": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(store.NewPruningOptions(1, 1, 1)),
+			),
+			nil,
+		},
+		"pruning-keep-every is a multiple of snapshot-interval": {
+			NewBaseApp(name, logger, db, nil,
+				SetSnapshot(snapshotStore, 9, 2),
+				SetPruning(store.NewPruningOptions(1, 3, 1)),
+			),
+			nil,
+		},
+		"pruning-keep-every is 0 when snapshot is enabled": {
+			NewBaseApp(name, logger, db, nil,
+				SetSnapshot(snapshotStore, 9, 2),
+				SetPruning(store.NewPruningOptions(1, 0, 1)),
+			),
+			errOptsZeroKeepRecentWithSnapshot(9),
+		},
+		"pruning-keep-every is not a multiple of snapshot-interval": {
+			NewBaseApp(name, logger, db, nil,
+				SetSnapshot(snapshotStore, 9, 2),
+				SetPruning(store.NewPruningOptions(1, 2, 1)),
+			),
+			errOptsNotMutipleKeepRecentWithSnapshot(9, 2),
+		},
+	}
+
+	for _, tc := range testCases {
+		require.Equal(t, tc.expected, tc.bapp.init())
+	}
 }

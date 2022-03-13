@@ -68,19 +68,9 @@ func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
 	return func(app *BaseApp) { app.setInterBlockCache(cache) }
 }
 
-// SetSnapshotInterval sets the snapshot interval.
-func SetSnapshotInterval(interval uint64) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshotInterval(interval) }
-}
-
-// SetSnapshotKeepRecent sets the recent snapshots to keep.
-func SetSnapshotKeepRecent(keepRecent uint32) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshotKeepRecent(keepRecent) }
-}
-
-// SetSnapshotStore sets the snapshot store.
-func SetSnapshotStore(snapshotStore *snapshots.Store) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetSnapshotStore(snapshotStore) }
+// SetSnapshot sets the snapshot store.
+func SetSnapshot(snapshotStore *snapshots.Store, interval uint64, keepRecent uint32) func(*BaseApp) {
+	return func(app *BaseApp) { app.SetSnapshot(snapshotStore, interval, keepRecent) }
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -208,32 +198,16 @@ func (app *BaseApp) SetRouter(router sdk.Router) {
 	app.router = router
 }
 
-// SetSnapshotStore sets the snapshot store.
-func (app *BaseApp) SetSnapshotStore(snapshotStore *snapshots.Store) {
+// SetSnapshot sets the snapshot store.
+func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, interval uint64, keepRecent uint32) {
 	if app.sealed {
-		panic("SetSnapshotStore() on sealed BaseApp")
+		panic("SetSnapshot() on sealed BaseApp")
 	}
 	if snapshotStore == nil {
 		app.snapshotManager = nil
 		return
 	}
-	app.snapshotManager = snapshots.NewManager(snapshotStore, app.cms)
-}
-
-// SetSnapshotInterval sets the snapshot interval.
-func (app *BaseApp) SetSnapshotInterval(snapshotInterval uint64) {
-	if app.sealed {
-		panic("SetSnapshotInterval() on sealed BaseApp")
-	}
-	app.snapshotInterval = snapshotInterval
-}
-
-// SetSnapshotKeepRecent sets the number of recent snapshots to keep.
-func (app *BaseApp) SetSnapshotKeepRecent(snapshotKeepRecent uint32) {
-	if app.sealed {
-		panic("SetSnapshotKeepRecent() on sealed BaseApp")
-	}
-	app.snapshotKeepRecent = snapshotKeepRecent
+	app.snapshotManager = snapshots.NewManager(snapshotStore, interval, keepRecent, app.cms, app.logger)
 }
 
 // SetInterfaceRegistry sets the InterfaceRegistry.

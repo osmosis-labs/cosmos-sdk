@@ -9,6 +9,8 @@ import (
 	tmprototypes "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/cosmos/cosmos-sdk/snapshots"
+	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -16,6 +18,9 @@ func TestGetBlockRentionHeight(t *testing.T) {
 	logger := defaultLogger()
 	db := dbm.NewMemDB()
 	name := t.Name()
+
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	require.NoError(t, err)
 
 	testCases := map[string]struct {
 		bapp         *BaseApp
@@ -48,8 +53,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		"pruning state sync snapshot only": {
 			bapp: NewBaseApp(
 				name, logger, db, nil,
-				SetSnapshotInterval(50000),
-				SetSnapshotKeepRecent(3),
+				SetSnapshot(snapshotStore, 50000, 3),
 				SetMinRetainBlocks(1),
 			),
 			maxAgeBlocks: 0,
@@ -70,7 +74,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 				name, logger, db, nil,
 				SetPruning(sdk.PruningOptions{KeepEvery: 10000}),
 				SetMinRetainBlocks(400000),
-				SetSnapshotInterval(50000), SetSnapshotKeepRecent(3),
+				SetSnapshot(snapshotStore, 50000, 3),
 			),
 			maxAgeBlocks: 362880,
 			commitHeight: 499000,
@@ -81,7 +85,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 				name, logger, db, nil,
 				SetPruning(sdk.PruningOptions{KeepEvery: 10000}),
 				SetMinRetainBlocks(400000),
-				SetSnapshotInterval(50000), SetSnapshotKeepRecent(3),
+				SetSnapshot(snapshotStore, 50000, 3),
 			),
 			maxAgeBlocks: 362880,
 			commitHeight: 10000,
@@ -92,7 +96,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 				name, logger, db, nil,
 				SetPruning(sdk.PruningOptions{KeepEvery: 10000}),
 				SetMinRetainBlocks(0),
-				SetSnapshotInterval(50000), SetSnapshotKeepRecent(3),
+				SetSnapshot(snapshotStore, 50000, 3),
 			),
 			maxAgeBlocks: 362880,
 			commitHeight: 499000,
