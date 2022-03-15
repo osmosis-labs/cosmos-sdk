@@ -530,19 +530,19 @@ func TestMultiStore_PruningRestart(t *testing.T) {
 	pruneHeights := []int64{1, 2, 4, 5, 7}
 
 	// ensure we've persisted the current batch of heights to prune to the store's DB
-	ph, err := getPruningHeights(ms.db)
+	err := ms.pruningManager.LoadPruningHeights(ms.db)
 	require.NoError(t, err)
-	require.Equal(t, pruneHeights, ph)
+	require.Equal(t, pruneHeights, ms.pruningManager.GetPruningHeights())
 
 	// "restart"
 	ms = newMultiStoreWithMounts(db, pruningTypes.NewPruningOptions(2, 3, 11))
 	err = ms.LoadLatestVersion()
 	require.NoError(t, err)
-	require.Equal(t, pruneHeights, ms.pruneHeights)
+	require.Equal(t, pruneHeights, ms.pruningManager.GetPruningHeights())
 
 	// commit one more block and ensure the heights have been pruned
 	ms.Commit()
-	require.Empty(t, ms.pruneHeights)
+	require.Empty(t, ms.pruningManager.GetPruningHeights())
 
 	for _, v := range pruneHeights {
 		_, err := ms.CacheMultiStoreWithVersion(v)
@@ -886,7 +886,7 @@ var (
 
 func newMultiStoreWithMounts(db dbm.DB, pruningOpts *pruningTypes.PruningOptions) *Store {
 	store := NewStore(db, log.NewNopLogger())
-	store.pruningOpts = pruningOpts
+	store.SetPruning(pruningOpts)
 
 	store.MountStoreWithDB(testStoreKey1, types.StoreTypeIAVL, nil)
 	store.MountStoreWithDB(testStoreKey2, types.StoreTypeIAVL, nil)
@@ -966,7 +966,7 @@ func newMultiStoreWithGeneratedData(db dbm.DB, stores uint8, storeKeys uint64) *
 
 func newMultiStoreWithModifiedMounts(db dbm.DB, pruningOpts *pruningTypes.PruningOptions) (*Store, *types.StoreUpgrades) {
 	store := NewStore(db, log.NewNopLogger())
-	store.pruningOpts = pruningOpts
+	store.SetPruning(pruningOpts)
 
 	store.MountStoreWithDB(types.NewKVStoreKey("store1"), types.StoreTypeIAVL, nil)
 	store.MountStoreWithDB(types.NewKVStoreKey("restore2"), types.StoreTypeIAVL, nil)
