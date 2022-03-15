@@ -56,6 +56,11 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 		)
 	}
 
+	//Uses GT instead of GTE for consistency with other MinSelfDelegation checks
+	if msg.MinSelfDelegation.GT(msg.Value.Amount) {
+		return nil, types.ErrSelfDelegationBelowMinimum
+	}
+
 	if _, err := msg.Description.EnsureLength(); err != nil {
 		return nil, err
 	}
