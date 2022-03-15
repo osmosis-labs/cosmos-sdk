@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 )
@@ -36,10 +37,14 @@ var (
 			"pruning-keep-every is 0. if snapspot interval (%v) is enabled, pruning-keep-every must be greater than 0 and snapsot interval is the multiple of pruning-keep-every",
 			snapshotInterval)
 	}
-	errOptsNotMutipleKeepRecentWithSnapshot = func(snapshotInterval, pruningKeepEvery uint64) error {
+	errOptsNotEqualsPruningKeepRecentWithSnapshot = func(snapshotInterval, pruningKeepEvery uint64) error {
 		return fmt.Errorf(
-			"state sync snapshot interval %v must be a multiple of pruning keep every interval %v",
+			"state sync snapshot interval %v must be equal to the pruning keep every %v",
 			snapshotInterval, pruningKeepEvery)
+	}
+	errOptsPruningKeepRecentUndefinedSnapshot = func(pruningKeepEvery uint64) error {
+		return fmt.Errorf(
+			"state sync snapshot interval is undefined but must be equal to the pruning keep every %v", pruningKeepEvery)
 	}
 
 	_ abci.Application = (*BaseApp)(nil)
@@ -313,24 +318,26 @@ func (app *BaseApp) init() error {
 	app.setCheckState(tmproto.Header{})
 	app.Seal()
 
+	rms, ok := app.cms.(*rootmulti.Store)
+	if !ok {
+		return errOptsSnapshotReqMultistore
+	}
+
+	pruningOpts := rms.GetPruning()
 	if app.snapshotManager != nil {
 		snapshotInterval := app.snapshotManager.GetInterval()
-		if snapshotInterval > 0 {
-			rms, ok := app.cms.(*rootmulti.Store)
-			if !ok {
-				return errOptsSnapshotReqMultistore
-			}
-			pruningOpts := rms.GetPruning()
-	
+		if snapshotInterval > 0 && pruningOpts.KeepEvery == 0 {
 			// pruning-keep-every must be enabled if snapshot is on
-			if pruningOpts.KeepEvery == 0 {
-				return errOptsZeroKeepRecentWithSnapshot(snapshotInterval)
-			}
-	
-			// make sure the snapshot interval is a multiple of the pruning KeepEvery interval
-			if snapshotInterval%pruningOpts.KeepEvery != 0 {
-				return errOptsNotMutipleKeepRecentWithSnapshot(snapshotInterval, pruningOpts.KeepEvery)
-			}
+			return errOptsZeroKeepRecentWithSnapshot(snapshotInterval)
+		}
+		// if stretegy is not PruneNothing, pruning-keep-every must be equal to snapshot-interval
+		if pruningOpts != pruningTypes.PruneNothing && snapshotInterval != pruningOpts.KeepEvery {
+			return errOptsNotEqualsPruningKeepRecentWithSnapshot(snapshotInterval, pruningOpts.KeepEvery)
+		}
+	} else {
+		if pruningOpts != pruningTypes.PruneNothing && pruningOpts.KeepEvery > 0 {
+			// if strategy is not PruneNothing and snapshot is off, pruning-keep-every must be zero 
+			return errOptsPruningKeepRecentUndefinedSnapshot(pruningOpts.KeepEvery)
 		}
 	}
 

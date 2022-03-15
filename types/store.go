@@ -184,14 +184,20 @@ type (
 	GasConfig = types.GasConfig
 )
 
-func NewGasMeter(limit Gas) GasMeter {
-	return types.NewGasMeter(limit)
-}
-
 type (
 	ErrorOutOfGas    = types.ErrorOutOfGas
 	ErrorGasOverflow = types.ErrorGasOverflow
 )
+
+var (
+	PruneDefault = pruningTypes.PruneDefault
+	PruneEverything = pruningTypes.PruneEverything
+	PruneNothing = pruningTypes.PruneNothing
+)
+
+func NewGasMeter(limit Gas) GasMeter {
+	return types.NewGasMeter(limit)
+}
 
 func NewInfiniteGasMeter() GasMeter {
 	return types.NewInfiniteGasMeter()

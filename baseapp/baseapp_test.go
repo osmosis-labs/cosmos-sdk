@@ -22,11 +22,11 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -146,7 +146,7 @@ func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options 
 
 	app := setupBaseApp(t, append(options,
 		SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(snapshotInterval, 2)),
-		SetPruning(sdk.NewPruningOptions(0, 1, 0)),
+		SetPruning(sdk.PruneNothing),
 		routerOpt)...)
 
 	app.InitChain(abci.RequestInitChain{})
@@ -399,13 +399,18 @@ func TestLoadVersionPruning(t *testing.T) {
 	pruningOpt := SetPruning(pruningOptions)
 	db := dbm.NewMemDB()
 	name := t.Name()
-	app := NewBaseApp(name, logger, db, nil, pruningOpt)
+
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	require.NoError(t, err)
+	snapshotOpt := SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(3, 1))
+
+	app := NewBaseApp(name, logger, db, nil, pruningOpt, snapshotOpt)
 
 	// make a cap key and mount the store
 	capKey := sdk.NewKVStoreKey("key1")
 	app.MountStores(capKey)
 
-	err := app.LoadLatestVersion() // needed to make stores non-nil
+	err = app.LoadLatestVersion() // needed to make stores non-nil
 	require.Nil(t, err)
 
 	emptyCommitID := sdk.CommitID{}
@@ -437,7 +442,7 @@ func TestLoadVersionPruning(t *testing.T) {
 	}
 
 	// reload with LoadLatestVersion, check it loads last version
-	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app = NewBaseApp(name, logger, db, nil, pruningOpt, snapshotOpt)
 	app.MountStores(capKey)
 
 	err = app.LoadLatestVersion()
@@ -2050,42 +2055,13 @@ func TestBaseApp_Init(t *testing.T) {
 		bapp     *BaseApp
 		expected error
 	}{
-		"nil options": {
-			NewBaseApp(name, logger, db, nil),
-			nil,
-		},
 		"snapshot but no pruning": {
 			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)), // if no pruning is set, the default is keep-every=1
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
 			),
+			// if no pruning is set, the default is PruneNothing with keep-every=1
+			// This is the only exception when keep-every=1 is allowed with no snapshots
 			nil,
-		},
-		"pruning but no snapshot": {
-			NewBaseApp(name, logger, db, nil,
-				SetPruning(sdk.NewPruningOptions(1, 1, 1)),
-			),
-			nil,
-		},
-		"pruning-keep-every is a multiple of snapshot-interval": {
-			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(9, 2)),
-				SetPruning(sdk.NewPruningOptions(1, 3, 1)),
-			),
-			nil,
-		},
-		"pruning-keep-every is 0 when snapshot is enabled": {
-			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(9, 2)),
-				SetPruning(sdk.NewPruningOptions(1, 0, 1)),
-			),
-			errOptsZeroKeepRecentWithSnapshot(9),
-		},
-		"pruning-keep-every is not a multiple of snapshot-interval": {
-			NewBaseApp(name, logger, db, nil,
-				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(9, 2)),
-				SetPruning(sdk.NewPruningOptions(1, 2, 1)),
-			),
-			errOptsNotMutipleKeepRecentWithSnapshot(9, 2),
 		},
 	}
 

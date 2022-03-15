@@ -24,6 +24,7 @@ var (
 	PruneEverything = NewPruningOptions(10, 0, 10)
 
 	// PruneNothing defines a pruning strategy where all heights are kept on disk.
+	// This is the only stretegy where KeepEvery=1 is allowed with state-sync snapshots disabled.
 	PruneNothing = NewPruningOptions(0, 1, 0)
 
 	// PruneEmpty defines an undefined pruning strategy. It is to be returned by stores that do not support pruning. 
