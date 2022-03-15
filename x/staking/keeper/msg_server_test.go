@@ -25,6 +25,7 @@ func TestCreateValidatorWithLessThanMinCommission(t *testing.T) {
 	// set min commission rate to non-zero
 	params := app.StakingKeeper.GetParams(ctx)
 	params.MinCommissionRate = sdk.NewDecWithPrec(1, 2)
+	params.MinSelfDelegation = sdk.NewInt(0)
 	app.StakingKeeper.SetParams(ctx, params)
 
 	// create validator with 0% commission
@@ -65,7 +66,7 @@ func TestCreateValidatorWithLessThanGlobalMinSelfDelegation(t *testing.T) {
 	// set min commission rate and min self delegation to non-zero
 	params := app.StakingKeeper.GetParams(ctx)
 	params.MinCommissionRate = sdk.NewDecWithPrec(1, 2)
-	params.MinSelfDelegation = sdk.OneInt()
+	params.MinSelfDelegation = sdk.NewInt(5)
 	app.StakingKeeper.SetParams(ctx, params)
 
 	// create two validators with 0% commission and self delegations that are above and below the minimum, respectively
@@ -80,10 +81,11 @@ func TestCreateValidatorWithLessThanGlobalMinSelfDelegation(t *testing.T) {
 	msg2, err := stakingtypes.NewMsgCreateValidator(
 		sdk.ValAddress(addrs[1]),
 		valConsPk2,
-		sdk.NewInt64Coin(sdk.DefaultBondDenom, 0),
+		sdk.NewInt64Coin(sdk.DefaultBondDenom, 10),
 		stakingtypes.Description{},
 		stakingtypes.NewCommissionRates(sdk.NewDec(0), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0)),
-		params.MinSelfDelegation)
+		// input minimum self delegation that is less than the allowed global minimum
+		sdk.OneInt())
 	require.NoError(t, err)
 
 	sh := staking.NewHandler(app.StakingKeeper)

@@ -99,6 +99,13 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 
 	validator.MinSelfDelegation = msg.MinSelfDelegation
 
+	globalMinSelfDelegation := k.MinSelfDelegation(ctx)
+
+	//Minimum validator self delegation must be greater than or equal to global minimum
+	if globalMinSelfDelegation.GT(validator.MinSelfDelegation) {
+		return nil, types.ErrMinSelfDelegationBelowMinimum
+	}
+
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
 	k.SetNewValidatorByPowerIndex(ctx, validator)
@@ -161,6 +168,13 @@ func (k msgServer) EditValidator(goCtx context.Context, msg *types.MsgEditValida
 		k.BeforeValidatorModified(ctx, valAddr)
 
 		validator.Commission = commission
+	}
+
+	globalMinSelfDelegation := k.MinSelfDelegation(ctx)
+
+	//Minimum validator self delegation must be greater than or equal to global minimum
+	if globalMinSelfDelegation.GT(validator.MinSelfDelegation) {
+		return nil, types.ErrMinSelfDelegationBelowMinimum
 	}
 
 	if msg.MinSelfDelegation != nil {
