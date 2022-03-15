@@ -115,6 +115,10 @@ func (ms multiStore) GetStoreType() sdk.StoreType {
 	panic("not implemented")
 }
 
+func (ms multiStore) PruneHeight(height int64) {
+	panic("not implemented")
+}
+
 func (ms multiStore) SetInterBlockCache(_ sdk.MultiStorePersistentCache) {
 	panic("not implemented")
 }

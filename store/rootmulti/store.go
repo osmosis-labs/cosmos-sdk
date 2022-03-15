@@ -308,6 +308,14 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 	return deleteKVStore(oldDB)
 }
 
+// PruneHeight prunes the given height according to the prune strategy.
+// If PruneNothing, this is a no-op.
+// If other strategy, this height is persisted until it is 
+// less than <current height> - KeepRecent and <current height> % Interval == 0
+func (rs *Store) PruneHeight(height int64) {
+
+}
+
 // SetInterBlockCache sets the Store's internal inter-block (persistent) cache.
 // When this is defined, all CommitKVStores will be wrapped with their respective
 // inter-block cache.

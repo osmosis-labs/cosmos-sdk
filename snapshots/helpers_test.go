@@ -60,6 +60,7 @@ func readChunks(chunks <-chan io.ReadCloser) [][]byte {
 
 type mockSnapshotter struct {
 	chunks [][]byte
+	prunedHeights map[int64]struct{}
 }
 
 func (m *mockSnapshotter) Restore(
@@ -87,6 +88,10 @@ func (m *mockSnapshotter) Restore(
 	return nil
 }
 
+func (m *mockSnapshotter) PruneHeight(height int64) {
+	m.prunedHeights[height] = struct{}{}
+}
+
 func (m *mockSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, error) {
 	if format == 0 {
 		return nil, types.ErrUnknownFormat
@@ -112,6 +117,8 @@ func setupBusyManager(t *testing.T) *snapshots.Manager {
 	go func() {
 		_, err := mgr.Create(1)
 		require.NoError(t, err)
+		_, didPruneHeight := hung.prunedHeights[1]
+		require.True(t, didPruneHeight)
 	}()
 	time.Sleep(10 * time.Millisecond)
 	t.Cleanup(hung.Close)
@@ -122,11 +129,13 @@ func setupBusyManager(t *testing.T) *snapshots.Manager {
 // hungSnapshotter can be used to test operations in progress. Call close to end the snapshot.
 type hungSnapshotter struct {
 	ch chan struct{}
+	prunedHeights map[int64]struct{}
 }
 
 func newHungSnapshotter() *hungSnapshotter {
 	return &hungSnapshotter{
 		ch: make(chan struct{}),
+		prunedHeights: make(map[int64]struct{}),
 	}
 }
 
@@ -139,6 +148,10 @@ func (m *hungSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.Read
 	ch := make(chan io.ReadCloser, 1)
 	ch <- ioutil.NopCloser(bytes.NewReader([]byte{}))
 	return ch, nil
+}
+
+func (m *hungSnapshotter) PruneHeight(height int64) {
+	m.prunedHeights[height] = struct{}{}
 }
 
 func (m *hungSnapshotter) Restore(

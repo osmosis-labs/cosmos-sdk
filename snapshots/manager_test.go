@@ -62,6 +62,7 @@ func TestManager_Take(t *testing.T) {
 			{4, 5, 6},
 			{7, 8, 9},
 		},
+		prunedHeights: make(map[int64]struct{}),
 	}
 	manager := snapshots.NewManager(store, opts, snapshotter, log.NewNopLogger())
 
@@ -72,10 +73,15 @@ func TestManager_Take(t *testing.T) {
 	// creating a snapshot at a lower height than the latest should error
 	_, err = manager.Create(3)
 	require.Error(t, err)
+	_, didPruneHeight := snapshotter.prunedHeights[3]
+	require.True(t, didPruneHeight)
 
 	// creating a snapshot at a higher height should be fine, and should return it
 	snapshot, err := manager.Create(5)
 	require.NoError(t, err)
+	_, didPruneHeight = snapshotter.prunedHeights[5]
+	require.True(t, didPruneHeight)
+
 	assert.Equal(t, &types.Snapshot{
 		Height: 5,
 		Format: types.CurrentFormat,
@@ -118,7 +124,9 @@ func TestManager_Prune(t *testing.T) {
 
 func TestManager_Restore(t *testing.T) {
 	store := setupStore(t)
-	target := &mockSnapshotter{}
+	target := &mockSnapshotter{
+		prunedHeights: make(map[int64]struct{}),
+	}
 	manager := snapshots.NewManager(store, opts, target, log.NewNopLogger())
 
 	chunks := [][]byte{
@@ -165,6 +173,8 @@ func TestManager_Restore(t *testing.T) {
 	// While the restore is in progress, any other operations fail
 	_, err = manager.Create(4)
 	require.Error(t, err)
+	_, didPruneHeight := target.prunedHeights[4]
+	require.True(t, didPruneHeight)
 
 	_, err = manager.Prune(1)
 	require.Error(t, err)
