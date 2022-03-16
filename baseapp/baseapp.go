@@ -334,14 +334,15 @@ func (app *BaseApp) init() error {
 		snapshotInterval := app.snapshotManager.GetInterval()
 
 		// pruning-keep-every must be enabled if snapshot is on
-		if pruningType != pruningTypes.Everything && snapshotInterval > 0 && pruningOpts.KeepEvery == 0 {
+		if snapshotInterval > 0 && pruningOpts.KeepEvery == 0 && pruningType == pruningTypes.Custom {
 			return errOptsZeroKeepRecentWithSnapshot(snapshotInterval)
 		}
+		// snapshot-interval must be enabled if pruning-keep-every is
 		if snapshotInterval == 0 && pruningOpts.KeepEvery > 0 {
 			return errOptsNonZeroKeepRecentWithZeroSnapshot(pruningOpts.KeepEvery)
 		}
-		// if strategy is not PruneNothing or PruneEverything, pruning-keep-every must be equal to snapshot-interval
-		if pruningType != pruningTypes.Nothing && pruningType != pruningTypes.Everything && snapshotInterval != pruningOpts.KeepEvery {
+		// if types is custom, pruning-keep-every must be equal to snapshot-interval
+		if snapshotInterval != pruningOpts.KeepEvery && pruningType == pruningTypes.Custom {
 			return errOptsNotEqualsPruningKeepRecentWithSnapshot(snapshotInterval, pruningOpts.KeepEvery)
 		}
 	} else {

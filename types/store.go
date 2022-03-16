@@ -200,7 +200,3 @@ func NewInfiniteGasMeter() GasMeter {
 func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshotTypes.SnapshotOptions {
 	return snapshotTypes.NewSnapshotOptions(interval, keepRecent)
 }
-
-func NewCustomPruningOptions(keepRecent, keepEvery, interval uint64) *pruningTypes.PruningOptions {
-	return pruningTypes.NewCustomPruningOptions(keepRecent, keepEvery, interval)
-}

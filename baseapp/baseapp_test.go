@@ -404,7 +404,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 
 func TestLoadVersionPruning(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOptions := sdk.NewCustomPruningOptions(2, 3, 1)
+	pruningOptions := pruningTypes.NewCustomPruningOptions(2, 3, 1)
 	pruningOpt := SetPruning(pruningOptions)
 	db := dbm.NewMemDB()
 	name := t.Name()
@@ -1839,92 +1839,91 @@ func TestListSnapshots(t *testing.T) {
 	}}, resp)
 }
 
-func TestSnapshotWithPruning_CustomPruning(t *testing.T) {
+func TestSnapshotWithPruning(t *testing.T) {
 	testcases := map[string]struct {
 		config *setupConfig
 		expectedSnapshots []*abci.Snapshot
 		expectedErr error
 	} {
-		// "error pruning-keep-every and snapshot-interval mismatch": {
-		// 	config: &setupConfig{
-		// 		blocks: 0, 
-		// 		blockTxs: 0,
-		// 		snapshotInterval: 1,
-		// 		snapshotKeepEvery: 2,
-		// 		pruningOpts: sdk.NewPruningOptions(1, 5, 1),
-		// 	},
-		// 	expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(1, 5),
-		// },
-		// "error pruning-keep-every is non-zero when snapshot-interval is": {
-		// 	config: &setupConfig{
-		// 		blocks: 0, 
-		// 		blockTxs: 0,
-		// 		snapshotInterval: 0,
-		// 		snapshotKeepEvery: 0,
-		// 		pruningOpts: sdk.NewPruningOptions(1, 1, 1),
-		// 	},
-		// 	expectedErr: errOptsNonZeroKeepRecentWithZeroSnapshot(1),
-		// },
-		// "error pruning-keep-every does not equal snapshot-interval": {
-		// 	config: &setupConfig{
-		// 		blocks: 0, 
-		// 		blockTxs: 0,
-		// 		snapshotInterval: 5,
-		// 		snapshotKeepEvery: 1,
-		// 		pruningOpts: sdk.NewPruningOptions(1, 4, 1),
-		// 	},
-		// 	expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(5, 4),
-		// },
-		// "prune nothing with snapshot": {
-		// 	config: &setupConfig{
-		// 		blocks: 20, 
-		// 		blockTxs: 2,
-		// 		snapshotInterval: 5,
-		// 		snapshotKeepEvery: 1,
-		// 		pruningOpts: sdk.PruneNothing,
-		// 	},
-		// 	expectedSnapshots: []*abci.Snapshot{
-		// 		{Height: 20, Format: 1, Chunks: 5},
-		// 	},
-		// },
-		// "prune everything with snapshot": {
-		// 	config: &setupConfig{
-		// 		blocks: 20, 
-		// 		blockTxs: 2,
-		// 		snapshotInterval: 5,
-		// 		snapshotKeepEvery: 1,
-		// 		pruningOpts: sdk.PruneEverything,
-		// 	},
-		// 	expectedSnapshots: []*abci.Snapshot{
-		// 		{Height: 20, Format: 1, Chunks: 5},
-		// 	},
-		// },
-		
-		// "default pruning with snapshot": {
-		// 	config: &setupConfig{
-		// 		blocks: 20, 
-		// 		blockTxs: 2,
-		// 		snapshotInterval: 5,
-		// 		snapshotKeepEvery: 1,
-		// 		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Default),
-		// 	},
-		// 	expectedSnapshots: []*abci.Snapshot{
-		// 		{Height: 20, Format: 1, Chunks: 5},
-		// 	},
-		// },
-		// "custom": {
-		// 	config: &setupConfig{
-		// 		blocks: 20, 
-		// 		blockTxs: 2,
-		// 		snapshotInterval: 5,
-		// 		snapshotKeepEvery: 2,
-		// 		pruningOpts: sdk.NewPruningOptions(10, 5, 3),
-		// 	},
-		// 	expectedSnapshots: []*abci.Snapshot{
-		// 		{Height: 20, Format: 1, Chunks: 5},
-		// 		{Height: 15, Format: 1, Chunks: 4},
-		// 	},
-		// },
+		"error pruning-keep-every and snapshot-interval mismatch": {
+			config: &setupConfig{
+				blocks: 0, 
+				blockTxs: 0,
+				snapshotInterval: 1,
+				snapshotKeepEvery: 2,
+				pruningOpts: pruningTypes.NewCustomPruningOptions(1, 5, 1),
+			},
+			expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(1, 5),
+		},
+		"error pruning-keep-every is non-zero when snapshot-interval is": {
+			config: &setupConfig{
+				blocks: 0, 
+				blockTxs: 0,
+				snapshotInterval: 0,
+				snapshotKeepEvery: 0,
+				pruningOpts: pruningTypes.NewCustomPruningOptions(1, 1, 1),
+			},
+			expectedErr: errOptsNonZeroKeepRecentWithZeroSnapshot(1),
+		},
+		"error pruning-keep-every does not equal snapshot-interval": {
+			config: &setupConfig{
+				blocks: 0, 
+				blockTxs: 0,
+				snapshotInterval: 5,
+				snapshotKeepEvery: 1,
+				pruningOpts: pruningTypes.NewCustomPruningOptions(1, 4, 1),
+			},
+			expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(5, 4),
+		},
+		"prune nothing with snapshot": {
+			config: &setupConfig{
+				blocks: 20, 
+				blockTxs: 2,
+				snapshotInterval: 5,
+				snapshotKeepEvery: 1,
+				pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
+			},
+			expectedSnapshots: []*abci.Snapshot{
+				{Height: 20, Format: 1, Chunks: 5},
+			},
+		},
+		"prune everything with snapshot": {
+			config: &setupConfig{
+				blocks: 20, 
+				blockTxs: 2,
+				snapshotInterval: 5,
+				snapshotKeepEvery: 1,
+				pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Everything),
+			},
+			expectedSnapshots: []*abci.Snapshot{
+				{Height: 20, Format: 1, Chunks: 5},
+			},
+		},
+		"default pruning with snapshot": {
+			config: &setupConfig{
+				blocks: 20, 
+				blockTxs: 2,
+				snapshotInterval: 5,
+				snapshotKeepEvery: 1,
+				pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Default),
+			},
+			expectedSnapshots: []*abci.Snapshot{
+				{Height: 20, Format: 1, Chunks: 5},
+			},
+		},
+		"custom": {
+			config: &setupConfig{
+				blocks: 20, 
+				blockTxs: 2,
+				snapshotInterval: 5,
+				snapshotKeepEvery: 2,
+				pruningOpts: pruningTypes.NewCustomPruningOptions(10, 5, 3),
+			},
+			expectedSnapshots: []*abci.Snapshot{
+				{Height: 20, Format: 1, Chunks: 5},
+				{Height: 15, Format: 1, Chunks: 4},
+			},
+		},
 	}
 
 	for name, tc := range testcases {
@@ -1950,30 +1949,36 @@ func TestSnapshotWithPruning_CustomPruning(t *testing.T) {
 			fmt.Println(resp)
 			assert.Equal(t, abci.ResponseListSnapshots{Snapshots: tc.expectedSnapshots}, resp)
 
-			// validate that heights were pruned correctly
+			// Validate that heights were pruned correctly by querying the state at the last height from that should be present relative to latest
+			// and the first height that should be pruned.
+			// 
+			// Exceptions:
+			//   * Prune everything: should only be able to query latest height
+			//   * Prune nothing: should be able to query all heights (we only test first and latest)
+			//   * Prunde default: should be able to query all heights (we only test first and latest)
+			//      * The reason for default behaving this way is that we only commit 20 heights but default has 100_000 keep-recent
 			var lastExistingHeight int64
 			if tc.config.pruningOpts.GetType() == pruningTypes.Nothing {
 				lastExistingHeight = 1
-			} else if tc.config.pruningOpts.GetType() == pruningTypes.Everything {
+			} else if tc.config.pruningOpts.GetType() == pruningTypes.Everything || tc.config.pruningOpts.GetType() == pruningTypes.Default {
 				lastExistingHeight = int64(tc.config.blocks)
 			} else {
-				// Integer division rounds down so by multiplying back we get the last height at which we prune
+				// Integer division rounds down so by multiplying back we get the last height at which we pruned
 				lastExistingHeight = int64((tc.config.blocks / tc.config.pruningOpts.Interval) * tc.config.pruningOpts.Interval - tc.config.pruningOpts.KeepRecent)
 			}
 
 			res := app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight})
-			require.NotNil(t, res)
-			require.NotNil(t, res.Value)
+			require.NotNil(t, res, "height: %d", lastExistingHeight)
+			require.NotNil(t, res.Value, "height: %d", lastExistingHeight)
 
 			res = app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight - 1})
-			require.NotNil(t, res)
-			if tc.config.pruningOpts.GetType() == pruningTypes.Nothing {
+			require.NotNil(t, res, "height: %d", lastExistingHeight - 1)
+			if tc.config.pruningOpts.GetType() == pruningTypes.Nothing || tc.config.pruningOpts.GetType() == pruningTypes.Default {
 				// With prune nothing, we query height 0 which translates to the latest height.
-				require.NotNil(t, res)
-				require.NotNil(t, res.Value)
+				require.NotNil(t, res.Value, "height: %d", lastExistingHeight - 1)
 			} else {
 				require.Nil(t, res.Value)
-				require.Equal(t, iavl.ErrVersionDoesNotExist.Error(), res.Log)
+				require.Equal(t, iavl.ErrVersionDoesNotExist.Error(), res.Log, "height: %d", lastExistingHeight - 1)
 			}
 		})
 	}
