@@ -116,6 +116,14 @@ func (m *Manager) GetKeepRecent() uint32 {
 	return m.opts.KeepRecent
 }
 
+// GetSnapshotBlockRetentionHeights returns the number of heights needed
+// for block retention. Blocks since the oldest available snapshot must be
+// available for state sync nodes to catch up (oldest because a node may be
+// restoring an old snapshot while a new snapshot was taken).
+func (m *Manager) GetSnapshotBlockRetentionHeights() int64{
+	return int64(m.opts.Interval * uint64(m.opts.KeepRecent))
+}
+
 // Create creates a snapshot and returns its metadata.
 func (m *Manager) Create(height uint64) (*types.Snapshot, error) {
 	if m == nil {
