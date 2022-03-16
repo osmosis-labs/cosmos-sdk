@@ -43,6 +43,14 @@ type paramStore struct {
 	db *dbm.MemDB
 }
 
+type setupConfig struct {
+	blocks uint 
+	blockTxs int
+	snapshotInterval uint64 
+	snapshotKeepEvery uint32
+	pruningOpts *sdk.PruningOptions
+}
+
 func (ps *paramStore) Set(_ sdk.Context, key []byte, value interface{}) {
 	bz, err := json.Marshal(value)
 	if err != nil {
@@ -123,7 +131,7 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
 }
 
 // simple one store baseapp with data and snapshots. Each tx is 1 MB in size (uncompressed).
-func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options ...func(*BaseApp)) (*BaseApp, func()) {
+func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, func()) {
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 	routerOpt := func(bapp *BaseApp) {
@@ -134,7 +142,6 @@ func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options 
 		}))
 	}
 
-	snapshotInterval := uint64(2)
 	snapshotTimeout := 1 * time.Minute
 	snapshotDir, err := ioutil.TempDir("", "baseapp")
 	require.NoError(t, err)
@@ -144,18 +151,15 @@ func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options 
 		os.RemoveAll(snapshotDir)
 	}
 
-	app := setupBaseApp(t, append(options,
-		SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(snapshotInterval, 2)),
-		SetPruning(sdk.PruneNothing),
-		routerOpt)...)
+	app := setupBaseApp(t, routerOpt, SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(config.snapshotInterval, uint32(config.snapshotKeepEvery))), SetPruning(config.pruningOpts))
 
 	app.InitChain(abci.RequestInitChain{})
 
 	r := rand.New(rand.NewSource(3920758213583))
 	keyCounter := 0
-	for height := int64(1); height <= int64(blocks); height++ {
+	for height := int64(1); height <= int64(config.blocks); height++ {
 		app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: height}})
-		for txNum := 0; txNum < blockTxs; txNum++ {
+		for txNum := 0; txNum < config.blockTxs; txNum++ {
 			tx := txTest{Msgs: []sdk.Msg{}}
 			for msgNum := 0; msgNum < 100; msgNum++ {
 				key := []byte(fmt.Sprintf("%v", keyCounter))
@@ -174,7 +178,7 @@ func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options 
 		app.Commit()
 
 		// Wait for snapshot to be taken, since it happens asynchronously.
-		if uint64(height)%snapshotInterval == 0 {
+		if uint64(height)%config.snapshotInterval == 0 {
 			start := time.Now()
 			for {
 				if time.Since(start) > snapshotTimeout {
@@ -1790,7 +1794,15 @@ func TestGetMaximumBlockGas(t *testing.T) {
 }
 
 func TestListSnapshots(t *testing.T) {
-	app, teardown := setupBaseAppWithSnapshots(t, 5, 4)
+	setupConfig := &setupConfig{
+		blocks: 5, 
+		blockTxs: 4,
+		snapshotInterval: 2,
+		snapshotKeepEvery: 2,
+		pruningOpts: sdk.PruneNothing,
+	}
+
+	app, teardown := setupBaseAppWithSnapshots(t, setupConfig)
 	defer teardown()
 
 	resp := app.ListSnapshots(abci.RequestListSnapshots{})
@@ -1807,7 +1819,14 @@ func TestListSnapshots(t *testing.T) {
 }
 
 func TestLoadSnapshotChunk(t *testing.T) {
-	app, teardown := setupBaseAppWithSnapshots(t, 2, 5)
+	setupConfig := &setupConfig{
+		blocks: 2, 
+		blockTxs: 5,
+		snapshotInterval: 2,
+		snapshotKeepEvery: 2,
+		pruningOpts: sdk.PruneNothing,
+	}
+	app, teardown := setupBaseAppWithSnapshots(t, setupConfig)
 	defer teardown()
 
 	testcases := map[string]struct {
@@ -1843,7 +1862,14 @@ func TestLoadSnapshotChunk(t *testing.T) {
 
 func TestOfferSnapshot_Errors(t *testing.T) {
 	// Set up app before test cases, since it's fairly expensive.
-	app, teardown := setupBaseAppWithSnapshots(t, 0, 0)
+	setupConfig := &setupConfig{
+		blocks: 0, 
+		blockTxs: 0,
+		snapshotInterval: 2,
+		snapshotKeepEvery: 2,
+		pruningOpts: sdk.PruneNothing,
+	}
+	app, teardown := setupBaseAppWithSnapshots(t, setupConfig)
 	defer teardown()
 
 	m := snapshottypes.Metadata{ChunkHashes: [][]byte{{1}, {2}, {3}}}
@@ -1898,10 +1924,24 @@ func TestOfferSnapshot_Errors(t *testing.T) {
 }
 
 func TestApplySnapshotChunk(t *testing.T) {
-	source, teardown := setupBaseAppWithSnapshots(t, 4, 10)
+	setupConfig1 := &setupConfig{
+		blocks: 4, 
+		blockTxs: 10,
+		snapshotInterval: 2,
+		snapshotKeepEvery: 2,
+		pruningOpts: sdk.PruneNothing,
+	}
+	source, teardown := setupBaseAppWithSnapshots(t, setupConfig1)
 	defer teardown()
 
-	target, teardown := setupBaseAppWithSnapshots(t, 0, 0)
+	setupConfig2 := &setupConfig{
+		blocks: 0, 
+		blockTxs: 0,
+		snapshotInterval: 2,
+		snapshotKeepEvery: 2,
+		pruningOpts: sdk.PruneNothing,
+	}
+	target, teardown := setupBaseAppWithSnapshots(t, setupConfig2)
 	defer teardown()
 
 	// Fetch latest snapshot to restore
