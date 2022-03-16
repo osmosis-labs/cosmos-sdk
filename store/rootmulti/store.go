@@ -313,7 +313,7 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 // If other strategy, this height is persisted until it is 
 // less than <current height> - KeepRecent and <current height> % Interval == 0
 func (rs *Store) PruneHeight(height int64) {
-
+	// TODO
 }
 
 // SetInterBlockCache sets the Store's internal inter-block (persistent) cache.
@@ -407,7 +407,7 @@ func (rs *Store) Commit() types.CommitID {
 		}
 	}()
 
-	rs.handlePruning(previousHeight, version)
+	pruneErr = rs.handlePruning(previousHeight, version)
 
 	hash, keys := rs.lastCommitInfo.Hash()
 	rs.logger.Info("calculated commit hash", "height", version, "commit_hash", hash, "keys", keys)
