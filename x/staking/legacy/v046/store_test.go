@@ -23,12 +23,12 @@ func TestStoreMigration(t *testing.T) {
 	paramstore := paramtypes.NewSubspace(encCfg.Marshaler, encCfg.Amino, stakingKey, tStakingKey, "staking")
 
 	// Check no params
-	require.False(t, paramstore.Has(ctx, types.KeyMinCommissionRate))
+	require.False(t, paramstore.Has(ctx, types.KeyMinSelfDelegation))
 
 	// Run migrations.
 	err := v046staking.MigrateStore(ctx, paramstore)
 	require.NoError(t, err)
 
 	// Make sure the new params are set.
-	require.True(t, paramstore.Has(ctx, types.KeyMinCommissionRate))
+	require.True(t, paramstore.Has(ctx, types.KeyMinSelfDelegation))
 }
