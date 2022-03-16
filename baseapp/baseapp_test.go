@@ -1853,7 +1853,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 				snapshotKeepEvery: 2,
 				pruningOpts: pruningTypes.NewCustomPruningOptions(1, 5, 1),
 			},
-			expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(1, 5),
+			expectedErr: errOptsSnapshotIntervalNotEqualsPruningKeepRecent(1, 5),
 		},
 		"error pruning-keep-every is non-zero when snapshot-interval is": {
 			config: &setupConfig{
@@ -1863,7 +1863,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 				snapshotKeepEvery: 0,
 				pruningOpts: pruningTypes.NewCustomPruningOptions(1, 1, 1),
 			},
-			expectedErr: errOptsNonZeroKeepRecentWithZeroSnapshot(1),
+			expectedErr: errOptsNonZeroKeepEveryWithZeroSnapshot(1),
 		},
 		"error pruning-keep-every does not equal snapshot-interval": {
 			config: &setupConfig{
@@ -1873,7 +1873,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 				snapshotKeepEvery: 1,
 				pruningOpts: pruningTypes.NewCustomPruningOptions(1, 4, 1),
 			},
-			expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(5, 4),
+			expectedErr: errOptsSnapshotIntervalNotEqualsPruningKeepRecent(5, 4),
 		},
 		"prune nothing with snapshot": {
 			config: &setupConfig{
