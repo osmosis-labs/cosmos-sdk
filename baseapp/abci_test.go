@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/snapshots"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -44,7 +43,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		"pruning iavl snapshot only": {
 			bapp: NewBaseApp(
 				name, logger, db, nil,
-				SetPruning(pruningTypes.NewCustomPruningOptions(0, 10000, 0)),
+				SetPruning(sdk.NewCustomPruningOptions(0, 10000, 0)),
 				SetMinRetainBlocks(1),
 			),
 			maxAgeBlocks: 0,
@@ -73,7 +72,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		"pruning all conditions": {
 			bapp: NewBaseApp(
 				name, logger, db, nil,
-				SetPruning(pruningTypes.NewCustomPruningOptions(0, 10000, 0)),
+				SetPruning(sdk.NewCustomPruningOptions(0, 10000, 0)),
 				SetMinRetainBlocks(400000),
 				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(50000, 3)),
 			),
@@ -84,7 +83,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		"no pruning due to no persisted state": {
 			bapp: NewBaseApp(
 				name, logger, db, nil,
-				SetPruning(pruningTypes.NewCustomPruningOptions(0, 10000, 0)),
+				SetPruning(sdk.NewCustomPruningOptions(0, 10000, 0)),
 				SetMinRetainBlocks(400000),
 				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(50000, 3)),
 			),
@@ -95,7 +94,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		"disable pruning": {
 			bapp: NewBaseApp(
 				name, logger, db, nil,
-				SetPruning(pruningTypes.NewCustomPruningOptions(0, 10000, 0)),
+				SetPruning(sdk.NewCustomPruningOptions(0, 10000, 0)),
 				SetMinRetainBlocks(0),
 				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(50000, 3)),
 			),

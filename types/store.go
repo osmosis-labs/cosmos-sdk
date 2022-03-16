@@ -87,6 +87,17 @@ type (
 	MemoryStoreKey    = types.MemoryStoreKey
 )
 
+type (
+	PruningType = pruningTypes.Type
+)
+
+const (
+	Default PruningType = pruningTypes.Default
+	Everything = pruningTypes.Everything
+	Nothing = pruningTypes.Nothing
+	Custom = pruningTypes.Custom
+)
+
 // assertNoCommonPrefix will panic if there are two keys: k1 and k2 in keys, such that
 // k1 is a prefix of k2
 func assertNoPrefix(keys []string) {
@@ -199,4 +210,12 @@ func NewInfiniteGasMeter() GasMeter {
 
 func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshotTypes.SnapshotOptions {
 	return snapshotTypes.NewSnapshotOptions(interval, keepRecent)
+}
+
+func NewPruningOptions(pruningType PruningType) *pruningTypes.PruningOptions {
+	return pruningTypes.NewPruningOptions(pruningType)
+}
+
+func NewCustomPruningOptions(keepRecent, keepEvery, interval uint64) *pruningTypes.PruningOptions {
+	return pruningTypes.NewCustomPruningOptions(keepRecent, keepEvery, interval)
 }
