@@ -88,7 +88,7 @@ func (m *mockSnapshotter) Restore(
 	return nil
 }
 
-func (m *mockSnapshotter) PruneHeight(height int64) {
+func (m *mockSnapshotter) PruneSnapshotHeight(height int64) {
 	m.prunedHeights[height] = struct{}{}
 }
 
@@ -150,7 +150,7 @@ func (m *hungSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.Read
 	return ch, nil
 }
 
-func (m *hungSnapshotter) PruneHeight(height int64) {
+func (m *hungSnapshotter) PruneSnapshotHeight(height int64) {
 	m.prunedHeights[height] = struct{}{}
 }
 

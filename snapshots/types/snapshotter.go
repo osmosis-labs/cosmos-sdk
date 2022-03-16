@@ -9,11 +9,11 @@ type Snapshotter interface {
 	// Snapshot creates a state snapshot, returning a channel of snapshot chunk readers.
 	Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, error)
 
-	// PruneHeight prunes the given height according to the prune strategy.
+	// PruneSnapshotHeight prunes the given height according to the prune strategy.
 	// If PruneNothing, this is a no-op.
 	// If other strategy, this height is persisted until it is 
 	// less than <current height> - KeepRecent and <current height> % Interval == 0
-	PruneHeight(height int64)
+	PruneSnapshotHeight(height int64)
 
 	// Restore restores a state snapshot, taking snapshot chunk readers as input.
 	// If the ready channel is non-nil, it returns a ready signal (by being closed) once the

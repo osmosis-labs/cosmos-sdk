@@ -122,7 +122,7 @@ func (m *Manager) Create(height uint64) (*types.Snapshot, error) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "no snapshot store configured")
 	}
 
-	defer m.target.PruneHeight(int64(height))
+	defer m.target.PruneSnapshotHeight(int64(height))
 
 	err := m.begin(opSnapshot)
 	if err != nil {

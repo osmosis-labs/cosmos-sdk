@@ -312,8 +312,8 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 // If PruneNothing, this is a no-op.
 // If other strategy, this height is persisted until it is 
 // less than <current height> - KeepRecent and <current height> % Interval == 0
-func (rs *Store) PruneHeight(height int64) {
-	// TODO
+func (rs *Store) PruneSnapshotHeight(height int64) {
+	rs.pruningManager.HandleHeightSnapshot(height)
 }
 
 // SetInterBlockCache sets the Store's internal inter-block (persistent) cache.
@@ -514,10 +514,11 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 func (rs *Store) handlePruning(previousHeight int64, version int64) error {
 	rs.pruningManager.HandleHeight(previousHeight)
 	if rs.pruningManager.ShouldPruneAtHeight(version) {
-		rs.logger.Info(fmt.Sprintf("start pruning start, at height %d\n\n", version))
-		rs.logger.Info(fmt.Sprintf("pruning the following heights: %d\n", version))
-		
+		rs.logger.Info(fmt.Sprintf("start pruning at height %d\n\n", version))
+
 		pruningHeights := rs.pruningManager.GetPruningHeights()
+		rs.logger.Info(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
+	
 		if len(pruningHeights) == 0 {
 			return nil
 		}
@@ -535,9 +536,7 @@ func (rs *Store) handlePruning(previousHeight int64, version int64) error {
 				}
 			}
 		}
-	
 		rs.pruningManager.ResetPruningHeights()
-
 		rs.logger.Info(fmt.Sprintf("prune end, height - %d\n", version))
 	}
 	return nil

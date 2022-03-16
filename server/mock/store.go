@@ -115,7 +115,7 @@ func (ms multiStore) GetStoreType() sdk.StoreType {
 	panic("not implemented")
 }
 
-func (ms multiStore) PruneHeight(height int64) {
+func (ms multiStore) PruneSnapshotHeight(height int64) {
 	panic("not implemented")
 }
 
