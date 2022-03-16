@@ -280,7 +280,6 @@ func (m *Manager) RestoreChunk(chunk []byte) (bool, error) {
 // Snapshot takes a snapshot of the current state and prunes any old snapshottypes.
 func (m *Manager) Snapshot(height int64) {
 	if m == nil {
-		m.logger.Info("snapshot manager is not configured") // TODO: change log level
 		return
 	}
 	if !m.shouldTakeSnapshot(height) {

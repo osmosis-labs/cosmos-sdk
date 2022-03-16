@@ -976,6 +976,8 @@ func (rs *Store) commitStores(version int64, storeMap map[types.StoreKey]types.C
 		Version:    version,
 		StoreInfos: storeInfos,
 	}
+}
+
 func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo) {
 	rs.logger.Info("flushing metadata", "height", version) // TODO: change log level to Debug()
 	batch := db.NewBatch()
