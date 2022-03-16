@@ -121,10 +121,8 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) (*BaseApp, error) {
 	app := newBaseApp(t.Name(), options...)
 	require.Equal(t, t.Name(), app.Name())
 
-	db := dbm.NewMemDB()
-
 	app.MountStores(capKey1, capKey2)
-	app.SetParamStore(&paramStore{db: db})
+	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
 
 	// stores are mounted
 	err := app.LoadLatestVersion()
@@ -202,7 +200,8 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, fun
 }
 
 func TestMountStores(t *testing.T) {
-	app, _ := setupBaseApp(t)
+	app, err := setupBaseApp(t)
+	require.NoError(t, err)
 
 	// check both stores
 	store1 := app.cms.GetCommitKVStore(capKey1)
