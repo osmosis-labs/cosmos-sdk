@@ -407,7 +407,7 @@ func (rs *Store) Commit() types.CommitID {
 		}
 	}()
 
-	pruneErr = rs.handlePruning(previousHeight, version)
+	pruneErr = rs.handlePruning(version)
 
 	hash, keys := rs.lastCommitInfo.Hash()
 	rs.logger.Info("calculated commit hash", "height", version, "commit_hash", hash, "keys", keys)
@@ -511,8 +511,8 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 	return store
 }
 
-func (rs *Store) handlePruning(previousHeight int64, version int64) error {
-	rs.pruningManager.HandleHeight(previousHeight)
+func (rs *Store) handlePruning(version int64) error {
+	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
 	if rs.pruningManager.ShouldPruneAtHeight(version) {
 		rs.logger.Info(fmt.Sprintf("start pruning at height %d\n\n", version))
 

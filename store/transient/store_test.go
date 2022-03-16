@@ -27,7 +27,7 @@ func TestTransientStore(t *testing.T) {
 	require.Nil(t, tstore.Get(k))
 
 	// no-op
-	tstore.SetPruning(pruningTypes.PruneUndefined)
+	tstore.SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Undefined))
 
 	emptyCommitID := tstore.LastCommitID()
 	require.Equal(t, emptyCommitID.Version, int64(0))

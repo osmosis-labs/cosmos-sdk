@@ -28,7 +28,7 @@ const (
 func NewManager(logger log.Logger) *Manager {
 	return &Manager{
 		logger:               logger,
-		opts:                 types.PruneNothing,
+		opts:                 types.NewPruningOptions(types.Nothing),
 		pruneHeights:         []int64{},
 		// These are the heights that are kept by KeepEvery flag
 		// for state sync snapshots. These are added to the list to be pruned
@@ -61,7 +61,7 @@ func (m *Manager) ResetPruningHeights() {
 // HandleHeight determines if pruneHeight height needs to be kept for pruning at the right interval prescribed by
 // the pruning strategy. Returns true if the given height was kept to be pruned at the next call to Prune(), false otherwise
 func (m *Manager) HandleHeight(previousHeight int64) int64 {
-	if m.opts == types.PruneNothing {
+	if m.opts.GetType() == types.Nothing {
 		return 0
 	}
 
@@ -81,7 +81,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		m.pruneSnapshotHeights = pruneSnapshotHeightsNew
 	}()
 
-	if m.opts == types.PruneEverything {
+	if m.opts.GetType() == types.Everything {
 		m.pruneHeights = append(m.pruneHeights, previousHeight)
 		return previousHeight
 	}
@@ -102,7 +102,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 }
 
 func (m *Manager) HandleHeightSnapshot(height int64) {
-	if m.opts == types.PruneNothing {
+	if m.opts.GetType() == types.Nothing {
 		return
 	}
 	m.mx.Lock()
@@ -113,12 +113,12 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 
 // ShouldPruneAtHeight return true if the given height should be pruned, false otherwise
 func (m *Manager) ShouldPruneAtHeight(height int64) bool {
-	return m.opts != types.PruneNothing && m.opts.Interval > 0 && height%int64(m.opts.Interval) == 0
+	return m.opts.GetType() != types.Nothing && m.opts.Interval > 0 && height%int64(m.opts.Interval) == 0
 }
 
 // FlushPruningHeights flushes the pruning heights to the database for crash recovery.
 func (m *Manager) FlushPruningHeights(batch dbm.Batch) {
-	if m.opts == types.PruneNothing {
+	if m.opts.GetType() == types.Nothing {
 		return
 	}
 	m.flushPruningHeights(batch)
@@ -127,7 +127,7 @@ func (m *Manager) FlushPruningHeights(batch dbm.Batch) {
 
 // LoadPruningHeights loads the pruning heights from the database as a crash recovery.
 func (m *Manager) LoadPruningHeights(db dbm.DB) error {
-	if m.opts == types.PruneNothing {
+	if m.opts.GetType() == types.Nothing {
 		return nil
 	}
 	if err := m.loadPruningHeights(db); err != nil {

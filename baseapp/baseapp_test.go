@@ -32,6 +32,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
+	"github.com/cosmos/iavl"
 )
 
 var (
@@ -44,7 +45,7 @@ type paramStore struct {
 }
 
 type setupConfig struct {
-	blocks uint 
+	blocks uint64
 	blockTxs int
 	snapshotInterval uint64 
 	snapshotKeepEvery uint32
@@ -117,21 +118,22 @@ func aminoTxEncoder() sdk.TxEncoder {
 }
 
 // simple one store baseapp
-func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
+func setupBaseApp(t *testing.T, options ...func(*BaseApp)) (*BaseApp, error) {
 	app := newBaseApp(t.Name(), options...)
 	require.Equal(t, t.Name(), app.Name())
 
+	db := dbm.NewMemDB()
+
 	app.MountStores(capKey1, capKey2)
-	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
+	app.SetParamStore(&paramStore{db: db})
 
 	// stores are mounted
 	err := app.LoadLatestVersion()
-	require.Nil(t, err)
-	return app
+	return app, err
 }
 
 // simple one store baseapp with data and snapshots. Each tx is 1 MB in size (uncompressed).
-func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, func()) {
+func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, func(), error) {
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 	routerOpt := func(bapp *BaseApp) {
@@ -151,7 +153,10 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, fun
 		os.RemoveAll(snapshotDir)
 	}
 
-	app := setupBaseApp(t, routerOpt, SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(config.snapshotInterval, uint32(config.snapshotKeepEvery))), SetPruning(config.pruningOpts))
+	app, err := setupBaseApp(t, routerOpt, SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(config.snapshotInterval, uint32(config.snapshotKeepEvery))), SetPruning(config.pruningOpts))
+	if err != nil {
+		return nil, nil, err
+	}
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -194,11 +199,11 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, fun
 		}
 	}
 
-	return app, teardown
+	return app, teardown, nil
 }
 
 func TestMountStores(t *testing.T) {
-	app := setupBaseApp(t)
+	app, _ := setupBaseApp(t)
 
 	// check both stores
 	store1 := app.cms.GetCommitKVStore(capKey1)
@@ -211,7 +216,7 @@ func TestMountStores(t *testing.T) {
 // Test that LoadLatestVersion actually does.
 func TestLoadVersion(t *testing.T) {
 	logger := defaultLogger()
-	pruningOpt := SetPruning(pruningTypes.PruneNothing)
+	pruningOpt := SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Nothing))
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -264,7 +269,7 @@ func useDefaultLoader(app *BaseApp) {
 
 func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
 	rs := rootmulti.NewStore(db, log.NewNopLogger())
-	rs.SetPruning(pruningTypes.PruneNothing)
+	rs.SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Nothing))
 	key := sdk.NewKVStoreKey(storeKey)
 	rs.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, nil)
 	err := rs.LoadLatestVersion()
@@ -281,7 +286,7 @@ func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
 
 func checkStore(t *testing.T, db dbm.DB, ver int64, storeKey string, k, v []byte) {
 	rs := rootmulti.NewStore(db, log.NewNopLogger())
-	rs.SetPruning(pruningTypes.PruneDefault)
+	rs.SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Default))
 	key := sdk.NewKVStoreKey(storeKey)
 	rs.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, nil)
 	err := rs.LoadLatestVersion()
@@ -324,7 +329,7 @@ func TestSetLoader(t *testing.T) {
 			initStore(t, db, tc.origStoreKey, k, v)
 
 			// load the app with the existing db
-			opts := []func(*BaseApp){SetPruning(pruningTypes.PruneNothing)}
+			opts := []func(*BaseApp){SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Nothing))}
 			if tc.setLoader != nil {
 				opts = append(opts, tc.setLoader)
 			}
@@ -347,7 +352,7 @@ func TestSetLoader(t *testing.T) {
 
 func TestVersionSetterGetter(t *testing.T) {
 	logger := defaultLogger()
-	pruningOpt := SetPruning(pruningTypes.PruneDefault)
+	pruningOpt := SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Default))
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -367,7 +372,7 @@ func TestVersionSetterGetter(t *testing.T) {
 
 func TestLoadVersionInvalid(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOpt := SetPruning(pruningTypes.PruneNothing)
+	pruningOpt := SetPruning(pruningTypes.NewPruningOptions(pruningTypes.Nothing))
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -399,7 +404,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 
 func TestLoadVersionPruning(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOptions := sdk.NewPruningOptions(2, 3, 1)
+	pruningOptions := sdk.NewCustomPruningOptions(2, 3, 1)
 	pruningOpt := SetPruning(pruningOptions)
 	db := dbm.NewMemDB()
 	name := t.Name()
@@ -510,7 +515,8 @@ func TestInfo(t *testing.T) {
 }
 
 func TestBaseAppOptionSeal(t *testing.T) {
-	app := setupBaseApp(t)
+	app, err := setupBaseApp(t)
+	require.NoError(t, err)
 
 	require.Panics(t, func() {
 		app.SetName("")
@@ -930,7 +936,8 @@ func TestCheckTx(t *testing.T) {
 		}))
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	nTxs := int64(5)
 	app.InitChain(abci.RequestInitChain{})
@@ -983,7 +990,8 @@ func TestDeliverTx(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 	app.InitChain(abci.RequestInitChain{})
 
 	// Create same codec used in txDecoder
@@ -1039,7 +1047,8 @@ func TestMultiMsgDeliverTx(t *testing.T) {
 		bapp.Router().AddRoute(r2)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	// Create same codec used in txDecoder
 	codec := codec.NewLegacyAmino()
@@ -1118,7 +1127,8 @@ func TestSimulateTx(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -1182,7 +1192,8 @@ func TestRunInvalidTransaction(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	header := tmproto.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -1310,7 +1321,8 @@ func TestTxGasLimits(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	header := tmproto.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -1394,7 +1406,8 @@ func TestMaxBlockGasLimits(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: &abci.ConsensusParams{
 			Block: &abci.BlockParams{
@@ -1477,7 +1490,8 @@ func TestCustomRunTxPanicHandler(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	header := tmproto.Header{Height: 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -1516,7 +1530,8 @@ func TestBaseAppAnteHandler(t *testing.T) {
 	}
 
 	cdc := codec.NewLegacyAmino()
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	app.InitChain(abci.RequestInitChain{})
 	registerTestCodec(cdc)
@@ -1619,7 +1634,8 @@ func TestGasConsumptionBadTx(t *testing.T) {
 	cdc := codec.NewLegacyAmino()
 	registerTestCodec(cdc)
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: &abci.ConsensusParams{
 			Block: &abci.BlockParams{
@@ -1670,7 +1686,8 @@ func TestQuery(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 
 	app.InitChain(abci.RequestInitChain{})
 
@@ -1718,7 +1735,8 @@ func TestGRPCQuery(t *testing.T) {
 		)
 	}
 
-	app := setupBaseApp(t, grpcQueryOpt)
+	app, err := setupBaseApp(t, grpcQueryOpt)
+	require.NoError(t, err)
 
 	app.InitChain(abci.RequestInitChain{})
 	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
@@ -1760,7 +1778,8 @@ func TestP2PQuery(t *testing.T) {
 		})
 	}
 
-	app := setupBaseApp(t, addrPeerFilterOpt, idPeerFilterOpt)
+	app, err := setupBaseApp(t, addrPeerFilterOpt, idPeerFilterOpt)
+	require.NoError(t, err)
 
 	addrQuery := abci.RequestQuery{
 		Path: "/p2p/filter/addr/1.1.1.1:8000",
@@ -1776,7 +1795,8 @@ func TestP2PQuery(t *testing.T) {
 }
 
 func TestGetMaximumBlockGas(t *testing.T) {
-	app := setupBaseApp(t)
+	app, err := setupBaseApp(t)
+	require.NoError(t, err)
 	app.InitChain(abci.RequestInitChain{})
 	ctx := app.NewContext(true, tmproto.Header{})
 
@@ -1799,10 +1819,11 @@ func TestListSnapshots(t *testing.T) {
 		blockTxs: 4,
 		snapshotInterval: 2,
 		snapshotKeepEvery: 2,
-		pruningOpts: sdk.PruneNothing,
+		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
 	}
 
-	app, teardown := setupBaseAppWithSnapshots(t, setupConfig)
+	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	require.NoError(t, err)
 	defer teardown()
 
 	resp := app.ListSnapshots(abci.RequestListSnapshots{})
@@ -1818,15 +1839,156 @@ func TestListSnapshots(t *testing.T) {
 	}}, resp)
 }
 
+func TestSnapshotWithPruning_CustomPruning(t *testing.T) {
+	testcases := map[string]struct {
+		config *setupConfig
+		expectedSnapshots []*abci.Snapshot
+		expectedErr error
+	} {
+		// "error pruning-keep-every and snapshot-interval mismatch": {
+		// 	config: &setupConfig{
+		// 		blocks: 0, 
+		// 		blockTxs: 0,
+		// 		snapshotInterval: 1,
+		// 		snapshotKeepEvery: 2,
+		// 		pruningOpts: sdk.NewPruningOptions(1, 5, 1),
+		// 	},
+		// 	expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(1, 5),
+		// },
+		// "error pruning-keep-every is non-zero when snapshot-interval is": {
+		// 	config: &setupConfig{
+		// 		blocks: 0, 
+		// 		blockTxs: 0,
+		// 		snapshotInterval: 0,
+		// 		snapshotKeepEvery: 0,
+		// 		pruningOpts: sdk.NewPruningOptions(1, 1, 1),
+		// 	},
+		// 	expectedErr: errOptsNonZeroKeepRecentWithZeroSnapshot(1),
+		// },
+		// "error pruning-keep-every does not equal snapshot-interval": {
+		// 	config: &setupConfig{
+		// 		blocks: 0, 
+		// 		blockTxs: 0,
+		// 		snapshotInterval: 5,
+		// 		snapshotKeepEvery: 1,
+		// 		pruningOpts: sdk.NewPruningOptions(1, 4, 1),
+		// 	},
+		// 	expectedErr: errOptsNotEqualsPruningKeepRecentWithSnapshot(5, 4),
+		// },
+		// "prune nothing with snapshot": {
+		// 	config: &setupConfig{
+		// 		blocks: 20, 
+		// 		blockTxs: 2,
+		// 		snapshotInterval: 5,
+		// 		snapshotKeepEvery: 1,
+		// 		pruningOpts: sdk.PruneNothing,
+		// 	},
+		// 	expectedSnapshots: []*abci.Snapshot{
+		// 		{Height: 20, Format: 1, Chunks: 5},
+		// 	},
+		// },
+		// "prune everything with snapshot": {
+		// 	config: &setupConfig{
+		// 		blocks: 20, 
+		// 		blockTxs: 2,
+		// 		snapshotInterval: 5,
+		// 		snapshotKeepEvery: 1,
+		// 		pruningOpts: sdk.PruneEverything,
+		// 	},
+		// 	expectedSnapshots: []*abci.Snapshot{
+		// 		{Height: 20, Format: 1, Chunks: 5},
+		// 	},
+		// },
+		
+		// "default pruning with snapshot": {
+		// 	config: &setupConfig{
+		// 		blocks: 20, 
+		// 		blockTxs: 2,
+		// 		snapshotInterval: 5,
+		// 		snapshotKeepEvery: 1,
+		// 		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Default),
+		// 	},
+		// 	expectedSnapshots: []*abci.Snapshot{
+		// 		{Height: 20, Format: 1, Chunks: 5},
+		// 	},
+		// },
+		// "custom": {
+		// 	config: &setupConfig{
+		// 		blocks: 20, 
+		// 		blockTxs: 2,
+		// 		snapshotInterval: 5,
+		// 		snapshotKeepEvery: 2,
+		// 		pruningOpts: sdk.NewPruningOptions(10, 5, 3),
+		// 	},
+		// 	expectedSnapshots: []*abci.Snapshot{
+		// 		{Height: 20, Format: 1, Chunks: 5},
+		// 		{Height: 15, Format: 1, Chunks: 4},
+		// 	},
+		// },
+	}
+
+	for name, tc := range testcases {
+		t.Run(name, func(t *testing.T) {
+			app, teardown, err := setupBaseAppWithSnapshots(t, tc.config)
+
+			if tc.expectedErr != nil {
+				require.Error(t, err)
+				require.Equal(t, tc.expectedErr.Error(), err.Error())
+				return
+			}
+			require.NoError(t, err)
+
+			defer teardown()
+
+			resp := app.ListSnapshots(abci.RequestListSnapshots{})
+			for _, s := range resp.Snapshots {
+				assert.NotEmpty(t, s.Hash)
+				assert.NotEmpty(t, s.Metadata)
+				s.Hash = nil
+				s.Metadata = nil
+			}
+			fmt.Println(resp)
+			assert.Equal(t, abci.ResponseListSnapshots{Snapshots: tc.expectedSnapshots}, resp)
+
+			// validate that heights were pruned correctly
+			var lastExistingHeight int64
+			if tc.config.pruningOpts.GetType() == pruningTypes.Nothing {
+				lastExistingHeight = 1
+			} else if tc.config.pruningOpts.GetType() == pruningTypes.Everything {
+				lastExistingHeight = int64(tc.config.blocks)
+			} else {
+				// Integer division rounds down so by multiplying back we get the last height at which we prune
+				lastExistingHeight = int64((tc.config.blocks / tc.config.pruningOpts.Interval) * tc.config.pruningOpts.Interval - tc.config.pruningOpts.KeepRecent)
+			}
+
+			res := app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight})
+			require.NotNil(t, res)
+			require.NotNil(t, res.Value)
+
+			res = app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight - 1})
+			require.NotNil(t, res)
+			if tc.config.pruningOpts.GetType() == pruningTypes.Nothing {
+				// With prune nothing, we query height 0 which translates to the latest height.
+				require.NotNil(t, res)
+				require.NotNil(t, res.Value)
+			} else {
+				require.Nil(t, res.Value)
+				require.Equal(t, iavl.ErrVersionDoesNotExist.Error(), res.Log)
+			}
+		})
+	}
+}
+
 func TestLoadSnapshotChunk(t *testing.T) {
 	setupConfig := &setupConfig{
 		blocks: 2, 
 		blockTxs: 5,
 		snapshotInterval: 2,
 		snapshotKeepEvery: 2,
-		pruningOpts: sdk.PruneNothing,
+		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
 	}
-	app, teardown := setupBaseAppWithSnapshots(t, setupConfig)
+	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	require.NoError(t, err)
 	defer teardown()
 
 	testcases := map[string]struct {
@@ -1867,9 +2029,10 @@ func TestOfferSnapshot_Errors(t *testing.T) {
 		blockTxs: 0,
 		snapshotInterval: 2,
 		snapshotKeepEvery: 2,
-		pruningOpts: sdk.PruneNothing,
+		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
 	}
-	app, teardown := setupBaseAppWithSnapshots(t, setupConfig)
+	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	require.NoError(t, err)
 	defer teardown()
 
 	m := snapshottypes.Metadata{ChunkHashes: [][]byte{{1}, {2}, {3}}}
@@ -1929,9 +2092,10 @@ func TestApplySnapshotChunk(t *testing.T) {
 		blockTxs: 10,
 		snapshotInterval: 2,
 		snapshotKeepEvery: 2,
-		pruningOpts: sdk.PruneNothing,
+		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
 	}
-	source, teardown := setupBaseAppWithSnapshots(t, setupConfig1)
+	source, teardown, err := setupBaseAppWithSnapshots(t, setupConfig1)
+	require.NoError(t, err)
 	defer teardown()
 
 	setupConfig2 := &setupConfig{
@@ -1939,9 +2103,10 @@ func TestApplySnapshotChunk(t *testing.T) {
 		blockTxs: 0,
 		snapshotInterval: 2,
 		snapshotKeepEvery: 2,
-		pruningOpts: sdk.PruneNothing,
+		pruningOpts: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
 	}
-	target, teardown := setupBaseAppWithSnapshots(t, setupConfig2)
+	target, teardown, err := setupBaseAppWithSnapshots(t, setupConfig2)
+	require.NoError(t, err)
 	defer teardown()
 
 	// Fetch latest snapshot to restore
@@ -2021,7 +2186,8 @@ func TestWithRouter(t *testing.T) {
 		bapp.Router().AddRoute(r)
 	}
 
-	app := setupBaseApp(t, anteOpt, routerOpt)
+	app, err := setupBaseApp(t, anteOpt, routerOpt)
+	require.NoError(t, err)
 	app.InitChain(abci.RequestInitChain{})
 
 	// Create same codec used in txDecoder

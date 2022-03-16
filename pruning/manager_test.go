@@ -17,53 +17,68 @@ import (
 	db "github.com/tendermint/tm-db"
 )
 
+var (
+	pruneDefault   = types.NewPruningOptions(types.Default)
+	pruneEverything = types.NewPruningOptions(types.Everything)
+)
+
 func Test_NewManager(t *testing.T) {
 	manager := pruning.NewManager(log.NewNopLogger())
 
 	require.NotNil(t, manager)
 	require.NotNil(t, manager.GetPruningHeights())
-	require.Equal(t, types.PruneNothing, manager.GetOptions())
+	require.Equal(t, types.Nothing, manager.GetOptions().GetType())
 }
 
 func Test_Strategies(t *testing.T) {
 	testcases := map[string]struct {
 		strategy *types.PruningOptions
+		typeToAssert types.Type
 		isValid  bool
 	}{
 		"prune nothing": {
-			strategy: types.PruneNothing,
+			strategy: types.NewPruningOptions(types.Nothing),
+			typeToAssert: types.Nothing,
 			isValid:  true,
 		},
 		"prune default": {
-			strategy: types.PruneDefault,
+			strategy: types.NewPruningOptions(types.Default),
+			typeToAssert: types.Default,
 			isValid:  true,
 		},
 		"prune everything": {
-			strategy: types.PruneEverything,
+			strategy: types.NewPruningOptions(types.Everything),
+			typeToAssert: types.Everything,
 			isValid:  true,
 		},
 		"custom 100-10-15": {
-			strategy: types.NewPruningOptions(100, 10, 15),
+			strategy: types.NewCustomPruningOptions(100, 10, 15),
+			typeToAssert: types.Custom,
 			isValid:  true,
 		},
 		"custom 0-10-15": {
-			strategy: types.NewPruningOptions(0, 10, 15),
+			strategy: types.NewCustomPruningOptions(0, 10, 15),
+			typeToAssert: types.Custom,
 			isValid:  true,
 		},
 		"custom 100-0-15": {
-			strategy: types.NewPruningOptions(0, 10, 15),
+			strategy: types.NewCustomPruningOptions(0, 10, 15),
+			typeToAssert: types.Custom,
 			isValid:  true,
 		},
-		"custom 100-0-0": { // does not make sense
-			strategy: types.NewPruningOptions(100, 0, 0),
+		"custom 100-0-0": {
+			strategy: types.NewCustomPruningOptions(100, 0, 0),
+			typeToAssert: types.Custom,
 			isValid:  false,
 		},
-		"custom 0-10-0": { // does not make sense
-			strategy: types.NewPruningOptions(0, 10, 0),
+		"custom 0-10-0": {
+			strategy: types.NewCustomPruningOptions(0, 10, 0),
+			typeToAssert: types.Custom,
 			isValid:  false,
 		},
-		"custom 0-0-1": { // does not make sense
-			strategy: types.NewPruningOptions(0, 0, 1),
+		"custom 0-0-1": {
+			strategy: types.NewCustomPruningOptions(0, 0, 1),
+			typeToAssert: types.Custom,
 			isValid:  true,
 		},
 	}
@@ -75,6 +90,28 @@ func Test_Strategies(t *testing.T) {
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
 			curStrategy := tc.strategy
+			
+			pruneType := curStrategy.GetType()
+			require.Equal(t, tc.typeToAssert, pruneType)
+
+			// Validate strategy parameters
+			switch pruneType {
+			case types.Default:
+				require.Equal(t, uint64(100000), curStrategy.KeepRecent)
+				require.Equal(t, uint64(0), curStrategy.KeepEvery)
+				require.Equal(t, uint64(100), curStrategy.Interval)
+			case types.Nothing:
+				require.Equal(t, uint64(0), curStrategy.KeepRecent)
+				require.Equal(t, uint64(1), curStrategy.KeepEvery)
+				require.Equal(t, uint64(0), curStrategy.Interval)
+			case types.Everything:
+				require.Equal(t, uint64(10), curStrategy.KeepRecent)
+				require.Equal(t, uint64(0), curStrategy.KeepEvery)
+				require.Equal(t, uint64(10), curStrategy.Interval)
+			default:
+				//
+			}
+
 
 			require.Equal(t, tc.isValid, curStrategy.Validate() == nil)
 			if !tc.isValid {
@@ -96,20 +133,20 @@ func Test_Strategies(t *testing.T) {
 
 				curHeightStr := fmt.Sprintf("height: %d", curHeight)
 
-				switch curStrategy {
-				case types.PruneNothing:
+				switch curStrategy.GetType() {
+				case types.Nothing:
 					require.Equal(t, int64(0), handleHeightActual, curHeightStr)
 					require.False(t, shouldPruneAtHeightActual, curHeightStr)
 
 					require.Equal(t, 0, len(manager.GetPruningHeights()))
-				case types.PruneEverything:
+				case types.Everything:
 					require.Equal(t, curHeight, handleHeightActual, fmt.Sprintf("height: %d", curHeight))
-					require.Equal(t, curHeight%int64(types.PruneEverything.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
+					require.Equal(t, curHeight%int64(pruneEverything.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
 
 					require.Contains(t, curPruningHeihts, curHeight, curHeightStr)
-				case types.PruneDefault:
-					if curHeight > int64(types.PruneDefault.KeepRecent) {
-						expectedHeight := curHeight - int64(types.PruneDefault.KeepRecent)
+				case types.Default:
+					if curHeight > int64(pruneDefault.KeepRecent) {
+						expectedHeight := curHeight - int64(pruneDefault.KeepRecent)
 						require.Equal(t, expectedHeight, handleHeightActual, curHeightStr)
 
 						require.Contains(t, curPruningHeihts, expectedHeight, curHeightStr)
@@ -118,7 +155,7 @@ func Test_Strategies(t *testing.T) {
 
 						require.Equal(t, 0, len(manager.GetPruningHeights()))
 					}
-					require.Equal(t, curHeight%int64(types.PruneDefault.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
+					require.Equal(t, curHeight%int64(pruneDefault.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
 				default:
 					if curHeight > int64(curKeepRecent) && (curKeepEvery != 0 && (curHeight-int64(curKeepRecent))%int64(curKeepEvery) != 0 || curKeepEvery == 0) {
 						expectedHeight := curHeight - int64(curKeepRecent)
@@ -145,7 +182,7 @@ func Test_FlushLoad(t *testing.T) {
 
 	db := db.NewMemDB()
 
-	curStrategy := types.NewPruningOptions(100, 10, 15)
+	curStrategy := types.NewCustomPruningOptions(100, 10, 15)
 
 	manager.SetOptions(curStrategy)
 	require.Equal(t, curStrategy, manager.GetOptions())
@@ -195,7 +232,7 @@ func Test_WithSnapshot(t *testing.T) {
 	manager := pruning.NewManager(log.NewNopLogger())
 	require.NotNil(t, manager)
 
-	curStrategy := types.NewPruningOptions(10, 15, 10)
+	curStrategy := types.NewCustomPruningOptions(10, 15, 10)
 
 	manager.SetOptions(curStrategy)
 	require.Equal(t, curStrategy, manager.GetOptions())

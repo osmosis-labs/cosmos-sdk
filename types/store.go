@@ -189,12 +189,6 @@ type (
 	ErrorGasOverflow = types.ErrorGasOverflow
 )
 
-var (
-	PruneDefault = pruningTypes.PruneDefault
-	PruneEverything = pruningTypes.PruneEverything
-	PruneNothing = pruningTypes.PruneNothing
-)
-
 func NewGasMeter(limit Gas) GasMeter {
 	return types.NewGasMeter(limit)
 }
@@ -207,6 +201,6 @@ func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshotTypes.Snaps
 	return snapshotTypes.NewSnapshotOptions(interval, keepRecent)
 }
 
-func NewPruningOptions(keepRecent, keepEvery, interval uint64) *pruningTypes.PruningOptions {
-	return pruningTypes.NewPruningOptions(keepRecent, keepEvery, interval)
+func NewCustomPruningOptions(keepRecent, keepEvery, interval uint64) *pruningTypes.PruningOptions {
+	return pruningTypes.NewCustomPruningOptions(keepRecent, keepEvery, interval)
 }

@@ -34,8 +34,13 @@ var (
 	errOptsSnapshotReqMultistore = errors.New("state sync snapshots require a rootmulti store")
 	errOptsZeroKeepRecentWithSnapshot = func(snapshotInterval uint64) error {
 		return fmt.Errorf(
-			"pruning-keep-every is 0. if snapspot interval (%v) is enabled, pruning-keep-every must be greater than 0 and snapsot interval is the multiple of pruning-keep-every",
+			"pruning-keep-every is 0. if snapshot-interval (%v) is enabled, pruning-keep-every must be equal to snapsot-interval",
 			snapshotInterval)
+	}
+	errOptsNonZeroKeepRecentWithZeroSnapshot = func(pruningKeepEvery uint64) error {
+		return fmt.Errorf(
+			"snapshot-interval is 0. if pruning-keep-every (%v) is enabled, snapshot-interval must be equal to pruning-keep-every",
+			pruningKeepEvery)
 	}
 	errOptsNotEqualsPruningKeepRecentWithSnapshot = func(snapshotInterval, pruningKeepEvery uint64) error {
 		return fmt.Errorf(
@@ -324,18 +329,23 @@ func (app *BaseApp) init() error {
 	}
 
 	pruningOpts := rms.GetPruning()
+	pruningType := pruningOpts.GetType()
 	if app.snapshotManager != nil {
 		snapshotInterval := app.snapshotManager.GetInterval()
-		if snapshotInterval > 0 && pruningOpts.KeepEvery == 0 {
-			// pruning-keep-every must be enabled if snapshot is on
+
+		// pruning-keep-every must be enabled if snapshot is on
+		if pruningType != pruningTypes.Everything && snapshotInterval > 0 && pruningOpts.KeepEvery == 0 {
 			return errOptsZeroKeepRecentWithSnapshot(snapshotInterval)
 		}
-		// if stretegy is not PruneNothing, pruning-keep-every must be equal to snapshot-interval
-		if pruningOpts != pruningTypes.PruneNothing && snapshotInterval != pruningOpts.KeepEvery {
+		if snapshotInterval == 0 && pruningOpts.KeepEvery > 0 {
+			return errOptsNonZeroKeepRecentWithZeroSnapshot(pruningOpts.KeepEvery)
+		}
+		// if strategy is not PruneNothing or PruneEverything, pruning-keep-every must be equal to snapshot-interval
+		if pruningType != pruningTypes.Nothing && pruningType != pruningTypes.Everything && snapshotInterval != pruningOpts.KeepEvery {
 			return errOptsNotEqualsPruningKeepRecentWithSnapshot(snapshotInterval, pruningOpts.KeepEvery)
 		}
 	} else {
-		if pruningOpts != pruningTypes.PruneNothing && pruningOpts.KeepEvery > 0 {
+		if pruningType != pruningTypes.Nothing && pruningOpts.KeepEvery > 0 {
 			// if strategy is not PruneNothing and snapshot is off, pruning-keep-every must be zero 
 			return errOptsPruningKeepRecentUndefinedSnapshot(pruningOpts.KeepEvery)
 		}
