@@ -279,7 +279,12 @@ func (m *Manager) RestoreChunk(chunk []byte) (bool, error) {
 
 // Snapshot takes a snapshot of the current state and prunes any old snapshottypes.
 func (m *Manager) Snapshot(height int64) {
+	if m == nil {
+		m.logger.Info("snapshot manager is not configured") // TODO: change log level
+		return
+	}
 	if !m.shouldTakeSnapshot(height) {
+		m.logger.Info("snapshot at height %d is skipped", "height", height) // TODO: change log level
 		return
 	}
 	go m.snapshot(height)
@@ -291,10 +296,6 @@ func (m *Manager) shouldTakeSnapshot(height int64) bool {
 }
 
 func (m *Manager) snapshot(height int64) {
-	if !m.shouldTakeSnapshot(height) {
-		return
-	}
-
 	m.logger.Info("creating state snapshot", "height", height)
 
 	snapshot, err := m.Create(uint64(height))

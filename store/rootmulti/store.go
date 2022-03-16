@@ -538,6 +538,7 @@ func (rs *Store) handlePruning(previousHeight int64, version int64) error {
 		}
 		rs.pruningManager.ResetPruningHeights()
 		rs.logger.Info(fmt.Sprintf("prune end, height - %d\n", version))
+		return nil
 	}
 	return nil
 }
@@ -976,7 +977,7 @@ func (rs *Store) commitStores(version int64, storeMap map[types.StoreKey]types.C
 		StoreInfos: storeInfos,
 	}
 func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo) {
-	rs.logger.Info("flushing metadata")
+	rs.logger.Info("flushing metadata", "height", version) // TODO: change log level to Debug()
 	batch := db.NewBatch()
 	defer batch.Close()
 
@@ -987,7 +988,7 @@ func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo
 	if err := batch.Write(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))
 	}
-	rs.logger.Info("flushing metadata finished")
+	rs.logger.Info("flushing metadata finished", "height", version) // TODO: change log level to Debug()
 }
 
 type storeParams struct {

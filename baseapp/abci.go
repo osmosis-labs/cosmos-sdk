@@ -334,11 +334,7 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 		app.halt()
 	}
 
-	if app.snapshotManager == nil {
-		app.logger.Debug("snapshot manager is not configured")
-	} else {
-		app.snapshotManager.Snapshot(header.Height)
-	}
+	app.snapshotManager.Snapshot(header.Height)
 
 	app.logger.Info("commited - baseapp", "height", commitID.Version, "commit_hash", commitID.Hash, "retain_height", retainHeight)
 	return abci.ResponseCommit{
