@@ -17,10 +17,6 @@ import (
 	db "github.com/tendermint/tm-db"
 )
 
-var (
-	pruneEverything = types.NewPruningOptions(types.Everything)
-)
-
 func Test_NewManager(t *testing.T) {
 	manager := pruning.NewManager(log.NewNopLogger())
 
@@ -127,11 +123,6 @@ func Test_Strategies(t *testing.T) {
 					require.False(t, shouldPruneAtHeightActual, curHeightStr)
 
 					require.Equal(t, 0, len(manager.GetPruningHeights()))
-				case types.Everything:
-					require.Equal(t, curHeight, handleHeightActual, fmt.Sprintf("height: %d", curHeight))
-					require.Equal(t, curHeight%int64(pruneEverything.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
-
-					require.Contains(t, curPruningHeihts, curHeight, curHeightStr)
 				default:
 					if curHeight > int64(curKeepRecent) && (tc.snapshotInterval != 0 && (curHeight-int64(curKeepRecent))%int64(tc.snapshotInterval) != 0 || tc.snapshotInterval == 0) {
 						expectedHeight := curHeight - int64(curKeepRecent)

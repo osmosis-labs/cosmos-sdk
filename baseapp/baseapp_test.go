@@ -31,7 +31,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
-	"github.com/cosmos/iavl"
 )
 
 var (
@@ -1944,14 +1943,13 @@ func TestSnapshotWithPruning(t *testing.T) {
 			// and the first height that should be pruned.
 			// 
 			// Exceptions:
-			//   * Prune everything: should only be able to query latest height
 			//   * Prune nothing: should be able to query all heights (we only test first and latest)
 			//   * Prunde default: should be able to query all heights (we only test first and latest)
 			//      * The reason for default behaving this way is that we only commit 20 heights but default has 100_000 keep-recent
 			var lastExistingHeight int64
 			if tc.config.pruningOpts.GetType() == sdk.Nothing {
 				lastExistingHeight = 1
-			} else if tc.config.pruningOpts.GetType() == sdk.Everything || tc.config.pruningOpts.GetType() == sdk.Default {
+			} else if tc.config.pruningOpts.GetType() == sdk.Default {
 				lastExistingHeight = int64(tc.config.blocks)
 			} else {
 				// Integer division rounds down so by multiplying back we get the last height at which we pruned
@@ -1967,9 +1965,6 @@ func TestSnapshotWithPruning(t *testing.T) {
 			if tc.config.pruningOpts.GetType() == sdk.Nothing || tc.config.pruningOpts.GetType() == sdk.Default {
 				// With prune nothing, we query height 0 which translates to the latest height.
 				require.NotNil(t, res.Value, "height: %d", lastExistingHeight - 1)
-			} else {
-				require.Nil(t, res.Value)
-				require.Equal(t, iavl.ErrVersionDoesNotExist.Error(), res.Log, "height: %d", lastExistingHeight - 1)
 			}
 		})
 	}

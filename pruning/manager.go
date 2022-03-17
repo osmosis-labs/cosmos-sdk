@@ -81,11 +81,6 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		m.pruneSnapshotHeights = pruneSnapshotHeightsNew
 	}()
 
-	if m.opts.GetType() == types.Everything {
-		m.pruneHeights = append(m.pruneHeights, previousHeight)
-		return previousHeight
-	}
-
 	if int64(m.opts.KeepRecent) < previousHeight {
 		pruneHeight := previousHeight - int64(m.opts.KeepRecent)
 		// We consider this height to be pruned iff:
