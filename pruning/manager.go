@@ -69,16 +69,19 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		// handle persisted snapshot heights
 		m.mx.Lock()
 		defer m.mx.Unlock()
-		pruneSnapshotHeightsNew := list.New() // TODO: optimize
-		for e := m.pruneSnapshotHeights.Front(); e != nil; e = e.Next() {
+		var next *list.Element
+		for e := m.pruneSnapshotHeights.Front(); e != nil; e = next {
 			snHeight := e.Value.(int64)
 			if snHeight < previousHeight-int64(m.opts.KeepRecent) {
 				m.pruneHeights = append(m.pruneHeights, snHeight)
+
+				// We must get next before removing to be able to continue iterating.
+				next = e.Next()
+				m.pruneSnapshotHeights.Remove(e)
 			} else {
-				pruneSnapshotHeightsNew.PushBack(snHeight)
+				next = e.Next()
 			}
 		}
-		m.pruneSnapshotHeights = pruneSnapshotHeightsNew
 	}()
 
 	if int64(m.opts.KeepRecent) < previousHeight {

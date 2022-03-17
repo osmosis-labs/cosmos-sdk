@@ -233,16 +233,19 @@ func Test_WithSnapshot(t *testing.T) {
 
 		actualHeightsToPrune := manager.GetPruningHeights()
 
-		snapshotHeightsToPruneMirrorNew := list.New() // TODO: optimize
-		for e := snapshotHeightsToPruneMirror.Front(); e != nil; e = e.Next() {
+		var next *list.Element
+		for e := snapshotHeightsToPruneMirror.Front(); e != nil; e = next {
 			snapshotHeight := e.Value.(int64)
 			if snapshotHeight < curHeight-int64(keepRecent) {
 				heightsToPruneMirror = append(heightsToPruneMirror, snapshotHeight)
+
+				// We must get next before removing to be able to continue iterating.
+				next = e.Next()
+				snapshotHeightsToPruneMirror.Remove(e)
 			} else {
-				snapshotHeightsToPruneMirrorNew.PushBack(snapshotHeight)
+				next = e.Next()
 			}
 		}
-		snapshotHeightsToPruneMirror = snapshotHeightsToPruneMirrorNew
 
 		require.Equal(t, heightsToPruneMirror, actualHeightsToPrune, curHeightStr)
 		mx.Unlock()
