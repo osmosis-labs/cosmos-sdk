@@ -243,10 +243,6 @@ func TestManager_Validate(t *testing.T) {
 			opts: types.NewSnapshotOptions(0, 1),
 			err: snapshots.ErrOptsZeroSnapshotInterval,
 		},
-		"zero keep recent": {
-			opts: types.NewSnapshotOptions(1, 0),
-			err: snapshots.ErrOptsZeroSnapshotKeepRecent,
-		},
 	}
 
 	for name, tc := range testcases {

@@ -61,7 +61,6 @@ const (
 
 var(
 	ErrOptsZeroSnapshotInterval = errors.New("snaphot-interval must not be 0")
-	ErrOptsZeroSnapshotKeepRecent = errors.New("snaphot-keep-recent must not be 0")
 )
 
 // NewManager creates a new manager.
@@ -309,9 +308,6 @@ func (m *Manager) Validate() error {
 	if m.opts.Interval == 0 {
 		return ErrOptsZeroSnapshotInterval
 	}
-	if m.opts.KeepRecent == 0 {
-		return ErrOptsZeroSnapshotKeepRecent
-	}
 	return nil
 }
 
@@ -331,7 +327,7 @@ func (m *Manager) snapshot(height int64) {
 
 	m.logger.Info("completed state snapshot", "height", height, "format", snapshot.Format)
 
-	if m.opts.KeepRecent > 0 {  // TODO: make snapshotKeepRecent a member of snapshots.Manager
+	if m.opts.KeepRecent > 0 {
 		m.logger.Debug("pruning state snapshots")
 
 		pruned, err := m.Prune(m.opts.KeepRecent)

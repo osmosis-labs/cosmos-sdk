@@ -180,7 +180,7 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, fun
 		app.Commit()
 
 		// Wait for snapshot to be taken, since it happens asynchronously.
-		if uint64(height)%config.snapshotInterval == 0 {
+		if config.snapshotInterval > 0 && uint64(height)%config.snapshotInterval == 0 {
 			start := time.Now()
 			for {
 				if time.Since(start) > snapshotTimeout {
@@ -1843,26 +1843,6 @@ func TestSnapshotWithPruning(t *testing.T) {
 		expectedSnapshots []*abci.Snapshot
 		expectedErr error
 	} {
-		"error snapshot-interval is 0": {
-			config: &setupConfig{
-				blocks: 0, 
-				blockTxs: 0,
-				snapshotInterval: 0,
-				snapshotKeepEvery: 0,
-				pruningOpts: sdk.NewCustomPruningOptions(10, 10),
-			},
-			expectedErr: snapshots.ErrOptsZeroSnapshotInterval,
-		},
-		"error pruning-inteval is 0": {
-			config: &setupConfig{
-				blocks: 0, 
-				blockTxs: 0,
-				snapshotInterval: 0,
-				snapshotKeepEvery: 0,
-				pruningOpts: sdk.NewCustomPruningOptions(10, 10),
-			},
-			expectedErr: snapshots.ErrOptsZeroSnapshotInterval,
-		},
 		"prune nothing with snapshot": {
 			config: &setupConfig{
 				blocks: 20, 
@@ -1910,6 +1890,29 @@ func TestSnapshotWithPruning(t *testing.T) {
 			expectedSnapshots: []*abci.Snapshot{
 				{Height: 25, Format: 1, Chunks: 6},
 				{Height: 20, Format: 1, Chunks: 5},
+			},
+		},
+		"no snapshots": {
+			config: &setupConfig{
+				blocks: 10, 
+				blockTxs: 2,
+				snapshotInterval: 0, // 0 implies disable snapshots
+				pruningOpts: sdk.NewPruningOptions(sdk.Nothing),
+			},
+			expectedSnapshots: []*abci.Snapshot{},
+		},
+		"keep all snapshots": {
+			config: &setupConfig{
+				blocks: 10, 
+				blockTxs: 2,
+				snapshotInterval: 3,
+				snapshotKeepEvery: 0, // 0 implies keep all snapshots
+				pruningOpts: sdk.NewPruningOptions(sdk.Nothing),
+			},
+			expectedSnapshots: []*abci.Snapshot{
+				{Height: 9, Format: 1, Chunks: 2},
+				{Height: 6, Format: 1, Chunks: 2},
+				{Height: 3, Format: 1, Chunks: 1},
 			},
 		},
 	}
