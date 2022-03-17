@@ -41,8 +41,7 @@ const (
 	// Nothing defines a pruning strategy where all heights are kept on disk.
 	// This is the only stretegy where KeepEvery=1 is allowed with state-sync snapshots disabled.
 	Nothing
-	// Custom defines a pruning strategy where the user specifies the pruning. The `pruning-keep-every`
-	// for this strategy must be equal to `snapshot-interval`
+	// Custom defines a pruning strategy where the user specifies the pruning.
 	Custom
 	// Undefined defines an undefined pruning strategy. It is to be returned by stores that do not support pruning.
 	Undefined

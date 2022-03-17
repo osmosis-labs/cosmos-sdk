@@ -31,9 +31,8 @@ func NewManager(logger log.Logger) *Manager {
 		logger:               logger,
 		opts:                 types.NewPruningOptions(types.Nothing),
 		pruneHeights:         []int64{},
-		// These are the heights that are kept by pruning-keep-every flag
-		// for state sync snapshots. These keep-every heights are added to this list to be pruned
-		// when the snapshot is complete.
+		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots. 
+		// The heights are added to this list to be pruned when the snapshot is complete.
 		pruneSnapshotHeights: list.New(),
 		mx:                   sync.Mutex{},
 	}
