@@ -8,10 +8,10 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/tendermint/tendermint/libs/log"
-
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 // Manager manages snapshot and restore operations for an app, making sure only a single

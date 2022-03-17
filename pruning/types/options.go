@@ -14,6 +14,7 @@ type PruningOptions struct {
 	// Interval defines when the pruned heights are removed from disk.
 	Interval uint64
 
+	// Type defines the type of pruning strategy. See below for more information.
 	Type Type
 }
 

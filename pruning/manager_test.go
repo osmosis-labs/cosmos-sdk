@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"fmt"
 
-	// "sort"
 	"sync"
 	"testing"
 	"time"

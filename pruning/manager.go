@@ -32,7 +32,7 @@ func NewManager(logger log.Logger) *Manager {
 		opts:                 types.NewPruningOptions(types.Nothing),
 		pruneHeights:         []int64{},
 		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots. 
-		// The heights are added to this list to be pruned when the snapshot is complete.
+		// The heights are added to this list to be pruned when a snapshot is complete.
 		pruneSnapshotHeights: list.New(),
 		mx:                   sync.Mutex{},
 	}
@@ -102,7 +102,7 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 	}
 	m.mx.Lock()
 	defer m.mx.Unlock()
-	m.logger.Info("HandleHeightSnapshot", "height", height) // TODO: change log level to Debug
+	m.logger.Debug("HandleHeightSnapshot", "height", height) // TODO: change log level to Debug
 	m.pruneSnapshotHeights.PushBack(height)
 }
 

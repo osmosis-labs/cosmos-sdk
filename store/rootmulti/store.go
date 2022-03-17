@@ -22,10 +22,10 @@ import (
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	iavltree "github.com/cosmos/iavl"
 
 	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/log"
-	iavltree "github.com/cosmos/iavl"
 	protoio "github.com/gogo/protobuf/io"
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -75,7 +75,7 @@ var (
 // a store is created, KVStores must be mounted and finally LoadLatestVersion or
 // LoadVersion must be called.
 func NewStore(db dbm.DB, logger log.Logger) *Store {
-	store := &Store{
+	return &Store{
 		db:           db,
 		logger:       logger,
 		iavlCacheSize: iavl.DefaultIAVLCacheSize,
@@ -83,9 +83,8 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 		stores:       make(map[types.StoreKey]types.CommitKVStore),
 		keysByName:   make(map[string]types.StoreKey),
 		listeners:    make(map[types.StoreKey][]types.WriteListener),
+		pruningManager: pruning.NewManager(logger),
 	}
-	store.pruningManager = pruning.NewManager(logger)
-	return store
 }
 
 // GetPruning fetches the pruning strategy from the root store.
@@ -101,6 +100,7 @@ func (rs *Store) SetPruning(pruningOpts *pruningTypes.PruningOptions) {
 }
 
 // SetSnapshotInterval sets the interval at which the snapshots are taken.
+// It is used by the store to determine which heights to retain until after the snapshot is complete.
 func (rs *Store) SetSnapshotInterval(snapshotInterval uint64) {
 	rs.pruningManager.SetSnapshotInterval(snapshotInterval)
 }
@@ -313,7 +313,7 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 	return deleteKVStore(oldDB)
 }
 
-// PruneHeight prunes the given height according to the prune strategy.
+// PruneSnapshotHeight prunes the given height according to the prune strategy.
 // If PruneNothing, this is a no-op.
 // If other strategy, this height is persisted until it is 
 // less than <current height> - KeepRecent and <current height> % Interval == 0
@@ -519,10 +519,10 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 func (rs *Store) handlePruning(version int64) error {
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
 	if rs.pruningManager.ShouldPruneAtHeight(version) {
-		rs.logger.Info(fmt.Sprintf("start pruning at height %d\n\n", version))
+		rs.logger.Info("prune start", "height", version)
 
 		pruningHeights := rs.pruningManager.GetPruningHeights()
-		rs.logger.Info(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
+		rs.logger.Debug(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
 	
 		if len(pruningHeights) == 0 {
 			return nil
@@ -542,7 +542,7 @@ func (rs *Store) handlePruning(version int64) error {
 			}
 		}
 		rs.pruningManager.ResetPruningHeights()
-		rs.logger.Info(fmt.Sprintf("prune end, height - %d\n", version))
+		rs.logger.Info("prune end", "height", version)
 		return nil
 	}
 	return nil
@@ -984,7 +984,7 @@ func (rs *Store) commitStores(version int64, storeMap map[types.StoreKey]types.C
 }
 
 func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo) {
-	rs.logger.Info("flushing metadata", "height", version) // TODO: change log level to Debug()
+	rs.logger.Debug("flushing metadata", "height", version)
 	batch := db.NewBatch()
 	defer batch.Close()
 
@@ -995,7 +995,7 @@ func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo
 	if err := batch.Write(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))
 	}
-	rs.logger.Info("flushing metadata finished", "height", version) // TODO: change log level to Debug()
+	rs.logger.Debug("flushing metadata finished", "height", version)
 }
 
 type storeParams struct {
