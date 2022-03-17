@@ -11,7 +11,7 @@ type Snapshotter interface {
 
 	// PruneSnapshotHeight prunes the given height according to the prune strategy.
 	// If PruneNothing, this is a no-op.
-	// If other strategy, this height is persisted until it is 
+	// If other strategy, this height is persisted until it is
 	// less than <current height> - KeepRecent and <current height> % Interval == 0
 	PruneSnapshotHeight(height int64)
 

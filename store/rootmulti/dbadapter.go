@@ -1,9 +1,9 @@
 package rootmulti
 
 import (
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/types"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 )
 
 var commithash = []byte("FAKE_HASH")
@@ -35,4 +35,6 @@ func (cdsa commitDBStoreAdapter) SetPruning(_ *pruningTypes.PruningOptions) {}
 
 // GetPruning is a no-op as pruning options cannot be directly set on this store.
 // They must be set on the root commit multi-store.
-func (cdsa commitDBStoreAdapter) GetPruning() *pruningTypes.PruningOptions { return pruningTypes.NewPruningOptions(pruningTypes.Undefined) }
+func (cdsa commitDBStoreAdapter) GetPruning() *pruningTypes.PruningOptions {
+	return pruningTypes.NewPruningOptions(pruningTypes.Undefined)
+}

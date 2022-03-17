@@ -15,7 +15,7 @@ import (
 type Manager struct {
 	logger               log.Logger
 	opts                 *types.PruningOptions
-	snapshotInterval uint64
+	snapshotInterval     uint64
 	pruneHeights         []int64
 	pruneSnapshotHeights *list.List
 	mx                   sync.Mutex
@@ -28,10 +28,10 @@ const (
 
 func NewManager(logger log.Logger) *Manager {
 	return &Manager{
-		logger:               logger,
-		opts:                 types.NewPruningOptions(types.Nothing),
-		pruneHeights:         []int64{},
-		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots. 
+		logger:       logger,
+		opts:         types.NewPruningOptions(types.Nothing),
+		pruneHeights: []int64{},
+		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
 		// The heights are added to this list to be pruned when a snapshot is complete.
 		pruneSnapshotHeights: list.New(),
 		mx:                   sync.Mutex{},
@@ -65,7 +65,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		return 0
 	}
 
-	defer func ()  {
+	defer func() {
 		// handle persisted snapshot heights
 		m.mx.Lock()
 		defer m.mx.Unlock()

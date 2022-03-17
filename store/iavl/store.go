@@ -3,9 +3,10 @@ package iavl
 import (
 	"errors"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
 	"io"
 	"time"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	ics23 "github.com/confio/ics23/go"
 	"github.com/cosmos/iavl"
@@ -13,11 +14,11 @@ import (
 	tmcrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
 	dbm "github.com/tendermint/tm-db"
 
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/listenkv"
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/kv"

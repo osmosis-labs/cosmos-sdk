@@ -32,7 +32,7 @@ type Store struct {
 	saving map[uint64]bool // heights currently being saved
 }
 
-var _ store.Store             = (*Store)(nil)
+var _ store.Store = (*Store)(nil)
 
 // NewStore creates a new snapshot store.
 func NewStore(db db.DB, dir string) (*Store, error) {
@@ -317,7 +317,6 @@ func (*Store) CacheWrapWithTrace(_ io.Writer, _ store.TraceContext) store.CacheW
 func (*Store) CacheWrapWithListeners(_ store.StoreKey, _ []store.WriteListener) store.CacheWrap {
 	panic("cannot CacheWrapWithListeners a snapshot Store")
 }
-
 
 // saveSnapshot saves snapshot metadata to the database.
 func (s *Store) saveSnapshot(snapshot *types.Snapshot) error {

@@ -68,7 +68,7 @@ type BaseApp struct { // nolint: maligned
 	fauxMerkleMode bool             // if true, IAVL MountStores uses MountStoresDB for simulation speed.
 
 	// manages snapshots, i.e. dumps of app state at certain intervals
-	snapshotManager    *snapshots.Manager
+	snapshotManager *snapshots.Manager
 
 	// volatile states:
 	//

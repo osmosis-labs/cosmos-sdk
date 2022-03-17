@@ -694,7 +694,7 @@ func (app *BaseApp) GetBlockRetentionHeight(commitHeight int64) int64 {
 
 		snapshotRetentionHeights := app.snapshotManager.GetSnapshotBlockRetentionHeights()
 		if snapshotRetentionHeights > 0 {
-			retentionHeight = minNonZero(retentionHeight, commitHeight - snapshotRetentionHeights)
+			retentionHeight = minNonZero(retentionHeight, commitHeight-snapshotRetentionHeights)
 		}
 	}
 

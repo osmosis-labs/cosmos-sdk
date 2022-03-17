@@ -3,14 +3,16 @@ package rootmulti
 import (
 	"bufio"
 	"compress/zlib"
+	"fmt"
 	"io"
 	"math"
 	"sort"
 	"strings"
-	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/pruning"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
+	"github.com/cosmos/cosmos-sdk/snapshots"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/cachemulti"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
@@ -19,16 +21,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/transient"
 	"github.com/cosmos/cosmos-sdk/store/types"
-	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	iavltree "github.com/cosmos/iavl"
 
-	"github.com/pkg/errors"
-	"github.com/tendermint/tendermint/libs/log"
 	protoio "github.com/gogo/protobuf/io"
 	gogotypes "github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -76,13 +76,13 @@ var (
 // LoadVersion must be called.
 func NewStore(db dbm.DB, logger log.Logger) *Store {
 	return &Store{
-		db:           db,
-		logger:       logger,
-		iavlCacheSize: iavl.DefaultIAVLCacheSize,
-		storesParams: make(map[types.StoreKey]storeParams),
-		stores:       make(map[types.StoreKey]types.CommitKVStore),
-		keysByName:   make(map[string]types.StoreKey),
-		listeners:    make(map[types.StoreKey][]types.WriteListener),
+		db:             db,
+		logger:         logger,
+		iavlCacheSize:  iavl.DefaultIAVLCacheSize,
+		storesParams:   make(map[types.StoreKey]storeParams),
+		stores:         make(map[types.StoreKey]types.CommitKVStore),
+		keysByName:     make(map[string]types.StoreKey),
+		listeners:      make(map[types.StoreKey][]types.WriteListener),
 		pruningManager: pruning.NewManager(logger),
 	}
 }
@@ -160,7 +160,7 @@ func (rs *Store) GetCommitKVStore(key types.StoreKey) types.CommitKVStore {
 }
 
 // GetCommitKVStores get all kv stores associated wit the multistore.
-func (rs *Store) GetCommitKVStores() map[types.StoreKey] types.CommitKVStore {
+func (rs *Store) GetCommitKVStores() map[types.StoreKey]types.CommitKVStore {
 	return rs.stores
 }
 
@@ -315,7 +315,7 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 
 // PruneSnapshotHeight prunes the given height according to the prune strategy.
 // If PruneNothing, this is a no-op.
-// If other strategy, this height is persisted until it is 
+// If other strategy, this height is persisted until it is
 // less than <current height> - KeepRecent and <current height> % Interval == 0
 func (rs *Store) PruneSnapshotHeight(height int64) {
 	rs.pruningManager.HandleHeightSnapshot(height)
@@ -405,7 +405,7 @@ func (rs *Store) Commit() types.CommitID {
 	rs.lastCommitInfo = rs.commitStores(version, rs.stores)
 
 	var pruneErr error
-	defer func ()  {
+	defer func() {
 		rs.flushMetadata(rs.db, version, rs.lastCommitInfo)
 		if pruneErr != nil {
 			panic(pruneErr)
@@ -523,17 +523,17 @@ func (rs *Store) handlePruning(version int64) error {
 
 		pruningHeights := rs.pruningManager.GetPruningHeights()
 		rs.logger.Debug(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
-	
+
 		if len(pruningHeights) == 0 {
 			return nil
 		}
-	
+
 		for key, store := range rs.stores {
 			if store.GetStoreType() == types.StoreTypeIAVL {
 				// If the store is wrapped with an inter-block cache, we must first unwrap
 				// it to get the underlying IAVL store.
-				store =rs.GetCommitKVStore(key)
-	
+				store = rs.GetCommitKVStore(key)
+
 				if err := store.(*iavl.Store).DeleteVersions(pruningHeights...); err != nil {
 					if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
 						return err

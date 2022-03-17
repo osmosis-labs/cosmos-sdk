@@ -5,14 +5,14 @@ package types
 type SnapshotOptions struct {
 	// Interval defines at which heights the snapshot is taken.
 	Interval uint64
-	
+
 	// KeepRecent defines how many snapshots to keep.
 	KeepRecent uint32
 }
 
 func NewSnapshotOptions(interval uint64, keepRecent uint32) *SnapshotOptions {
 	return &SnapshotOptions{
-		Interval: interval,
+		Interval:   interval,
 		KeepRecent: keepRecent,
 	}
 }

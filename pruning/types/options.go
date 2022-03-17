@@ -48,45 +48,45 @@ const (
 	Undefined
 )
 
-const(
+const (
 	pruneEverythingKeepRecent = 10
-	pruneEverythingInterval = 10
+	pruneEverythingInterval   = 10
 )
 
-var(
-	ErrPruningIntervalZero = errors.New("'pruning-interval' must not be 0. If you want to disable pruning, select pruning = \"nothing\"")
-	ErrPruningIntervalTooSmall = fmt.Errorf("'pruning-interval' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingInterval)
+var (
+	ErrPruningIntervalZero       = errors.New("'pruning-interval' must not be 0. If you want to disable pruning, select pruning = \"nothing\"")
+	ErrPruningIntervalTooSmall   = fmt.Errorf("'pruning-interval' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingInterval)
 	ErrPruningKeepRecentTooSmall = fmt.Errorf("'pruning-keep-recent' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingKeepRecent)
 )
 
 func NewPruningOptions(pruningType Type) *PruningOptions {
 	switch pruningType {
-		case Default:
-			return &PruningOptions{
-				KeepRecent: 100_000,
-				Interval:   100,
-				Type:       Default,
-			}
-		case Everything:
-			return &PruningOptions{
-				KeepRecent: pruneEverythingKeepRecent,
-				Interval:   pruneEverythingInterval,
-				Type:       Everything,
-			}
-		case Nothing:
-			return &PruningOptions{
-				KeepRecent: 0,
-				Interval:   0,
-				Type:       Nothing,
-			}
-		case Custom:
-			return &PruningOptions{
-				Type:       Custom,
-			}
-		default:
-			return &PruningOptions{
-				Type:       Undefined,
-			}
+	case Default:
+		return &PruningOptions{
+			KeepRecent: 100_000,
+			Interval:   100,
+			Type:       Default,
+		}
+	case Everything:
+		return &PruningOptions{
+			KeepRecent: pruneEverythingKeepRecent,
+			Interval:   pruneEverythingInterval,
+			Type:       Everything,
+		}
+	case Nothing:
+		return &PruningOptions{
+			KeepRecent: 0,
+			Interval:   0,
+			Type:       Nothing,
+		}
+	case Custom:
+		return &PruningOptions{
+			Type: Custom,
+		}
+	default:
+		return &PruningOptions{
+			Type: Undefined,
+		}
 	}
 }
 
@@ -127,7 +127,7 @@ func NewPruningOptionsFromString(strategy string) *PruningOptions {
 		return NewPruningOptions(Nothing)
 
 	case PruningOptionDefault:
-		return  NewPruningOptions(Default)
+		return NewPruningOptions(Default)
 
 	default:
 		return NewPruningOptions(Default)

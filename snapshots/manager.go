@@ -29,9 +29,9 @@ import (
 //    errors via io.Pipe.CloseWithError().
 type Manager struct {
 	store  *Store
-	opts *types.SnapshotOptions
+	opts   *types.SnapshotOptions
 	target types.Snapshotter
-	logger            log.Logger
+	logger log.Logger
 
 	mtx                sync.Mutex
 	operation          operation
@@ -59,7 +59,7 @@ const (
 	chunkBufferSize = 4
 )
 
-var(
+var (
 	ErrOptsZeroSnapshotInterval = errors.New("snaphot-interval must not be 0")
 )
 
@@ -68,7 +68,7 @@ func NewManager(store *Store, opts *types.SnapshotOptions, target types.Snapshot
 	target.SetSnapshotInterval(opts.Interval)
 	return &Manager{
 		store:  store,
-		opts:  opts,
+		opts:   opts,
 		target: target,
 		logger: logger,
 	}
@@ -126,7 +126,7 @@ func (m *Manager) GetKeepRecent() uint32 {
 // for block retention. Blocks since the oldest available snapshot must be
 // available for state sync nodes to catch up (oldest because a node may be
 // restoring an old snapshot while a new snapshot was taken).
-func (m *Manager) GetSnapshotBlockRetentionHeights() int64{
+func (m *Manager) GetSnapshotBlockRetentionHeights() int64 {
 	return int64(m.opts.Interval * uint64(m.opts.KeepRecent))
 }
 

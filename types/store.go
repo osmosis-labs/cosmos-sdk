@@ -5,14 +5,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/store/types"
 	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snapshotTypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
-	PruningOptions = pruningTypes.PruningOptions
+	PruningOptions  = pruningTypes.PruningOptions
 	SnapshotOptions = snapshotTypes.SnapshotOptions
 )
 
@@ -92,10 +92,10 @@ type (
 )
 
 const (
-	Default PruningType = pruningTypes.Default
-	Everything = pruningTypes.Everything
-	Nothing = pruningTypes.Nothing
-	Custom = pruningTypes.Custom
+	Default    PruningType = pruningTypes.Default
+	Everything             = pruningTypes.Everything
+	Nothing                = pruningTypes.Nothing
+	Custom                 = pruningTypes.Custom
 )
 
 // assertNoCommonPrefix will panic if there are two keys: k1 and k2 in keys, such that
