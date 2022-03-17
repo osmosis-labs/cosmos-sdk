@@ -118,9 +118,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		})
 
 		t.Run(name, func(t *testing.T) {
-			if name == "pruning iavl snapshot only" {
-				require.Equal(t, tc.expected, tc.bapp.GetBlockRetentionHeight(tc.commitHeight))
-			}
+			require.Equal(t, tc.expected, tc.bapp.GetBlockRetentionHeight(tc.commitHeight))
 		})
 	}
 }

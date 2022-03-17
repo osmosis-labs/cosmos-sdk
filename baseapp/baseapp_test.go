@@ -26,6 +26,7 @@ import (
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
+	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -1939,31 +1940,31 @@ func TestSnapshotWithPruning(t *testing.T) {
 			fmt.Println(resp)
 			assert.Equal(t, abci.ResponseListSnapshots{Snapshots: tc.expectedSnapshots}, resp)
 
-			// Validate that heights were pruned correctly by querying the state at the last height from that should be present relative to latest
+			// Validate that heights were pruned correctly by querying the state at the last height that should be present relative to latest
 			// and the first height that should be pruned.
 			// 
 			// Exceptions:
 			//   * Prune nothing: should be able to query all heights (we only test first and latest)
-			//   * Prunde default: should be able to query all heights (we only test first and latest)
+			//   * Prune default: should be able to query all heights (we only test first and latest)
 			//      * The reason for default behaving this way is that we only commit 20 heights but default has 100_000 keep-recent
 			var lastExistingHeight int64
-			if tc.config.pruningOpts.GetType() == sdk.Nothing {
+			if tc.config.pruningOpts.GetType() == sdk.Nothing || tc.config.pruningOpts.GetType() == sdk.Default {
 				lastExistingHeight = 1
-			} else if tc.config.pruningOpts.GetType() == sdk.Default {
-				lastExistingHeight = int64(tc.config.blocks)
 			} else {
 				// Integer division rounds down so by multiplying back we get the last height at which we pruned
 				lastExistingHeight = int64((tc.config.blocks / tc.config.pruningOpts.Interval) * tc.config.pruningOpts.Interval - tc.config.pruningOpts.KeepRecent)
 			}
 
+			// Query 1
 			res := app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight})
 			require.NotNil(t, res, "height: %d", lastExistingHeight)
 			require.NotNil(t, res.Value, "height: %d", lastExistingHeight)
 
+			// Query 2
 			res = app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight - 1})
 			require.NotNil(t, res, "height: %d", lastExistingHeight - 1)
 			if tc.config.pruningOpts.GetType() == sdk.Nothing || tc.config.pruningOpts.GetType() == sdk.Default {
-				// With prune nothing, we query height 0 which translates to the latest height.
+				// With prune nothing or default, we query height 0 which translates to the latest height.
 				require.NotNil(t, res.Value, "height: %d", lastExistingHeight - 1)
 			}
 		})
@@ -2250,19 +2251,151 @@ func TestBaseApp_Init(t *testing.T) {
 
 	testCases := map[string]struct {
 		bapp     *BaseApp
-		expected error
+		expectedPruning *sdk.PruningOptions
+		expectedSnapshot *snapshottypes.SnapshotOptions
+		expectedErr error
 	}{
 		"snapshot but no pruning": {
 			NewBaseApp(name, logger, db, nil,
 				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
 			),
-			// if no pruning is set, the default is PruneNothing with keep-every=1
-			// This is the only exception when keep-every=1 is allowed with no snapshots
+			sdk.NewPruningOptions(sdk.Nothing),
+			sdk.NewSnapshotOptions(1500, 2),
+			// if no pruning is set, the default is PruneNothing
+			nil,
+		},
+		"pruning everything only": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewPruningOptions(sdk.Everything)),
+			),
+			sdk.NewPruningOptions(sdk.Everything),
+			nil,
+			nil,
+		},
+		"pruning nothing only": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewPruningOptions(sdk.Nothing)),
+			),
+			sdk.NewPruningOptions(sdk.Nothing),
+			nil,
+			nil,
+		},
+		"pruning default only": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewPruningOptions(sdk.Default)),
+			),
+			sdk.NewPruningOptions(sdk.Default),
+			nil,
+			nil,
+		},
+		"pruning custom only": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(10, 10)),
+			),
+			sdk.NewCustomPruningOptions(10, 10),
+			nil,
+			nil,
+		},
+		"pruning everything and snapshots": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewPruningOptions(sdk.Everything)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewPruningOptions(sdk.Everything),
+			sdk.NewSnapshotOptions(1500, 2),
+			nil,
+		},
+		"pruning nothing and snapshots": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewPruningOptions(sdk.Nothing)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewPruningOptions(sdk.Nothing),
+			sdk.NewSnapshotOptions(1500, 2),
+			nil,
+		},
+		"pruning default and snapshots": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewPruningOptions(sdk.Default)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewPruningOptions(sdk.Default),
+			sdk.NewSnapshotOptions(1500, 2),
+			nil,
+		},
+		"pruning custom and snapshots": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(10, 10)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewCustomPruningOptions(10, 10),
+			sdk.NewSnapshotOptions(1500, 2),
+			nil,
+		},
+		"error custom pruning 0 interval": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(10, 0)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewCustomPruningOptions(10, 0),
+			sdk.NewSnapshotOptions(1500, 2),
+			pruningTypes.ErrPruningIntervalZero,
+		},
+		"error custom pruning too small interval": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(10, 9)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewCustomPruningOptions(10, 9),
+			sdk.NewSnapshotOptions(1500, 2),
+			pruningTypes.ErrPruningIntervalTooSmall,
+		},
+		"error custom pruning too small keep recent": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(9, 10)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 2)),
+			),
+			sdk.NewCustomPruningOptions(9, 10),
+			sdk.NewSnapshotOptions(1500, 2),
+			pruningTypes.ErrPruningKeepRecentTooSmall,
+		},
+		"snapshot zero interval - manager not set": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(10, 10)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(0, 2)),
+			),
+			sdk.NewCustomPruningOptions(10, 10),
+			nil, // the snapshot manager is not set when interval is 0
+			nil,
+		},
+		"snapshot zero keep recent - allowed": {
+			NewBaseApp(name, logger, db, nil,
+				SetPruning(sdk.NewCustomPruningOptions(10, 10)),
+				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(1500, 0)),
+			),
+			sdk.NewCustomPruningOptions(10, 10),
+			sdk.NewSnapshotOptions(1500, 0), // 0 snapshot-keep-recent means keep all
 			nil,
 		},
 	}
 
 	for _, tc := range testCases {
-		require.Equal(t, tc.expected, tc.bapp.init())
+		// Init and validate
+		require.Equal(t, tc.expectedErr, tc.bapp.init())
+		if tc.expectedErr != nil {
+			continue
+		}
+
+		// Check that settings were set correctly
+		actualPruning := tc.bapp.cms.GetPruning()
+		require.Equal(t, tc.expectedPruning, actualPruning)
+
+		if tc.expectedSnapshot == nil {
+			require.Nil(t, tc.bapp.snapshotManager)
+			continue
+		}
+
+		require.Equal(t, tc.expectedSnapshot.Interval, tc.bapp.snapshotManager.GetInterval())
+		require.Equal(t, tc.expectedSnapshot.KeepRecent, tc.bapp.snapshotManager.GetKeepRecent())
 	}
 }

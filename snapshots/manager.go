@@ -303,14 +303,6 @@ func (m *Manager) Snapshot(height int64) {
 	go m.snapshot(height)
 }
 
-// Validate validates the snapshot settings. Returns error if invalid, nil otherwise.
-func (m *Manager) Validate() error {
-	if m.opts.Interval == 0 {
-		return ErrOptsZeroSnapshotInterval
-	}
-	return nil
-}
-
 // shouldTakeSnapshot returns true is snapshot should be taken at height.
 func (m *Manager) shouldTakeSnapshot(height int64) bool {
 	return m.opts.Interval > 0 && uint64(height)%m.opts.Interval == 0

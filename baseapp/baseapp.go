@@ -30,8 +30,6 @@ const (
 )
 
 var (
-	errOptsSnapshotReqMultistore = errors.New("state sync snapshots require a rootmulti store")
-
 	_ abci.Application = (*BaseApp)(nil)
 )
 
@@ -305,19 +303,11 @@ func (app *BaseApp) init() error {
 
 	rms, ok := app.cms.(*rootmulti.Store)
 	if !ok {
-		return errOptsSnapshotReqMultistore
+		return errors.New("state sync snapshots require a rootmulti store")
 	}
-
 	if err := rms.GetPruning().Validate(); err != nil {
 		return err
 	}
-
-	if app.snapshotManager != nil {
-		if err := app.snapshotManager.Validate(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 

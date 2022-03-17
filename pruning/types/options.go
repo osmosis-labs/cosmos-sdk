@@ -55,7 +55,7 @@ const(
 var(
 	ErrPruningIntervalZero = errors.New("'pruning-interval' must not be 0. If you want to disable pruning, select pruning = \"nothing\"")
 	ErrPruningIntervalTooSmall = fmt.Errorf("'pruning-interval' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingInterval)
-	ErrKeepRecentTooSmall = fmt.Errorf("'pruning-keep-recent' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingKeepRecent)
+	ErrPruningKeepRecentTooSmall = fmt.Errorf("'pruning-keep-recent' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingKeepRecent)
 )
 
 func NewPruningOptions(pruningType Type) *PruningOptions {
@@ -112,7 +112,7 @@ func (po PruningOptions) Validate() error {
 		return ErrPruningIntervalTooSmall
 	}
 	if po.KeepRecent < pruneEverythingKeepRecent {
-		return ErrKeepRecentTooSmall
+		return ErrPruningKeepRecentTooSmall
 	}
 	return nil
 }

@@ -16,7 +16,7 @@ func TestPruningOptions_Validate(t *testing.T) {
 		{NewPruningOptions(Nothing), nil},
 		{NewCustomPruningOptions(10, 10), nil},
 		{NewCustomPruningOptions(100, 15), nil},
-		{NewCustomPruningOptions(9, 10), ErrKeepRecentTooSmall},
+		{NewCustomPruningOptions(9, 10), ErrPruningKeepRecentTooSmall},
 		{NewCustomPruningOptions(10, 9), ErrPruningIntervalTooSmall},
 		{NewCustomPruningOptions(10, 0), ErrPruningIntervalZero},
 		{NewCustomPruningOptions(9, 0), ErrPruningIntervalZero},

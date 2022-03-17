@@ -222,35 +222,3 @@ func TestManager_Restore(t *testing.T) {
 	})
 	require.NoError(t, err)
 }
-
-func TestManager_Validate(t *testing.T) {
-	store := setupStore(t)
-	target := &mockSnapshotter{
-		prunedHeights: make(map[int64]struct{}),
-	}
-
-	testcases := map[string]struct {
-		opts *types.SnapshotOptions
-		err  error
-	}{
-		"basic valid": {
-			opts: types.NewSnapshotOptions(1500, 2),
-		},
-		"minimum valid": {
-			opts: types.NewSnapshotOptions(1, 1),
-		},
-		"zero interval": {
-			opts: types.NewSnapshotOptions(0, 1),
-			err: snapshots.ErrOptsZeroSnapshotInterval,
-		},
-	}
-
-	for name, tc := range testcases {
-		t.Run(name, func(t *testing.T) {
-			manager := snapshots.NewManager(store, tc.opts, target, log.NewNopLogger())
-			err := manager.Validate()
-			require.Equal(t, tc.err, err)
-			require.Equal(t, tc.opts.Interval, target.snapshotInterval)
-		})
-	}
-}
