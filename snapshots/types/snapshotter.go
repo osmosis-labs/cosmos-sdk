@@ -15,6 +15,9 @@ type Snapshotter interface {
 	// less than <current height> - KeepRecent and <current height> % Interval == 0
 	PruneSnapshotHeight(height int64)
 
+	// SetSnapshotInterval sets the interval at which the snapshots are taken.
+	SetSnapshotInterval(snapshotInterval uint64)
+
 	// Restore restores a state snapshot, taking snapshot chunk readers as input.
 	// If the ready channel is non-nil, it returns a ready signal (by being closed) once the
 	// restorer is ready to accept chunks.

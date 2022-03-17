@@ -9,18 +9,21 @@ import (
 func TestPruningOptions_Validate(t *testing.T) {
 	testCases := []struct {
 		opts   *PruningOptions
-		expectErr  bool
+		expectErr  error
 	}{
-		{NewPruningOptions(Default), false}, // default
-		{NewPruningOptions(Everything), false},     // everything
-		{NewPruningOptions(Nothing), false},      // nothing
-		{NewCustomPruningOptions(0, 10, 10), false},
-		{NewCustomPruningOptions(100, 0, 0), true}, // invalid interval
-		{NewCustomPruningOptions(0, 1, 5), true},   // invalid interval
+		{NewPruningOptions(Default), nil},
+		{NewPruningOptions(Everything), nil},
+		{NewPruningOptions(Nothing), nil},
+		{NewCustomPruningOptions(10, 10), nil},
+		{NewCustomPruningOptions(100, 15), nil},
+		{NewCustomPruningOptions(9, 10), ErrKeepRecentTooSmall},
+		{NewCustomPruningOptions(10, 9), ErrPruningIntervalTooSmall},
+		{NewCustomPruningOptions(10, 0), ErrPruningIntervalZero},
+		{NewCustomPruningOptions(9, 0), ErrPruningIntervalZero},
 	}
 
 	for _, tc := range testCases {
 		err := tc.opts.Validate()
-		require.Equal(t, tc.expectErr, err != nil, "options: %v, err: %s", tc.opts, err)
+		require.Equal(t, tc.expectErr, err, "options: %v, err: %s", tc.opts, err)
 	}
 }

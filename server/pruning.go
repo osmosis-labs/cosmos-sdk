@@ -23,7 +23,6 @@ func GetPruningOptionsFromFlags(appOpts types.AppOptions) (*pruningTypes.Pruning
 	case pruningTypes.PruningOptionCustom:
 		opts := pruningTypes.NewCustomPruningOptions(
 			cast.ToUint64(appOpts.Get(FlagPruningKeepRecent)),
-			cast.ToUint64(appOpts.Get(FlagPruningKeepEvery)),
 			cast.ToUint64(appOpts.Get(FlagPruningInterval)),
 		)
 

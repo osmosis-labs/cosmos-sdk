@@ -402,7 +402,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 
 func TestLoadVersionPruning(t *testing.T) {
 	logger := log.NewNopLogger()
-	pruningOptions := sdk.NewCustomPruningOptions(2, 3, 1)
+	pruningOptions := sdk.NewCustomPruningOptions(10, 15)
 	pruningOpt := SetPruning(pruningOptions)
 	db := dbm.NewMemDB()
 	name := t.Name()
@@ -430,20 +430,20 @@ func TestLoadVersionPruning(t *testing.T) {
 
 	var lastCommitID sdk.CommitID
 
-	// Commit seven blocks, of which 7 (latest) is kept in addition to 6, 5
-	// (keep recent) and 3 (keep every).
-	for i := int64(1); i <= 7; i++ {
+	// Commit 15 blocks, of which 15 (latest) is kept in addition to 5-14 inclusive
+	// (keep recent) and 3 (snapshot-interval).
+	for i := int64(1); i <= 15; i++ {
 		app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: i}})
 		res := app.Commit()
 		lastCommitID = sdk.CommitID{Version: i, Hash: res.Data}
 	}
 
-	for _, v := range []int64{1, 2, 4} {
+	for _, v := range []int64{1, 2, 3, 4} {
 		_, err = app.cms.CacheMultiStoreWithVersion(v)
 		require.NoError(t, err)
 	}
 
-	for _, v := range []int64{3, 5, 6, 7} {
+	for _, v := range []int64{3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14} {
 		_, err = app.cms.CacheMultiStoreWithVersion(v)
 		require.NoError(t, err)
 	}
@@ -454,7 +454,7 @@ func TestLoadVersionPruning(t *testing.T) {
 
 	err = app.LoadLatestVersion()
 	require.Nil(t, err)
-	testLoadVersionHelper(t, app, int64(7), lastCommitID)
+	testLoadVersionHelper(t, app, int64(15), lastCommitID)
 }
 
 func testLoadVersionHelper(t *testing.T, app *BaseApp, expectedHeight int64, expectedID sdk.CommitID) {
@@ -1843,35 +1843,25 @@ func TestSnapshotWithPruning(t *testing.T) {
 		expectedSnapshots []*abci.Snapshot
 		expectedErr error
 	} {
-		"error pruning-keep-every and snapshot-interval mismatch": {
-			config: &setupConfig{
-				blocks: 0, 
-				blockTxs: 0,
-				snapshotInterval: 1,
-				snapshotKeepEvery: 2,
-				pruningOpts: sdk.NewCustomPruningOptions(1, 5, 1),
-			},
-			expectedErr: errOptsSnapshotIntervalNotEqualsPruningKeepRecent(1, 5),
-		},
-		"error pruning-keep-every is non-zero when snapshot-interval is": {
+		"error snapshot-interval is 0": {
 			config: &setupConfig{
 				blocks: 0, 
 				blockTxs: 0,
 				snapshotInterval: 0,
 				snapshotKeepEvery: 0,
-				pruningOpts: sdk.NewCustomPruningOptions(1, 1, 1),
+				pruningOpts: sdk.NewCustomPruningOptions(10, 10),
 			},
-			expectedErr: errOptsNonZeroKeepEveryWithZeroSnapshot(1),
+			expectedErr: snapshots.ErrOptsZeroSnapshotInterval,
 		},
-		"error pruning-keep-every does not equal snapshot-interval": {
+		"error pruning-inteval is 0": {
 			config: &setupConfig{
 				blocks: 0, 
 				blockTxs: 0,
-				snapshotInterval: 5,
-				snapshotKeepEvery: 1,
-				pruningOpts: sdk.NewCustomPruningOptions(1, 4, 1),
+				snapshotInterval: 0,
+				snapshotKeepEvery: 0,
+				pruningOpts: sdk.NewCustomPruningOptions(10, 10),
 			},
-			expectedErr: errOptsSnapshotIntervalNotEqualsPruningKeepRecent(5, 4),
+			expectedErr: snapshots.ErrOptsZeroSnapshotInterval,
 		},
 		"prune nothing with snapshot": {
 			config: &setupConfig{
@@ -1911,15 +1901,15 @@ func TestSnapshotWithPruning(t *testing.T) {
 		},
 		"custom": {
 			config: &setupConfig{
-				blocks: 20, 
+				blocks: 25, 
 				blockTxs: 2,
 				snapshotInterval: 5,
 				snapshotKeepEvery: 2,
-				pruningOpts: sdk.NewCustomPruningOptions(10, 5, 3),
+				pruningOpts: sdk.NewCustomPruningOptions(12, 12),
 			},
 			expectedSnapshots: []*abci.Snapshot{
+				{Height: 25, Format: 1, Chunks: 6},
 				{Height: 20, Format: 1, Chunks: 5},
-				{Height: 15, Format: 1, Chunks: 4},
 			},
 		},
 	}

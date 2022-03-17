@@ -1,6 +1,23 @@
 package types
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// PruningOptions defines the pruning strategy used when determining which
+// heights are removed from disk when committing state.
+type PruningOptions struct {
+	// KeepRecent defines how many recent heights to keep on disk.
+	KeepRecent uint64
+
+	// Interval defines when the pruned heights are removed from disk.
+	Interval uint64
+
+	Type Type
+}
+
+type Type int
 
 // Pruning option string constants
 const (
@@ -9,8 +26,6 @@ const (
 	PruningOptionNothing    = "nothing"
 	PruningOptionCustom     = "custom"
 )
-
-type Type int
 
 const (
 	// Default defines a pruning strategy where the last 100,000 heights are
@@ -33,41 +48,34 @@ const (
 	Undefined
 )
 
-// PruningOptions defines the pruning strategy used when determining which
-// heights are removed from disk when committing state.
-type PruningOptions struct {
-	// KeepRecent defines how many recent heights to keep on disk.
-	KeepRecent uint64
+const(
+	pruneEverythingKeepRecent = 10
+	pruneEverythingInterval = 10
+)
 
-	// KeepEvery defines how many offset heights are kept on disk past KeepRecent.
-	KeepEvery uint64
-
-	// Interval defines when the pruned heights are removed from disk.
-	Interval uint64
-
-	Type Type
-}
+var(
+	ErrPruningIntervalZero = errors.New("'pruning-interval' must not be 0. If you want to disable pruning, select pruning = \"nothing\"")
+	ErrPruningIntervalTooSmall = fmt.Errorf("'pruning-interval' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingInterval)
+	ErrKeepRecentTooSmall = fmt.Errorf("'pruning-keep-recent' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingKeepRecent)
+)
 
 func NewPruningOptions(pruningType Type) *PruningOptions {
 	switch pruningType {
 		case Default:
 			return &PruningOptions{
 				KeepRecent: 100_000,
-				KeepEvery:  0,
 				Interval:   100,
 				Type:       Default,
 			}
 		case Everything:
 			return &PruningOptions{
-				KeepRecent: 10,
-				KeepEvery:  0,
-				Interval:   10,
+				KeepRecent: pruneEverythingKeepRecent,
+				Interval:   pruneEverythingInterval,
 				Type:       Everything,
 			}
 		case Nothing:
 			return &PruningOptions{
 				KeepRecent: 0,
-				KeepEvery:  1,
 				Interval:   0,
 				Type:       Nothing,
 			}
@@ -82,10 +90,9 @@ func NewPruningOptions(pruningType Type) *PruningOptions {
 	}
 }
 
-func NewCustomPruningOptions(keepRecent, keepEvery, interval uint64) *PruningOptions {
+func NewCustomPruningOptions(keepRecent, interval uint64) *PruningOptions {
 	return &PruningOptions{
 		KeepRecent: keepRecent,
-		KeepEvery:  keepEvery,
 		Interval:   interval,
 		Type:       Custom,
 	}
@@ -96,19 +103,18 @@ func (po PruningOptions) GetType() Type {
 }
 
 func (po PruningOptions) Validate() error {
-	if po.KeepEvery == 0 && po.Interval == 0 {
-		return fmt.Errorf("invalid 'Interval': %d, when pruning everything", po.Interval)
+	if po.Type == Nothing {
+		return nil
 	}
-	if po.KeepEvery == 1 && po.Interval != 0 { // prune nothing
-		return fmt.Errorf("invalid 'Interval': %d when pruning nothing", po.Interval)
+	if po.Interval == 0 {
+		return ErrPruningIntervalZero
 	}
-	if po.KeepEvery > 1 && po.Interval == 0 {
-		return fmt.Errorf("invalid 'Interval': %d when `KeepEvery`: %d", po.Interval, po.KeepEvery)
+	if po.Interval < pruneEverythingInterval {
+		return ErrPruningIntervalTooSmall
 	}
-	if po.KeepRecent > 0 && po.Interval == 0 {
-		return fmt.Errorf("invalid 'Interval': %d when 'KeepRecent': %d", po.Interval, po.KeepRecent)
+	if po.KeepRecent < pruneEverythingKeepRecent {
+		return ErrKeepRecentTooSmall
 	}
-
 	return nil
 }
 

@@ -61,6 +61,7 @@ func readChunks(chunks <-chan io.ReadCloser) [][]byte {
 type mockSnapshotter struct {
 	chunks [][]byte
 	prunedHeights map[int64]struct{}
+	snapshotInterval uint64
 }
 
 func (m *mockSnapshotter) Restore(
@@ -92,6 +93,14 @@ func (m *mockSnapshotter) PruneSnapshotHeight(height int64) {
 	m.prunedHeights[height] = struct{}{}
 }
 
+func (m *mockSnapshotter) GetSnapshotInterval() uint64 {
+	return m.snapshotInterval
+}
+
+func (m *mockSnapshotter) SetSnapshotInterval(snapshotInterval uint64) {
+	m.snapshotInterval = snapshotInterval
+}
+
 func (m *mockSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, error) {
 	if format == 0 {
 		return nil, types.ErrUnknownFormat
@@ -113,6 +122,7 @@ func setupBusyManager(t *testing.T) *snapshots.Manager {
 	require.NoError(t, err)
 	hung := newHungSnapshotter()
 	mgr := snapshots.NewManager(store, opts, hung, log.NewNopLogger())
+	require.Equal(t, opts.Interval, hung.snapshotInterval)
 
 	go func() {
 		_, err := mgr.Create(1)
@@ -130,6 +140,7 @@ func setupBusyManager(t *testing.T) *snapshots.Manager {
 type hungSnapshotter struct {
 	ch chan struct{}
 	prunedHeights map[int64]struct{}
+	snapshotInterval uint64
 }
 
 func newHungSnapshotter() *hungSnapshotter {
@@ -152,6 +163,10 @@ func (m *hungSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.Read
 
 func (m *hungSnapshotter) PruneSnapshotHeight(height int64) {
 	m.prunedHeights[height] = struct{}{}
+}
+
+func (m *hungSnapshotter) SetSnapshotInterval(snapshotInterval uint64) {
+	m.snapshotInterval = snapshotInterval
 }
 
 func (m *hungSnapshotter) Restore(

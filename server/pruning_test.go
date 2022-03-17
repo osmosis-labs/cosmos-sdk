@@ -31,12 +31,11 @@ func TestGetPruningOptionsFromFlags(t *testing.T) {
 				v := viper.New()
 				v.Set(FlagPruning, pruningTypes.PruningOptionCustom)
 				v.Set(FlagPruningKeepRecent, 1234)
-				v.Set(FlagPruningKeepEvery, 4321)
 				v.Set(FlagPruningInterval, 10)
 
 				return v
 			},
-			expectedOptions: pruningTypes.NewCustomPruningOptions(1234, 4321, 10),
+			expectedOptions: pruningTypes.NewCustomPruningOptions(1234, 10),
 		},
 		{
 			name: pruningTypes.PruningOptionDefault,

@@ -3,6 +3,7 @@ package snapshots
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"io"
 	"io/ioutil"
 	"sync"
@@ -12,24 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
-
-const (
-	opNone     operation = ""
-	opSnapshot operation = "snapshot"
-	opPrune    operation = "prune"
-	opRestore  operation = "restore"
-
-	chunkBufferSize = 4
-)
-
-// operation represents a Manager operation. Only one operation can be in progress at a time.
-type operation string
-
-// restoreDone represents the result of a restore operation.
-type restoreDone struct {
-	complete bool  // if true, restore completed successfully (not prematurely)
-	err      error // if non-nil, restore errored
-}
 
 // Manager manages snapshot and restore operations for an app, making sure only a single
 // long-running operation is in progress at any given time, and provides convenience methods
@@ -58,8 +41,32 @@ type Manager struct {
 	restoreChunkIndex  uint32
 }
 
+// operation represents a Manager operation. Only one operation can be in progress at a time.
+type operation string
+
+// restoreDone represents the result of a restore operation.
+type restoreDone struct {
+	complete bool  // if true, restore completed successfully (not prematurely)
+	err      error // if non-nil, restore errored
+}
+
+const (
+	opNone     operation = ""
+	opSnapshot operation = "snapshot"
+	opPrune    operation = "prune"
+	opRestore  operation = "restore"
+
+	chunkBufferSize = 4
+)
+
+var(
+	ErrOptsZeroSnapshotInterval = errors.New("snaphot-interval must not be 0")
+	ErrOptsZeroSnapshotKeepRecent = errors.New("snaphot-keep-recent must not be 0")
+)
+
 // NewManager creates a new manager.
 func NewManager(store *Store, opts *types.SnapshotOptions, target types.Snapshotter, logger log.Logger) *Manager {
+	target.SetSnapshotInterval(opts.Interval)
 	return &Manager{
 		store:  store,
 		opts:  opts,
@@ -295,6 +302,17 @@ func (m *Manager) Snapshot(height int64) {
 		return
 	}
 	go m.snapshot(height)
+}
+
+// Validate validates the snapshot settings. Returns error if invalid, nil otherwise.
+func (m *Manager) Validate() error {
+	if m.opts.Interval == 0 {
+		return ErrOptsZeroSnapshotInterval
+	}
+	if m.opts.KeepRecent == 0 {
+		return ErrOptsZeroSnapshotKeepRecent
+	}
+	return nil
 }
 
 // shouldTakeSnapshot returns true is snapshot should be taken at height.

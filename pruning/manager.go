@@ -15,6 +15,7 @@ import (
 type Manager struct {
 	logger               log.Logger
 	opts                 *types.PruningOptions
+	snapshotInterval uint64
 	pruneHeights         []int64
 	pruneSnapshotHeights *list.List
 	mx                   sync.Mutex
@@ -90,10 +91,10 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		pruneHeight := previousHeight - int64(m.opts.KeepRecent)
 		// We consider this height to be pruned iff:
 		//
-		// - KeepEvery is zero as that means that all heights should be pruned.
-		// - KeepEvery % (height - KeepRecent) != 0 as that means the height is not
+		// - snapshotInterval is zero as that means that all heights should be pruned.
+		// - snapshotInterval % (height - KeepRecent) != 0 as that means the height is not
 		// a 'snapshot' height.
-		if m.opts.KeepEvery == 0 || pruneHeight%int64(m.opts.KeepEvery) != 0 {
+		if m.snapshotInterval == 0 || pruneHeight%int64(m.snapshotInterval) != 0 {
 			m.pruneHeights = append(m.pruneHeights, pruneHeight)
 			return pruneHeight
 		}
@@ -109,6 +110,11 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 	defer m.mx.Unlock()
 	m.logger.Info("HandleHeightSnapshot", "height", height) // TODO: change log level to Debug
 	m.pruneSnapshotHeights.PushBack(height)
+}
+
+// SetSnapshotInterval sets the interval at which the snapshots are taken.
+func (m *Manager) SetSnapshotInterval(snapshotInterval uint64) {
+	m.snapshotInterval = snapshotInterval
 }
 
 // ShouldPruneAtHeight return true if the given height should be pruned, false otherwise

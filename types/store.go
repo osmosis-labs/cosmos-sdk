@@ -216,6 +216,6 @@ func NewPruningOptions(pruningType PruningType) *pruningTypes.PruningOptions {
 	return pruningTypes.NewPruningOptions(pruningType)
 }
 
-func NewCustomPruningOptions(keepRecent, keepEvery, interval uint64) *pruningTypes.PruningOptions {
-	return pruningTypes.NewCustomPruningOptions(keepRecent, keepEvery, interval)
+func NewCustomPruningOptions(keepRecent, interval uint64) *pruningTypes.PruningOptions {
+	return pruningTypes.NewCustomPruningOptions(keepRecent, interval)
 }

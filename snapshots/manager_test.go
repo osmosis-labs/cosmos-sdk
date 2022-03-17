@@ -16,7 +16,9 @@ var opts = types.NewSnapshotOptions(1500, 2)
 
 func TestManager_List(t *testing.T) {
 	store := setupStore(t)
-	manager := snapshots.NewManager(store, opts, nil, log.NewNopLogger())
+	snapshotter := &mockSnapshotter{}
+	manager := snapshots.NewManager(store, opts, snapshotter, log.NewNopLogger())
+	require.Equal(t, opts.Interval, snapshotter.GetSnapshotInterval())
 
 	mgrList, err := manager.List()
 	require.NoError(t, err)
@@ -35,7 +37,7 @@ func TestManager_List(t *testing.T) {
 
 func TestManager_LoadChunk(t *testing.T) {
 	store := setupStore(t)
-	manager := snapshots.NewManager(store, opts, nil, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, &mockSnapshotter{}, log.NewNopLogger())
 
 	// Existing chunk should return body
 	chunk, err := manager.LoadChunk(2, 1, 1)
@@ -106,7 +108,7 @@ func TestManager_Take(t *testing.T) {
 
 func TestManager_Prune(t *testing.T) {
 	store := setupStore(t)
-	manager := snapshots.NewManager(store, opts, nil, log.NewNopLogger())
+	manager := snapshots.NewManager(store, opts, &mockSnapshotter{}, log.NewNopLogger())
 
 	pruned, err := manager.Prune(2)
 	require.NoError(t, err)
@@ -219,4 +221,40 @@ func TestManager_Restore(t *testing.T) {
 		Metadata: types.Metadata{ChunkHashes: checksums(chunks)},
 	})
 	require.NoError(t, err)
+}
+
+func TestManager_Validate(t *testing.T) {
+	store := setupStore(t)
+	target := &mockSnapshotter{
+		prunedHeights: make(map[int64]struct{}),
+	}
+
+	testcases := map[string]struct {
+		opts *types.SnapshotOptions
+		err  error
+	}{
+		"basic valid": {
+			opts: types.NewSnapshotOptions(1500, 2),
+		},
+		"minimum valid": {
+			opts: types.NewSnapshotOptions(1, 1),
+		},
+		"zero interval": {
+			opts: types.NewSnapshotOptions(0, 1),
+			err: snapshots.ErrOptsZeroSnapshotInterval,
+		},
+		"zero keep recent": {
+			opts: types.NewSnapshotOptions(1, 0),
+			err: snapshots.ErrOptsZeroSnapshotKeepRecent,
+		},
+	}
+
+	for name, tc := range testcases {
+		t.Run(name, func(t *testing.T) {
+			manager := snapshots.NewManager(store, tc.opts, target, log.NewNopLogger())
+			err := manager.Validate()
+			require.Equal(t, tc.err, err)
+			require.Equal(t, tc.opts.Interval, target.snapshotInterval)
+		})
+	}
 }

@@ -100,6 +100,11 @@ func (rs *Store) SetPruning(pruningOpts *pruningTypes.PruningOptions) {
 	rs.pruningManager.SetOptions(pruningOpts)
 }
 
+// SetSnapshotInterval sets the interval at which the snapshots are taken.
+func (rs *Store) SetSnapshotInterval(snapshotInterval uint64) {
+	rs.pruningManager.SetSnapshotInterval(snapshotInterval)
+}
+
 func (rs *Store) SetIAVLCacheSize(cacheSize int) {
 	rs.iavlCacheSize = cacheSize
 }

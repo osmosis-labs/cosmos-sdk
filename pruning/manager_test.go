@@ -18,7 +18,6 @@ import (
 )
 
 var (
-	pruneDefault   = types.NewPruningOptions(types.Default)
 	pruneEverything = types.NewPruningOptions(types.Everything)
 )
 
@@ -33,53 +32,51 @@ func Test_NewManager(t *testing.T) {
 func Test_Strategies(t *testing.T) {
 	testcases := map[string]struct {
 		strategy *types.PruningOptions
+		snapshotInterval uint64
 		typeToAssert types.Type
 		isValid  bool
 	}{
-		"prune nothing": {
+		"prune nothing - no snapshot": {
 			strategy: types.NewPruningOptions(types.Nothing),
 			typeToAssert: types.Nothing,
-			isValid:  true,
 		},
-		"prune default": {
+		"prune nothing - snapshot": {
+			strategy: types.NewPruningOptions(types.Nothing),
+			typeToAssert: types.Nothing,
+			snapshotInterval: 100,
+		},
+		"prune default - no snapshot": {
 			strategy: types.NewPruningOptions(types.Default),
 			typeToAssert: types.Default,
-			isValid:  true,
 		},
-		"prune everything": {
+		"prune default - snapshot": {
+			strategy: types.NewPruningOptions(types.Default),
+			typeToAssert: types.Default,
+			snapshotInterval: 100,
+		},
+		"prune everything - no snapshot": {
 			strategy: types.NewPruningOptions(types.Everything),
 			typeToAssert: types.Everything,
-			isValid:  true,
+		},
+		"prune everything - snapshot": {
+			strategy: types.NewPruningOptions(types.Everything),
+			typeToAssert: types.Everything,
+			snapshotInterval: 100,
 		},
 		"custom 100-10-15": {
-			strategy: types.NewCustomPruningOptions(100, 10, 15),
+			strategy: types.NewCustomPruningOptions(100, 15),
+			snapshotInterval: 10,
 			typeToAssert: types.Custom,
-			isValid:  true,
 		},
-		"custom 0-10-15": {
-			strategy: types.NewCustomPruningOptions(0, 10, 15),
+		"custom 10-10-15": {
+			strategy: types.NewCustomPruningOptions(10, 15),
+			snapshotInterval: 10,
 			typeToAssert: types.Custom,
-			isValid:  true,
 		},
 		"custom 100-0-15": {
-			strategy: types.NewCustomPruningOptions(0, 10, 15),
+			strategy: types.NewCustomPruningOptions(100, 15),
+			snapshotInterval: 0,
 			typeToAssert: types.Custom,
-			isValid:  true,
-		},
-		"custom 100-0-0": {
-			strategy: types.NewCustomPruningOptions(100, 0, 0),
-			typeToAssert: types.Custom,
-			isValid:  false,
-		},
-		"custom 0-10-0": {
-			strategy: types.NewCustomPruningOptions(0, 10, 0),
-			typeToAssert: types.Custom,
-			isValid:  false,
-		},
-		"custom 0-0-1": {
-			strategy: types.NewCustomPruningOptions(0, 0, 1),
-			typeToAssert: types.Custom,
-			isValid:  true,
 		},
 	}
 
@@ -89,7 +86,8 @@ func Test_Strategies(t *testing.T) {
 
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-			curStrategy := tc.strategy
+			curStrategy := tc.strategy 
+			manager.SetSnapshotInterval(tc.snapshotInterval)
 			
 			pruneType := curStrategy.GetType()
 			require.Equal(t, tc.typeToAssert, pruneType)
@@ -98,31 +96,21 @@ func Test_Strategies(t *testing.T) {
 			switch pruneType {
 			case types.Default:
 				require.Equal(t, uint64(100000), curStrategy.KeepRecent)
-				require.Equal(t, uint64(0), curStrategy.KeepEvery)
 				require.Equal(t, uint64(100), curStrategy.Interval)
 			case types.Nothing:
 				require.Equal(t, uint64(0), curStrategy.KeepRecent)
-				require.Equal(t, uint64(1), curStrategy.KeepEvery)
 				require.Equal(t, uint64(0), curStrategy.Interval)
 			case types.Everything:
 				require.Equal(t, uint64(10), curStrategy.KeepRecent)
-				require.Equal(t, uint64(0), curStrategy.KeepEvery)
 				require.Equal(t, uint64(10), curStrategy.Interval)
 			default:
 				//
-			}
-
-
-			require.Equal(t, tc.isValid, curStrategy.Validate() == nil)
-			if !tc.isValid {
-				return
 			}
 
 			manager.SetOptions(curStrategy)
 			require.Equal(t, tc.strategy, manager.GetOptions())
 
 			curKeepRecent := curStrategy.KeepRecent
-			curKeepEvery := curStrategy.KeepEvery
 			curInterval := curStrategy.Interval
 
 			for curHeight := int64(0); curHeight < 110000; curHeight++ {
@@ -144,20 +132,8 @@ func Test_Strategies(t *testing.T) {
 					require.Equal(t, curHeight%int64(pruneEverything.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
 
 					require.Contains(t, curPruningHeihts, curHeight, curHeightStr)
-				case types.Default:
-					if curHeight > int64(pruneDefault.KeepRecent) {
-						expectedHeight := curHeight - int64(pruneDefault.KeepRecent)
-						require.Equal(t, expectedHeight, handleHeightActual, curHeightStr)
-
-						require.Contains(t, curPruningHeihts, expectedHeight, curHeightStr)
-					} else {
-						require.Equal(t, int64(0), handleHeightActual, curHeightStr)
-
-						require.Equal(t, 0, len(manager.GetPruningHeights()))
-					}
-					require.Equal(t, curHeight%int64(pruneDefault.Interval) == 0, shouldPruneAtHeightActual, curHeightStr)
 				default:
-					if curHeight > int64(curKeepRecent) && (curKeepEvery != 0 && (curHeight-int64(curKeepRecent))%int64(curKeepEvery) != 0 || curKeepEvery == 0) {
+					if curHeight > int64(curKeepRecent) && (tc.snapshotInterval != 0 && (curHeight-int64(curKeepRecent))%int64(tc.snapshotInterval) != 0 || tc.snapshotInterval == 0) {
 						expectedHeight := curHeight - int64(curKeepRecent)
 						require.Equal(t, curHeight-int64(curKeepRecent), handleHeightActual, curHeightStr)
 
@@ -182,13 +158,15 @@ func Test_FlushLoad(t *testing.T) {
 
 	db := db.NewMemDB()
 
-	curStrategy := types.NewCustomPruningOptions(100, 10, 15)
+	curStrategy := types.NewCustomPruningOptions(100, 15)
+
+	snapshotInterval := uint64(10)
+	manager.SetSnapshotInterval(snapshotInterval)
 
 	manager.SetOptions(curStrategy)
 	require.Equal(t, curStrategy, manager.GetOptions())
 
 	keepRecent := curStrategy.KeepRecent
-	keepEvery := curStrategy.KeepEvery
 
 	heightsToPruneMirror := make([]int64, 0)
 
@@ -197,7 +175,7 @@ func Test_FlushLoad(t *testing.T) {
 
 		curHeightStr := fmt.Sprintf("height: %d", curHeight)
 
-		if curHeight > int64(keepRecent) && (keepEvery != 0 && (curHeight-int64(keepRecent))%int64(keepEvery) != 0 || keepEvery == 0) {
+		if curHeight > int64(keepRecent) && (snapshotInterval != 0 && (curHeight-int64(keepRecent))%int64(snapshotInterval) != 0 || snapshotInterval == 0) {
 			expectedHandleHeight := curHeight - int64(keepRecent)
 			require.Equal(t, expectedHandleHeight, handleHeightActual, curHeightStr)
 			heightsToPruneMirror = append(heightsToPruneMirror, expectedHandleHeight)
@@ -232,13 +210,15 @@ func Test_WithSnapshot(t *testing.T) {
 	manager := pruning.NewManager(log.NewNopLogger())
 	require.NotNil(t, manager)
 
-	curStrategy := types.NewCustomPruningOptions(10, 15, 10)
+	curStrategy := types.NewCustomPruningOptions(10, 10)
+	
+	snapshotInterval := uint64(15)
+	manager.SetSnapshotInterval(snapshotInterval)
 
 	manager.SetOptions(curStrategy)
 	require.Equal(t, curStrategy, manager.GetOptions())
 
 	keepRecent := curStrategy.KeepRecent
-	keepEvery := curStrategy.KeepEvery
 
 	heightsToPruneMirror := make([]int64, 0)
 
@@ -253,7 +233,7 @@ func Test_WithSnapshot(t *testing.T) {
 
 		curHeightStr := fmt.Sprintf("height: %d", curHeight)
 
-		if curHeight > int64(keepRecent) && (curHeight-int64(keepRecent))%int64(keepEvery) != 0 {
+		if curHeight > int64(keepRecent) && (curHeight-int64(keepRecent))%int64(snapshotInterval) != 0 {
 			expectedHandleHeight := curHeight - int64(keepRecent)
 			require.Equal(t, expectedHandleHeight, handleHeightActual, curHeightStr)
 			heightsToPruneMirror = append(heightsToPruneMirror, expectedHandleHeight)
@@ -283,7 +263,7 @@ func Test_WithSnapshot(t *testing.T) {
 		}
 
 		// Mimic taking snapshots in the background
-		if curHeight%int64(keepEvery) == 0 {
+		if curHeight%int64(snapshotInterval) == 0 {
 			wg.Add(1)
 			go func(curHeightCp int64) {
 				time.Sleep(time.Nanosecond * 500)
