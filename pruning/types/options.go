@@ -14,11 +14,11 @@ type PruningOptions struct {
 	// Interval defines when the pruned heights are removed from disk.
 	Interval uint64
 
-	// Type defines the type of pruning strategy. See below for more information.
-	Type Type
+	// Strategy defines the kind of pruning strategy. See below for more information on each.
+	Strategy PruningStrategy
 }
 
-type Type int
+type PruningStrategy int
 
 // Pruning option string constants
 const (
@@ -29,23 +29,23 @@ const (
 )
 
 const (
-	// Default defines a pruning strategy where the last 100,000 heights are
+	// PruningDefault defines a pruning strategy where the last 100,000 heights are
 	// kept where to-be pruned heights are pruned at every 10th height.
 	// The last 100000 heights are kept(approximately 1 week worth of state) assuming the typical
 	// block time is 6s. If these values
 	// do not match the applications' requirements, use the "custom" option.
-	Default Type = iota
-	// Everything defines a pruning strategy where all committed heights are
+	PruningDefault PruningStrategy = iota
+	// PruningEverything defines a pruning strategy where all committed heights are
 	// deleted, storing only the current height and last 10 states. To-be pruned heights are
 	// pruned at every 10th height.
-	Everything
-	// Nothing defines a pruning strategy where all heights are kept on disk.
+	PruningEverything
+	// PruningNothing defines a pruning strategy where all heights are kept on disk.
 	// This is the only stretegy where KeepEvery=1 is allowed with state-sync snapshots disabled.
-	Nothing
-	// Custom defines a pruning strategy where the user specifies the pruning.
-	Custom
-	// Undefined defines an undefined pruning strategy. It is to be returned by stores that do not support pruning.
-	Undefined
+	PruningNothing
+	// PruningCustom defines a pruning strategy where the user specifies the pruning.
+	PruningCustom
+	// PruningUndefined defines an undefined pruning strategy. It is to be returned by stores that do not support pruning.
+	PruningUndefined
 )
 
 const (
@@ -59,33 +59,33 @@ var (
 	ErrPruningKeepRecentTooSmall = fmt.Errorf("'pruning-keep-recent' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingKeepRecent)
 )
 
-func NewPruningOptions(pruningType Type) *PruningOptions {
-	switch pruningType {
-	case Default:
+func NewPruningOptions(pruningStrategy PruningStrategy) *PruningOptions {
+	switch pruningStrategy {
+	case PruningDefault:
 		return &PruningOptions{
 			KeepRecent: 100_000,
 			Interval:   100,
-			Type:       Default,
+			Strategy:   PruningDefault,
 		}
-	case Everything:
+	case PruningEverything:
 		return &PruningOptions{
 			KeepRecent: pruneEverythingKeepRecent,
 			Interval:   pruneEverythingInterval,
-			Type:       Everything,
+			Strategy:   PruningEverything,
 		}
-	case Nothing:
+	case PruningNothing:
 		return &PruningOptions{
 			KeepRecent: 0,
 			Interval:   0,
-			Type:       Nothing,
+			Strategy:   PruningNothing,
 		}
-	case Custom:
+	case PruningCustom:
 		return &PruningOptions{
-			Type: Custom,
+			Strategy: PruningCustom,
 		}
 	default:
 		return &PruningOptions{
-			Type: Undefined,
+			Strategy: PruningUndefined,
 		}
 	}
 }
@@ -94,16 +94,16 @@ func NewCustomPruningOptions(keepRecent, interval uint64) *PruningOptions {
 	return &PruningOptions{
 		KeepRecent: keepRecent,
 		Interval:   interval,
-		Type:       Custom,
+		Strategy:   PruningCustom,
 	}
 }
 
-func (po PruningOptions) GetType() Type {
-	return po.Type
+func (po PruningOptions) GetPruningStrategy() PruningStrategy {
+	return po.Strategy
 }
 
 func (po PruningOptions) Validate() error {
-	if po.Type == Nothing {
+	if po.Strategy == PruningNothing {
 		return nil
 	}
 	if po.Interval == 0 {
@@ -121,15 +121,15 @@ func (po PruningOptions) Validate() error {
 func NewPruningOptionsFromString(strategy string) *PruningOptions {
 	switch strategy {
 	case PruningOptionEverything:
-		return NewPruningOptions(Everything)
+		return NewPruningOptions(PruningEverything)
 
 	case PruningOptionNothing:
-		return NewPruningOptions(Nothing)
+		return NewPruningOptions(PruningNothing)
 
 	case PruningOptionDefault:
-		return NewPruningOptions(Default)
+		return NewPruningOptions(PruningDefault)
 
 	default:
-		return NewPruningOptions(Default)
+		return NewPruningOptions(PruningDefault)
 	}
 }

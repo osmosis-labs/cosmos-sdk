@@ -1948,7 +1948,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 			//   * Prune default: should be able to query all heights (we only test first and latest)
 			//      * The reason for default behaving this way is that we only commit 20 heights but default has 100_000 keep-recent
 			var lastExistingHeight int64
-			if tc.config.pruningOpts.GetType() == sdk.Nothing || tc.config.pruningOpts.GetType() == sdk.Default {
+			if tc.config.pruningOpts.GetPruningStrategy() == sdk.Nothing || tc.config.pruningOpts.GetPruningStrategy() == sdk.Default {
 				lastExistingHeight = 1
 			} else {
 				// Integer division rounds down so by multiplying back we get the last height at which we pruned
@@ -1963,7 +1963,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 			// Query 2
 			res = app.Query(abci.RequestQuery{Path: fmt.Sprintf("/store/%s/key", capKey2.Name()), Data: []byte("0"), Height: lastExistingHeight - 1})
 			require.NotNil(t, res, "height: %d", lastExistingHeight - 1)
-			if tc.config.pruningOpts.GetType() == sdk.Nothing || tc.config.pruningOpts.GetType() == sdk.Default {
+			if tc.config.pruningOpts.GetPruningStrategy() == sdk.Nothing || tc.config.pruningOpts.GetPruningStrategy() == sdk.Default {
 				// With prune nothing or default, we query height 0 which translates to the latest height.
 				require.NotNil(t, res.Value, "height: %d", lastExistingHeight - 1)
 			}

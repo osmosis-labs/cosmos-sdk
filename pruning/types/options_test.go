@@ -11,9 +11,9 @@ func TestPruningOptions_Validate(t *testing.T) {
 		opts   *PruningOptions
 		expectErr  error
 	}{
-		{NewPruningOptions(Default), nil},
-		{NewPruningOptions(Everything), nil},
-		{NewPruningOptions(Nothing), nil},
+		{NewPruningOptions(PruningDefault), nil},
+		{NewPruningOptions(PruningEverything), nil},
+		{NewPruningOptions(PruningNothing), nil},
 		{NewCustomPruningOptions(10, 10), nil},
 		{NewCustomPruningOptions(100, 15), nil},
 		{NewCustomPruningOptions(9, 10), ErrPruningKeepRecentTooSmall},

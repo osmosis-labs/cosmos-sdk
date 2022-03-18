@@ -23,7 +23,7 @@ func TestGetPruningOptionsFromFlags(t *testing.T) {
 				v.Set(FlagPruning, pruningTypes.PruningOptionNothing)
 				return v
 			},
-			expectedOptions: pruningTypes.NewPruningOptions(pruningTypes.Nothing),
+			expectedOptions: pruningTypes.NewPruningOptions(pruningTypes.PruningNothing),
 		},
 		{
 			name: "custom pruning options",
@@ -44,7 +44,7 @@ func TestGetPruningOptionsFromFlags(t *testing.T) {
 				v.Set(FlagPruning, pruningTypes.PruningOptionDefault)
 				return v
 			},
-			expectedOptions: pruningTypes.NewPruningOptions(pruningTypes.Default),
+			expectedOptions: pruningTypes.NewPruningOptions(pruningTypes.PruningDefault),
 		},
 	}
 

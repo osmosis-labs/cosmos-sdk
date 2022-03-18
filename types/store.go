@@ -88,14 +88,14 @@ type (
 )
 
 type (
-	PruningType = pruningTypes.Type
+	PruningStrategy = pruningTypes.PruningStrategy
 )
 
 const (
-	Default    PruningType = pruningTypes.Default
-	Everything             = pruningTypes.Everything
-	Nothing                = pruningTypes.Nothing
-	Custom                 = pruningTypes.Custom
+	Default    PruningStrategy = pruningTypes.PruningDefault
+	Everything                 = pruningTypes.PruningEverything
+	Nothing                    = pruningTypes.PruningNothing
+	Custom                     = pruningTypes.PruningCustom
 )
 
 // assertNoCommonPrefix will panic if there are two keys: k1 and k2 in keys, such that
@@ -212,8 +212,8 @@ func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshotTypes.Snaps
 	return snapshotTypes.NewSnapshotOptions(interval, keepRecent)
 }
 
-func NewPruningOptions(pruningType PruningType) *pruningTypes.PruningOptions {
-	return pruningTypes.NewPruningOptions(pruningType)
+func NewPruningOptions(pruningStrategy PruningStrategy) *pruningTypes.PruningOptions {
+	return pruningTypes.NewPruningOptions(pruningStrategy)
 }
 
 func NewCustomPruningOptions(keepRecent, interval uint64) *pruningTypes.PruningOptions {

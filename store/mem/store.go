@@ -60,7 +60,7 @@ func (s *Store) SetPruning(pruning *pruningTypes.PruningOptions) {}
 // GetPruning is a no-op as pruning options cannot be directly set on this store.
 // They must be set on the root commit multi-store.
 func (s *Store) GetPruning() *pruningTypes.PruningOptions {
-	return pruningTypes.NewPruningOptions(pruningTypes.Undefined)
+	return pruningTypes.NewPruningOptions(pruningTypes.PruningUndefined)
 }
 
 func (s Store) LastCommitID() (id types.CommitID) { return }
