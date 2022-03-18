@@ -162,7 +162,7 @@ type CommitMultiStore interface {
 	// Panics on a nil key.
 	GetCommitKVStore(key StoreKey) CommitKVStore
 
-	// GetCommitKVStores get all kv stores associated wit the multistore.
+	// GetCommitKVStores get all kv stores associated with the multistore.
 	GetCommitKVStores() map[StoreKey]CommitKVStore
 
 	// Load the latest persisted version. Called once after all calls to
