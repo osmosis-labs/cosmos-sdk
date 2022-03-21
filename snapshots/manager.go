@@ -28,8 +28,10 @@ import (
 // 2) io.ReadCloser streams automatically propagate IO errors, and can pass arbitrary
 //    errors via io.Pipe.CloseWithError().
 type Manager struct {
+	// store is the snapshot store where all completed snapshots are persisted.
 	store  *Store
 	opts   *types.SnapshotOptions
+	// target is the store from which snapshots are taken.
 	target types.Snapshotter
 	logger log.Logger
 
