@@ -291,8 +291,8 @@ func (m *Manager) RestoreChunk(chunk []byte) (bool, error) {
 	return false, nil
 }
 
-// Snapshot takes a snapshot of the current state if we are on a snapshot height. 
-// It also prunes any old snapshots. The snapshotting and pruning happens separate goroutines.
+// SnapshotIfApplicable takes a snapshot of the current state if we are on a snapshot height. 
+// It also prunes any old snapshots. The snapshotting and pruning happen in separate goroutines.
 func (m *Manager) SnapshotIfApplicable(height int64) {
 	if m == nil {
 		return
