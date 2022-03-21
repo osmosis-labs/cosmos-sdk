@@ -1,9 +1,10 @@
 package simulation
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
+
+	"github.com/goccy/go-json"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"

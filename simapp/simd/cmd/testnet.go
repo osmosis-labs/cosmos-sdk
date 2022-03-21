@@ -4,11 +4,12 @@ package cmd
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
+
+	"github.com/goccy/go-json"
 
 	"github.com/spf13/cobra"
 	tmconfig "github.com/tendermint/tendermint/config"

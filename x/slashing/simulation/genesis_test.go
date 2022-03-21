@@ -1,10 +1,11 @@
 package simulation_test
 
 import (
-	"encoding/json"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 

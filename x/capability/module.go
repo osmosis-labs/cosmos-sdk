@@ -1,10 +1,11 @@
 package capability
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"

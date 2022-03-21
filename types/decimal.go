@@ -1,13 +1,14 @@
 package types
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/goccy/go-json"
 )
 
 var _ CustomProtobufType = (*Dec)(nil)

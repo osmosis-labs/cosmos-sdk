@@ -2,9 +2,10 @@ package rosetta
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"github.com/goccy/go-json"
 
 	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 

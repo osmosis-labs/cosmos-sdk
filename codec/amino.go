@@ -2,10 +2,11 @@ package codec
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/goccy/go-json"
 
 	amino "github.com/tendermint/go-amino"
 	tmtypes "github.com/tendermint/tendermint/types"

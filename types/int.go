@@ -2,9 +2,10 @@ package types
 
 import (
 	"encoding"
-	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"math/big"
 )

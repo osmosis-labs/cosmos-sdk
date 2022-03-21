@@ -3,7 +3,6 @@ package network
 import (
 	"bufio"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	tmcfg "github.com/tendermint/tendermint/config"

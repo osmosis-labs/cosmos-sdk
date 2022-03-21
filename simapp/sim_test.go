@@ -1,11 +1,12 @@
 package simapp
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

@@ -1,7 +1,6 @@
 package cosmovisor
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +9,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	"github.com/hashicorp/go-getter"
 	"github.com/otiai10/copy"

@@ -1,10 +1,11 @@
 package genutil
 
 import (
-	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/cosmos/go-bip39"
 	cfg "github.com/tendermint/tendermint/config"

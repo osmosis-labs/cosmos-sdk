@@ -1,9 +1,10 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
+
+	"github.com/goccy/go-json"
 
 	proto "github.com/gogo/protobuf/proto"
 

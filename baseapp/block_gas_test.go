@@ -1,10 +1,11 @@
 package baseapp_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

@@ -2,9 +2,10 @@ package telemetry
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	metrics "github.com/armon/go-metrics"
 	metricsprom "github.com/armon/go-metrics/prometheus"

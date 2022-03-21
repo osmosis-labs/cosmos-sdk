@@ -1,11 +1,12 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/goccy/go-json"
 )
 
 //-----------------------------------------------------------------------------

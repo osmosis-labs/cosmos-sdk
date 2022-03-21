@@ -1,11 +1,12 @@
 package genutil_test
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gogo/protobuf/proto"
 

@@ -1,10 +1,11 @@
 package simulation
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+
+	"github.com/goccy/go-json"
 )
 
 // EventStats defines an object that keeps a tally of each event that has occurred

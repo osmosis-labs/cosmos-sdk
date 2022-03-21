@@ -1,9 +1,10 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"path/filepath"
+
+	"github.com/goccy/go-json"
 
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 

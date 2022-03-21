@@ -1,12 +1,13 @@
 package simapp
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	tmtypes "github.com/tendermint/tendermint/types"

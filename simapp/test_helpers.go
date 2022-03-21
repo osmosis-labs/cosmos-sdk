@@ -3,11 +3,12 @@ package simapp
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

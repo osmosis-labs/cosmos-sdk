@@ -1,8 +1,9 @@
 package version
 
 import (
-	"encoding/json"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"

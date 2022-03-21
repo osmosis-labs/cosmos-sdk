@@ -7,11 +7,12 @@ package v038
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 

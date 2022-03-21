@@ -2,9 +2,10 @@ package client
 
 import (
 	"bufio"
-	"encoding/json"
 	"io"
 	"os"
+
+	"github.com/goccy/go-json"
 
 	"github.com/spf13/viper"
 

@@ -1,9 +1,10 @@
 package genutil_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/suite"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"

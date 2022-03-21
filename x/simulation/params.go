@@ -1,9 +1,10 @@
 package simulation
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
+
+	"github.com/goccy/go-json"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"

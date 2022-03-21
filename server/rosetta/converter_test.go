@@ -2,8 +2,9 @@ package rosetta_test
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 

@@ -1,11 +1,12 @@
 package types
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

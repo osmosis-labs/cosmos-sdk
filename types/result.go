@@ -2,9 +2,10 @@ package types
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"math"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"

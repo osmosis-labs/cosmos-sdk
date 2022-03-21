@@ -2,10 +2,11 @@ package hd_test
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 

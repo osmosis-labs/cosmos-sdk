@@ -1,10 +1,11 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"

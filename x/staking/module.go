@@ -2,9 +2,10 @@ package staking
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/rand"
+
+	"github.com/goccy/go-json"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 

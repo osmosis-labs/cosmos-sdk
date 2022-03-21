@@ -3,12 +3,13 @@ package server_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"

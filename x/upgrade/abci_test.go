@@ -1,13 +1,14 @@
 package upgrade_test
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

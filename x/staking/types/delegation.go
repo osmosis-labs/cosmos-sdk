@@ -1,10 +1,11 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	yaml "gopkg.in/yaml.v2"
 

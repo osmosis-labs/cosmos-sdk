@@ -29,9 +29,10 @@ needlessly defining many placeholder functions
 package module
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"

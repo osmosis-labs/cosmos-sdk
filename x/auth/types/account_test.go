@@ -1,10 +1,11 @@
 package types_test
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"

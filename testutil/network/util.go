@@ -1,9 +1,10 @@
 package network
 
 import (
-	"encoding/json"
 	"path/filepath"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/node"

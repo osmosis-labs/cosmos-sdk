@@ -2,10 +2,11 @@ package types
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/tendermint/tendermint/crypto"

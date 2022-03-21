@@ -3,7 +3,6 @@ package genutil
 // DONTCOVER
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +11,8 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	cfg "github.com/tendermint/tendermint/config"
 	tmtypes "github.com/tendermint/tendermint/types"

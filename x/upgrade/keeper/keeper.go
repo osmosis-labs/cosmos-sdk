@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
+
+	"github.com/goccy/go-json"
 
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"

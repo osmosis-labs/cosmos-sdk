@@ -1,9 +1,10 @@
 package module_test
 
 import (
-	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 

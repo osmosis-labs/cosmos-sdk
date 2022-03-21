@@ -3,9 +3,10 @@ package simulation
 // DONTCOVER
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
+
+	"github.com/goccy/go-json"
 
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 

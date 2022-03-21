@@ -5,9 +5,10 @@
 package v034
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

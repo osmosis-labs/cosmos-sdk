@@ -4,7 +4,6 @@ package rest
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +11,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/goccy/go-json"
 
 	"github.com/tendermint/tendermint/types"
 

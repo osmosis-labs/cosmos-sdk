@@ -1,9 +1,10 @@
 package simapp
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/goccy/go-json"
 
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"

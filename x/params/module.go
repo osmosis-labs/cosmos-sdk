@@ -2,8 +2,9 @@ package params
 
 import (
 	"context"
-	"encoding/json"
 	"math/rand"
+
+	"github.com/goccy/go-json"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 

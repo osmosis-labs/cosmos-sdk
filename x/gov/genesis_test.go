@@ -1,8 +1,9 @@
 package gov_test
 
 import (
-	"encoding/json"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

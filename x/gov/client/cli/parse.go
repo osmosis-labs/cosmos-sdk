@@ -1,9 +1,10 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/goccy/go-json"
 
 	"github.com/spf13/pflag"
 

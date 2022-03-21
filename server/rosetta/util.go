@@ -1,8 +1,9 @@
 package rosetta
 
 import (
-	"encoding/json"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	crgerrs "github.com/cosmos/cosmos-sdk/server/rosetta/lib/errors"
 )

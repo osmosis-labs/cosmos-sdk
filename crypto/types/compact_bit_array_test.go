@@ -1,11 +1,12 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

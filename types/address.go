@@ -3,11 +3,12 @@ package types
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/goccy/go-json"
 
 	"github.com/hashicorp/golang-lru/simplelru"
 	yaml "gopkg.in/yaml.v2"

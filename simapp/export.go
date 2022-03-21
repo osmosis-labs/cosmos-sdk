@@ -1,8 +1,9 @@
 package simapp
 
 import (
-	"encoding/json"
 	"log"
+
+	"github.com/goccy/go-json"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 

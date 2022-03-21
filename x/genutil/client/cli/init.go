@@ -2,10 +2,11 @@ package cli
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/goccy/go-json"
 
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"

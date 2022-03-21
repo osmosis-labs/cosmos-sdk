@@ -1,9 +1,10 @@
 package types_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"

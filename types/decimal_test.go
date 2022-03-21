@@ -2,10 +2,11 @@ package types_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v2"

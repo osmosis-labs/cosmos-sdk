@@ -1,11 +1,12 @@
 package ante_test
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 

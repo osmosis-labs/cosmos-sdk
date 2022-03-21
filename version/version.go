@@ -17,10 +17,11 @@
 package version
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"runtime/debug"
+
+	"github.com/goccy/go-json"
 )
 
 var (

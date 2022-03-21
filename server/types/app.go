@@ -1,9 +1,10 @@
 package types
 
 import (
-	"encoding/json"
 	"io"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/gogo/protobuf/grpc"
 	"github.com/spf13/cobra"

@@ -3,12 +3,13 @@ package testutil
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/goccy/go-json"
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"

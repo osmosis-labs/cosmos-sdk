@@ -3,12 +3,13 @@ package cli
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/goccy/go-json"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
