@@ -298,7 +298,7 @@ func (m *Manager) SnapshotIfApplicable(height int64) {
 		return
 	}
 	if !m.shouldTakeSnapshot(height) {
-		m.logger.Info("snapshot is skipped", "height", height) // TODO: change log level
+		m.logger.Debug("snapshot is skipped", "height", height)
 		return
 	}
 	go m.snapshot(height)
