@@ -49,9 +49,9 @@ can be trivially forged by an adversary. This was considered out of scope for
 the initial implementation, but can be added later without changes to the
 ABCI state sync protocol.
 
-## Relationship to pruning
+## Relationship to Pruning
 
-Snapshot settings are optional. However, if set, they have an effect on how pruning is going to be done by
+Snapshot settings are optional. However, if set, they have an effect on how pruning is done by
 persisting the heights that are multiples of `state-sync.snapshot-interval` until after the snapshot is complete.
 
 If pruning is enabled (not `pruning = "nothing"`), we avoid pruning heights that are multiples of
