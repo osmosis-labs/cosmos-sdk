@@ -302,7 +302,7 @@ func (app *BaseApp) init() error {
 	app.Seal()
 
 	rms, ok := app.cms.(*rootmulti.Store)
-	if !ok {
+	if !ok && app.snapshotManager != nil {
 		return errors.New("state sync snapshots require a rootmulti store")
 	}
 	if err := rms.GetPruning().Validate(); err != nil {
