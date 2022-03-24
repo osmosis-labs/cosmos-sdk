@@ -80,7 +80,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		defer m.mx.Unlock()
 		defer func() {
 			if shouldFlush {
-				// Must be unlocked since we are under mutex
+				// Must be the unlocked implementation since we are under mutex
 				m.flushAllPruningHeightsUnlocked()
 			}
 		}()
