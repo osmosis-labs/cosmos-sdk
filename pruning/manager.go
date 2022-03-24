@@ -14,6 +14,7 @@ import (
 
 type Manager struct {
 	logger               log.Logger
+	db dbm.DB
 	opts                 *types.PruningOptions
 	snapshotInterval     uint64
 	pruneHeights         []int64
@@ -26,9 +27,10 @@ const (
 	pruneSnapshotHeightsKey = "s/pruneSnheights"
 )
 
-func NewManager(logger log.Logger) *Manager {
+func NewManager(logger log.Logger, db dbm.DB) *Manager {
 	return &Manager{
 		logger:       logger,
+		db: db,
 		opts:         types.NewPruningOptions(types.PruningNothing),
 		pruneHeights: []int64{},
 		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
@@ -120,10 +122,12 @@ func (m *Manager) ShouldPruneAtHeight(height int64) bool {
 }
 
 // FlushPruningHeights flushes the pruning heights to the database for crash recovery.
-func (m *Manager) FlushPruningHeights(batch dbm.Batch) {
+func (m *Manager) FlushPruningHeights() {
 	if m.opts.GetPruningStrategy() == types.PruningNothing {
 		return
 	}
+	batch := m.db.NewBatch()
+	defer batch.Close()
 	m.flushPruningHeights(batch)
 	m.flushPruningSnapshotHeights(batch)
 }
