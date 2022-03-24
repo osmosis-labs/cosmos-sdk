@@ -449,7 +449,7 @@ func (rs *Store) pruneStores() error {
 
 			if err := store.(*iavl.Store).DeleteVersions(rs.pruneHeights...); err != nil {
 				if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
-					return err
+					panic(err)
 				}
 			}
 		}
