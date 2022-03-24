@@ -144,16 +144,18 @@ func Test_Strategies(t *testing.T) {
 
 // Here, we focus on testing the correctness of flushing pruneHeights to disk and loading back.
 func Test_FlushLoad_PruneHeights(t *testing.T) {
-	db := db.NewMemDB()
-
-	manager := pruning.NewManager(log.NewNopLogger(), db)
+	const (
+		pruningKeepRecent = 100
+		totalHeights      = int64(1000)
+		snapshotInterval = uint64(10)
+	)
+	var(
+		curStrategy = types.NewCustomPruningOptions(uint64(pruningKeepRecent), 15)
+		db = db.NewMemDB()
+		manager = pruning.NewManager(log.NewNopLogger(), db)
+	)
 	require.NotNil(t, manager)
-
-	const pruningKeepRecent = 100
-
-	curStrategy := types.NewCustomPruningOptions(uint64(pruningKeepRecent), 15)
-
-	snapshotInterval := uint64(10)
+	
 	manager.SetSnapshotInterval(snapshotInterval)
 
 	manager.SetOptions(curStrategy)
@@ -161,7 +163,7 @@ func Test_FlushLoad_PruneHeights(t *testing.T) {
 
 	heightsToPruneMirror := make([]int64, 0)
 
-	for curHeight := int64(1); curHeight < 1000; curHeight++ {
+	for curHeight := int64(1); curHeight < totalHeights; curHeight++ {
 		handleHeightActual := manager.HandleHeight(curHeight)
 
 		curHeightStr := fmt.Sprintf("height: %d", curHeight)
