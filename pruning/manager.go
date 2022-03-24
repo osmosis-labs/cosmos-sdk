@@ -25,6 +25,8 @@ type Manager struct {
 const (
 	pruneHeightsKey         = "s/pruneheights"
 	pruneSnapshotHeightsKey = "s/pruneSnheights"
+
+	uint64Size = 8
 )
 
 func NewManager(logger log.Logger, db dbm.DB) *Manager {
@@ -67,10 +69,22 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		return 0
 	}
 
+	// Flag indicating whether should flush to disk.
+	// It is set to true when an update to one of
+	// pruneHeights or pruneSnapshotHeights is made
+	shouldFlush := false
+
 	defer func() {
 		// handle persisted snapshot heights
 		m.mx.Lock()
 		defer m.mx.Unlock()
+		defer func() {
+			if shouldFlush {
+				// Must be unlocked since we are under mutex
+				m.flushAllPruningHeightsUnlocked()
+			}
+		}()
+
 		var next *list.Element
 		for e := m.pruneSnapshotHeights.Front(); e != nil; e = next {
 			snHeight := e.Value.(int64)
@@ -80,13 +94,12 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 				// We must get next before removing to be able to continue iterating.
 				next = e.Next()
 				m.pruneSnapshotHeights.Remove(e)
+
+				shouldFlush = true
 			} else {
 				next = e.Next()
 			}
 		}
-
-		// Must be unlocked since we are under mutex
-		m.flushAllPruningHeightsUnlocked()
 	}()
 
 	if int64(m.opts.KeepRecent) < previousHeight {
@@ -98,6 +111,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		// a 'snapshot' height.
 		if m.snapshotInterval == 0 || pruneHeight%int64(m.snapshotInterval) != 0 {
 			m.pruneHeights = append(m.pruneHeights, pruneHeight)
+			shouldFlush = true
 			return pruneHeight
 		}
 	}
@@ -112,6 +126,7 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 	defer m.mx.Unlock()
 	m.logger.Debug("HandleHeightSnapshot", "height", height) // TODO: change log level to Debug
 	m.pruneSnapshotHeights.PushBack(height)
+	m.flushPruningSnapshotHeightsUnlocked()
 }
 
 // SetSnapshotInterval sets the interval at which the snapshots are taken.
@@ -196,8 +211,8 @@ func (m *Manager) FlushAllPruningHeights() {
 	}
 	batch := m.db.NewBatch()
 	defer batch.Close()
-	m.flushPruningHeights(batch)
-	m.flushPruningSnapshotHeights(batch)
+	m.flushPruningHeightsBatch(batch)
+	m.flushPruningSnapshotHeightsBatch(batch)
 
 	if err := batch.Write(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))
@@ -214,18 +229,18 @@ func (m *Manager) flushAllPruningHeightsUnlocked() {
 	}
 	batch := m.db.NewBatch()
 	defer batch.Close()
-	m.flushPruningHeights(batch)
-	m.flushPruningSnapshotHeightsUnlocked(batch)
+	m.flushPruningHeightsBatch(batch)
+	m.flushPruningSnapshotHeightsUnlockedBatch(batch)
 
 	if err := batch.Write(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))
 	}
 }
 
-func (m *Manager) flushPruningHeights(batch dbm.Batch) {
-	bz := make([]byte, 0)
+func (m *Manager) flushPruningHeightsBatch(batch dbm.Batch) {
+	bz := make([]byte, 0, uint64Size * len(m.pruneHeights))
 	for _, ph := range m.pruneHeights {
-		buf := make([]byte, 8)
+		buf := make([]byte, uint64Size)
 		binary.BigEndian.PutUint64(buf, uint64(ph))
 		bz = append(bz, buf...)
 	}
@@ -235,20 +250,33 @@ func (m *Manager) flushPruningHeights(batch dbm.Batch) {
 	}
 }
 
-func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
+func (m *Manager) flushPruningSnapshotHeightsBatch(batch dbm.Batch) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
-	m.flushPruningSnapshotHeightsUnlocked(batch)
+	m.flushPruningSnapshotHeightsUnlockedBatch(batch)
 }
 
-func (m *Manager) flushPruningSnapshotHeightsUnlocked(batch dbm.Batch) {
-	bz := make([]byte, 0)
-	for e := m.pruneSnapshotHeights.Front(); e != nil; e = e.Next() {
-		buf := make([]byte, 8)
-		binary.BigEndian.PutUint64(buf, uint64(e.Value.(int64)))
-		bz = append(bz, buf...)
-	}
+func (m *Manager) flushPruningSnapshotHeightsUnlockedBatch(batch dbm.Batch) {
+	bz := convertInt64ListToBytes(m.pruneSnapshotHeights)
 	if err := batch.Set([]byte(pruneSnapshotHeightsKey), bz); err != nil {
 		panic(err)
 	}
+}
+
+func (m *Manager) flushPruningSnapshotHeightsUnlocked() {
+	bz := convertInt64ListToBytes(m.pruneSnapshotHeights)
+	if err := m.db.Set([]byte(pruneSnapshotHeightsKey), bz); err != nil {
+		panic(err)
+	}
+}
+
+// INVARIANT: list contains ints
+func convertInt64ListToBytes(list *list.List) []byte {
+	bz := make([]byte, 0, uint64Size * list.Len())
+	for e := list.Front(); e != nil; e = e.Next() {
+		buf := make([]byte, uint64Size)
+		binary.BigEndian.PutUint64(buf, uint64(e.Value.(int64)))
+		bz = append(bz, buf...)
+	}
+	return bz
 }
