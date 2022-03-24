@@ -5,11 +5,13 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
 	"io"
 	"math"
 	"sort"
 	"strings"
+	"sync"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	iavltree "github.com/cosmos/iavl"
 	protoio "github.com/gogo/protobuf/io"
@@ -42,6 +44,13 @@ const (
 	snapshotMaxItemSize = int(64e6) // SDK has no key/value size limit, so we set an arbitrary limit
 )
 
+type storeParams struct {
+	key            types.StoreKey
+	db             dbm.DB
+	typ            types.StoreType
+	initialVersion uint64
+}
+
 // Store is composed of many CommitStores. Name contrasts with
 // cacheMultiStore which is used for branching other MultiStores. It implements
 // the CommitMultiStore interface.
@@ -49,6 +58,7 @@ type Store struct {
 	db             dbm.DB
 	logger         log.Logger
 	lastCommitInfo *types.CommitInfo
+	mx *sync.RWMutex // mutex to sync access to lastCommitInfo
 	pruningOpts    types.PruningOptions
 	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
@@ -86,6 +96,7 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 		keysByName:   make(map[string]types.StoreKey),
 		pruneHeights: make([]int64, 0),
 		listeners:    make(map[types.StoreKey][]types.WriteListener),
+		mx: &sync.RWMutex{},
 	}
 }
 
@@ -185,7 +196,7 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	// load old data if we are not version 0
 	if ver != 0 {
 		var err error
-		cInfo, err = getCommitInfo(rs.db, ver)
+		cInfo, err = rs.getCommitInfoFromDb(ver)
 		if err != nil {
 			return err
 		}
@@ -359,6 +370,8 @@ func (rs *Store) ListeningEnabled(key types.StoreKey) bool {
 
 // LastCommitID implements Committer/CommitStore.
 func (rs *Store) LastCommitID() types.CommitID {
+	rs.mx.RLock()
+	defer rs.mx.RUnlock()
 	if rs.lastCommitInfo == nil {
 		return types.CommitID{
 			Version: getLatestVersion(rs.db),
@@ -386,15 +399,8 @@ func (rs *Store) Commit() types.CommitID {
 		version = previousHeight + 1
 	}
 
-	rs.lastCommitInfo = rs.commitStores(version, rs.stores)
-
-	var pruneErr error
-	defer func ()  {
-		flushMetadata(rs.db, version, rs.lastCommitInfo, rs.pruneHeights)
-		if pruneErr != nil {
-			panic(pruneErr)
-		}
-	}()
+	newCommitInfo := rs.commitStores(version, rs.stores)
+	rs.updateLatestCommitInfo(newCommitInfo, version)
 
 	// Determine if pruneHeight height needs to be added to the list of heights to
 	// be pruned, where pruneHeight = (commitHeight - 1) - KeepRecent.
@@ -407,16 +413,19 @@ func (rs *Store) Commit() types.CommitID {
 		// a 'snapshot' height.
 		if rs.pruningOpts.KeepEvery == 0 || pruneHeight%int64(rs.pruningOpts.KeepEvery) != 0 {
 			rs.pruneHeights = append(rs.pruneHeights, pruneHeight)
+			rs.flushPruningHeights()
 		}
 	}
 
 	// batch prune if the current height is a pruning interval height
 	if rs.pruningOpts.Interval > 0 && version%int64(rs.pruningOpts.Interval) == 0 {
 		rs.logger.Info("pruning", "height", version, "to_prune", rs.pruneHeights)
-		pruneErr = rs.pruneStores()
+		rs.pruneStores()
 	}
 
+	rs.mx.RLock()
 	hash, keys := rs.lastCommitInfo.Hash()
+	defer rs.mx.RUnlock()
 	rs.logger.Info("calculated commit hash", "height", version, "commit_hash", hash, "keys", keys)
 
 	return types.CommitID{
@@ -589,18 +598,10 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proof is unexpectedly empty; ensure height has not been pruned"))
 	}
 
-	// If the request's height is the latest height we've committed, then utilize
-	// the store's lastCommitInfo as this commit info may not be flushed to disk.
-	// Otherwise, we query for the commit info from disk.
-	var commitInfo *types.CommitInfo
 
-	if res.Height == rs.lastCommitInfo.Version {
-		commitInfo = rs.lastCommitInfo
-	} else {
-		commitInfo, err = getCommitInfo(rs.db, res.Height)
-		if err != nil {
-			return sdkerrors.QueryResult(err)
-		}
+	commitInfo, err := rs.getCommitInfoFromDb(res.Height)
+	if err != nil {
+		return sdkerrors.QueryResult(err)
 	}
 
 	// Restore origin path and append proof op.
@@ -873,7 +874,8 @@ func (rs *Store) Restore(
 		importer.Close()
 	}
 
-	flushMetadata(rs.db, int64(height), rs.buildCommitInfo(int64(height)), []int64{})
+	rs.flushLastCommitInfo(rs.buildCommitInfo(int64(height)))
+	rs.flushPruningHeights()
 	return rs.LoadLatestVersion()
 }
 
@@ -978,11 +980,56 @@ func (rs *Store) commitStores(version int64, storeMap map[types.StoreKey]types.C
 	}
 }
 
-type storeParams struct {
-	key            types.StoreKey
-	db             dbm.DB
-	typ            types.StoreType
-	initialVersion uint64
+func (rs *Store) updateLatestCommitInfo(newCommitInfo *types.CommitInfo, version int64) {
+	rs.mx.Lock()
+	defer rs.mx.Unlock()
+	rs.lastCommitInfo = newCommitInfo
+	rs.flushLastCommitInfo(newCommitInfo)
+}
+
+func (rs *Store) flushLastCommitInfo(cInfo *types.CommitInfo) {
+	batch := rs.db.NewBatch()
+	defer batch.Close()
+
+	setCommitInfo(batch, cInfo)
+	setLatestVersion(batch, cInfo.Version)
+
+	if err := batch.Write(); err != nil {
+		panic(fmt.Errorf("error on batch write %w", err))
+	}
+}
+
+func (rs *Store) flushPruningHeights() {
+	bz := make([]byte, 0)
+	for _, ph := range rs.pruneHeights {
+		buf := make([]byte, 8)
+		binary.BigEndian.PutUint64(buf, uint64(ph))
+		bz = append(bz, buf...)
+	}
+
+	err := rs.db.Set([]byte(pruneHeightsKey), bz)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Gets commitInfo from disk.
+func (rs *Store) getCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
+	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
+
+	bz, err := rs.db.Get([]byte(cInfoKey))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get commit info")
+	} else if bz == nil {
+		return nil, errors.New("no commit info found")
+	}
+
+	cInfo := &types.CommitInfo{}
+	if err = cInfo.Unmarshal(bz); err != nil {
+		return nil, errors.Wrap(err, "failed unmarshal commit info")
+	}
+
+	return cInfo, nil
 }
 
 func getLatestVersion(db dbm.DB) int64 {
@@ -1002,32 +1049,13 @@ func getLatestVersion(db dbm.DB) int64 {
 	return latestVersion
 }
 
-// Gets commitInfo from disk.
-func getCommitInfo(db dbm.DB, ver int64) (*types.CommitInfo, error) {
-	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
-
-	bz, err := db.Get([]byte(cInfoKey))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get commit info")
-	} else if bz == nil {
-		return nil, errors.New("no commit info found")
-	}
-
-	cInfo := &types.CommitInfo{}
-	if err = cInfo.Unmarshal(bz); err != nil {
-		return nil, errors.Wrap(err, "failed unmarshal commit info")
-	}
-
-	return cInfo, nil
-}
-
-func setCommitInfo(batch dbm.Batch, version int64, cInfo *types.CommitInfo) {
+func setCommitInfo(batch dbm.Batch, cInfo *types.CommitInfo) {
 	bz, err := cInfo.Marshal()
 	if err != nil {
 		panic(err)
 	}
 
-	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
+	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, cInfo.Version)
 	batch.Set([]byte(cInfoKey), bz)
 }
 
@@ -1038,17 +1066,6 @@ func setLatestVersion(batch dbm.Batch, version int64) {
 	}
 
 	batch.Set([]byte(latestVersionKey), bz)
-}
-
-func setPruningHeights(batch dbm.Batch, pruneHeights []int64) {
-	bz := make([]byte, 0)
-	for _, ph := range pruneHeights {
-		buf := make([]byte, 8)
-		binary.BigEndian.PutUint64(buf, uint64(ph))
-		bz = append(bz, buf...)
-	}
-
-	batch.Set([]byte(pruneHeightsKey), bz)
 }
 
 func getPruningHeights(db dbm.DB) ([]int64, error) {
@@ -1069,17 +1086,4 @@ func getPruningHeights(db dbm.DB) ([]int64, error) {
 	}
 
 	return prunedHeights, nil
-}
-
-func flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo, pruneHeights []int64) {
-	batch := db.NewBatch()
-	defer batch.Close()
-
-	setCommitInfo(batch, version, cInfo)
-	setLatestVersion(batch, version)
-	setPruningHeights(batch, pruneHeights)
-
-	if err := batch.Write(); err != nil {
-		panic(fmt.Errorf("error on batch write %w", err))
-	}
 }
