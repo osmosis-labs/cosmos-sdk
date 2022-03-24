@@ -242,8 +242,6 @@ func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
 }
 
 func (m *Manager) flushPruningSnapshotHeightsUnlocked(batch dbm.Batch) {
-	m.mx.Lock()
-	defer m.mx.Unlock()
 	bz := make([]byte, 0)
 	for e := m.pruneSnapshotHeights.Front(); e != nil; e = e.Next() {
 		buf := make([]byte, 8)
