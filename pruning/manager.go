@@ -84,6 +84,9 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 				next = e.Next()
 			}
 		}
+
+		// Must be unlocked since we are under mutex
+		m.flushAllPruningHeightsUnlocked()
 	}()
 
 	if int64(m.opts.KeepRecent) < previousHeight {
@@ -119,17 +122,6 @@ func (m *Manager) SetSnapshotInterval(snapshotInterval uint64) {
 // ShouldPruneAtHeight return true if the given height should be pruned, false otherwise
 func (m *Manager) ShouldPruneAtHeight(height int64) bool {
 	return m.opts.GetPruningStrategy() != types.PruningNothing && m.opts.Interval > 0 && height%int64(m.opts.Interval) == 0
-}
-
-// FlushPruningHeights flushes the pruning heights to the database for crash recovery.
-func (m *Manager) FlushPruningHeights() {
-	if m.opts.GetPruningStrategy() == types.PruningNothing {
-		return
-	}
-	batch := m.db.NewBatch()
-	defer batch.Close()
-	m.flushPruningHeights(batch)
-	m.flushPruningSnapshotHeights(batch)
 }
 
 // LoadPruningHeights loads the pruning heights from the database as a crash recovery.
@@ -196,6 +188,40 @@ func (m *Manager) loadPruningSnapshotHeights(db dbm.DB) error {
 	return nil
 }
 
+// FlushAllPruningHeights flushes the pruning heights to the database for crash recovery.
+// "All" refers to regular pruning heights and snapshot heights, if any.
+func (m *Manager) FlushAllPruningHeights() {
+	if m.opts.GetPruningStrategy() == types.PruningNothing {
+		return
+	}
+	batch := m.db.NewBatch()
+	defer batch.Close()
+	m.flushPruningHeights(batch)
+	m.flushPruningSnapshotHeights(batch)
+
+	if err := batch.Write(); err != nil {
+		panic(fmt.Errorf("error on batch write %w", err))
+	}
+}
+
+// flushAllPruningHeightsUnlocked flushes the pruning heights to the database for crash recovery.
+// "All" refers to regular pruning heights and snapshot heights, if any.
+// It serves the same function as exported FlushPruningHeights. However, it assummes that
+// mutex was acquired prior to calling this method.
+func (m *Manager) flushAllPruningHeightsUnlocked() {
+	if m.opts.GetPruningStrategy() == types.PruningNothing {
+		return
+	}
+	batch := m.db.NewBatch()
+	defer batch.Close()
+	m.flushPruningHeights(batch)
+	m.flushPruningSnapshotHeightsUnlocked(batch)
+
+	if err := batch.Write(); err != nil {
+		panic(fmt.Errorf("error on batch write %w", err))
+	}
+}
+
 func (m *Manager) flushPruningHeights(batch dbm.Batch) {
 	bz := make([]byte, 0)
 	for _, ph := range m.pruneHeights {
@@ -204,10 +230,18 @@ func (m *Manager) flushPruningHeights(batch dbm.Batch) {
 		bz = append(bz, buf...)
 	}
 
-	batch.Set([]byte(pruneHeightsKey), bz)
+	if err := batch.Set([]byte(pruneHeightsKey), bz); err != nil {
+		panic(err)
+	}
 }
 
 func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+	m.flushPruningSnapshotHeightsUnlocked(batch)
+}
+
+func (m *Manager) flushPruningSnapshotHeightsUnlocked(batch dbm.Batch) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
 	bz := make([]byte, 0)
@@ -216,5 +250,7 @@ func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
 		binary.BigEndian.PutUint64(buf, uint64(e.Value.(int64)))
 		bz = append(bz, buf...)
 	}
-	batch.Set([]byte(pruneSnapshotHeightsKey), bz)
+	if err := batch.Set([]byte(pruneSnapshotHeightsKey), bz); err != nil {
+		panic(err)
+	}
 }

@@ -880,8 +880,8 @@ func (rs *Store) Restore(
 		importer.Close()
 	}
 
-	rs.flushLastCommitInfo(rs.buildCommitInfo(int64(height)))
-	rs.pruningManager.FlushPruningHeights()
+	rs.flushLastCommitInfoAndLatestVersion(rs.buildCommitInfo(int64(height)))
+	rs.pruningManager.FlushAllPruningHeights()
 	return rs.LoadLatestVersion()
 }
 
@@ -990,15 +990,15 @@ func (rs *Store) updateLatestCommitInfo(newCommitInfo *types.CommitInfo, version
 	rs.mx.Lock()
 	defer rs.mx.Unlock()
 	rs.lastCommitInfo = newCommitInfo
-	rs.flushLastCommitInfo(newCommitInfo)
+	rs.flushLastCommitInfoAndLatestVersion(newCommitInfo)
 }
 
-func (rs *Store) flushLastCommitInfo(cInfo *types.CommitInfo) {
+func (rs *Store) flushLastCommitInfoAndLatestVersion(cInfo *types.CommitInfo) {
 	batch := rs.db.NewBatch()
 	defer batch.Close()
 
-	setCommitInfo(batch, cInfo)
-	setLatestVersion(batch, cInfo.Version)
+	flushCommitInfo(batch, cInfo)
+	flushLatestVersion(batch, cInfo.Version)
 
 	if err := batch.Write(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))
@@ -1041,21 +1041,25 @@ func getLatestVersion(db dbm.DB) int64 {
 	return latestVersion
 }
 
-func setCommitInfo(batch dbm.Batch, cInfo *types.CommitInfo) {
+func flushCommitInfo(batch dbm.Batch, cInfo *types.CommitInfo) {
 	bz, err := cInfo.Marshal()
 	if err != nil {
 		panic(err)
 	}
 
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, cInfo.Version)
-	batch.Set([]byte(cInfoKey), bz)
+	if err := batch.Set([]byte(cInfoKey), bz); err != nil {
+		panic(err)
+	}
 }
 
-func setLatestVersion(batch dbm.Batch, version int64) {
+func flushLatestVersion(batch dbm.Batch, version int64) {
 	bz, err := gogotypes.StdInt64Marshal(version)
 	if err != nil {
 		panic(err)
 	}
 
-	batch.Set([]byte(latestVersionKey), bz)
+	if err := batch.Set([]byte(latestVersionKey), bz); err != nil {
+		panic(err)
+	}
 }

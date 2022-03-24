@@ -182,7 +182,7 @@ func Test_FlushLoad(t *testing.T) {
 		if curHeight%3 == 0 {
 			require.Equal(t, heightsToPruneMirror, manager.GetPruningHeights(), curHeightStr)
 			batch := db.NewBatch()
-			manager.FlushPruningHeights()
+			manager.FlushAllPruningHeights()
 			require.NoError(t, batch.Write())
 			require.NoError(t, batch.Close())
 
