@@ -17,7 +17,7 @@ import (
 )
 
 func Test_NewManager(t *testing.T) {
-	manager := pruning.NewManager(log.NewNopLogger())
+	manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 
 	require.NotNil(t, manager)
 	require.NotNil(t, manager.GetPruningHeights())
@@ -75,7 +75,7 @@ func Test_Strategies(t *testing.T) {
 		},
 	}
 
-	manager := pruning.NewManager(log.NewNopLogger())
+	manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 
 	require.NotNil(t, manager)
 
@@ -143,7 +143,7 @@ func Test_Strategies(t *testing.T) {
 }
 
 func Test_FlushLoad(t *testing.T) {
-	manager := pruning.NewManager(log.NewNopLogger())
+	manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 	require.NotNil(t, manager)
 
 	db := db.NewMemDB()
@@ -182,7 +182,7 @@ func Test_FlushLoad(t *testing.T) {
 		if curHeight%3 == 0 {
 			require.Equal(t, heightsToPruneMirror, manager.GetPruningHeights(), curHeightStr)
 			batch := db.NewBatch()
-			manager.FlushPruningHeights(batch)
+			manager.FlushPruningHeights()
 			require.NoError(t, batch.Write())
 			require.NoError(t, batch.Close())
 
@@ -197,7 +197,7 @@ func Test_FlushLoad(t *testing.T) {
 }
 
 func Test_WithSnapshot(t *testing.T) {
-	manager := pruning.NewManager(log.NewNopLogger())
+	manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 	require.NotNil(t, manager)
 
 	curStrategy := types.NewCustomPruningOptions(10, 10)
