@@ -126,7 +126,7 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 	defer m.mx.Unlock()
 	m.logger.Debug("HandleHeightSnapshot", "height", height) // TODO: change log level to Debug
 	m.pruneSnapshotHeights.PushBack(height)
-	m.flushPruningSnapshotHeightsUnlocked()
+	// m.flushPruningSnapshotHeightsUnlocked()
 }
 
 // SetSnapshotInterval sets the interval at which the snapshots are taken.

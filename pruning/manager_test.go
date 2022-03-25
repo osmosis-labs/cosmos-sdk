@@ -234,9 +234,6 @@ func Test_FlushLoad_PruneSnapshotHeights(t *testing.T) {
 			wg.Add(1)
 			// Mimic taking snapshot in a separate goroutine
 			go func(h int64) {
-
-				// Mimic delay to take snapshots
-				time.Sleep(30 * time.Millisecond)
 				manager.HandleHeightSnapshot(h)
 				wg.Done()
 			}(curHeight)
@@ -254,7 +251,7 @@ func Test_FlushLoad_PruneSnapshotHeights(t *testing.T) {
 	require.Equal(t, int64(lastHeight-pruningKeepRecent), handleHeightActual)
 
 	pruningHeights := manager.GetPruningHeights()
-	require.Equal(t, int(totalHeights+1-1-pruningKeepRecent), len(pruningHeights))
+	require.Equal(t, int(lastHeight-1-pruningKeepRecent), len(pruningHeights))
 }
 
 func Test_WithSnapshot(t *testing.T) {
