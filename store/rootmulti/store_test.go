@@ -474,7 +474,15 @@ func TestMultiStoreQuery(t *testing.T) {
 	qres = multi.Query(query)
 	require.EqualValues(t, 0, qres.Code)
 	require.Equal(t, v2, qres.Value)
+
+	// Test proofs
+	query.Path = fmt.Sprintf("/%s", proofsPath)
+	qres = multi.Query(query)
+	require.EqualValues(t, 0, qres.Code)
+	require.NotNil(t, qres.ProofOps)
+	require.Equal(t, 3, len(qres.ProofOps.Ops))
 }
+
 
 func TestMultiStore_Pruning(t *testing.T) {
 	testCases := []struct {
