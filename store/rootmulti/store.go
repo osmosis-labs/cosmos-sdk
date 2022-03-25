@@ -1036,7 +1036,7 @@ func (rs *Store) getCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
 }
 
 func (rs *Store) doProofsQuery(req abci.RequestQuery) abci.ResponseQuery {
-	commitInfo, err := getCommitInfo(rs.db, req.Height)
+	commitInfo, err := rs.getCommitInfoFromDb(req.Height)
 	if err != nil {
 		return sdkerrors.QueryResult(err)
 	}
