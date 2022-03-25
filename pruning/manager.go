@@ -204,7 +204,9 @@ func (m *Manager) flushPruningHeights(batch dbm.Batch) {
 		bz = append(bz, buf...)
 	}
 
-	batch.Set([]byte(pruneHeightsKey), bz)
+	if err := batch.Set([]byte(pruneHeightsKey), bz); err != nil {
+		panic(err)
+	}
 }
 
 func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
@@ -216,5 +218,7 @@ func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
 		binary.BigEndian.PutUint64(buf, uint64(e.Value.(int64)))
 		bz = append(bz, buf...)
 	}
-	batch.Set([]byte(pruneSnapshotHeightsKey), bz)
+	if err := batch.Set([]byte(pruneSnapshotHeightsKey), bz); err != nil {
+		panic(err)
+	}
 }
