@@ -428,7 +428,7 @@ func (rs *Store) Commit() types.CommitID {
 	rs.mx.RLock()
 	hash, keys := rs.lastCommitInfo.Hash()
 	defer rs.mx.RUnlock()
-	rs.logger.Info("calculated commit hash", "height", version, "commit_hash", hash, "keys", keys)
+	rs.logger.Info("calculated commit hash", "height", version, "commit_hash", fmt.Sprintf("%X", hash), "keys", keys)
 
 	return types.CommitID{
 		Version: version,
