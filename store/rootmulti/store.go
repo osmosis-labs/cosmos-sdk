@@ -527,6 +527,8 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
+	defer rs.pruningManager.FlushPruningHeights()
+
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
 	if rs.pruningManager.ShouldPruneAtHeight(version) {
 		rs.logger.Info("prune start", "height", version)
@@ -546,7 +548,7 @@ func (rs *Store) handlePruning(version int64) error {
 
 				if err := store.(*iavl.Store).DeleteVersions(pruningHeights...); err != nil {
 					if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
-						panic(err)
+						return err
 					}
 				}
 			}
