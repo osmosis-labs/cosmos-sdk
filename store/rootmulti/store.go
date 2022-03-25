@@ -567,7 +567,6 @@ func (rs *Store) getStoreByName(name string) types.Store {
 // Query calls substore.Query with the same `req` where `req.Path` is
 // modified to remove the substore prefix.
 // Ie. `req.Path` here is `/<substore>/<path>`, and trimmed to `/<path>` for the substore.
-// TODO: add proof for `multistore -> substore`.
 func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	path := req.Path
 	firstPath, subpath, err := parsePath(path)
@@ -576,21 +575,7 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	}
 
 	if firstPath == proofsPath {
-		commitInfo, err := getCommitInfo(rs.db, req.Height)
-		if err != nil {
-			return sdkerrors.QueryResult(err)
-		}
-		res := abci.ResponseQuery{
-			Height: req.Height,
-			Key: []byte(proofsPath),
-			Value: commitInfo.CommitID().Hash,
-			ProofOps: &crypto.ProofOps{Ops: make([]crypto.ProofOp, 0, len(commitInfo.StoreInfos))},
-		}
-
-		for _, storeInfo := range commitInfo.StoreInfos {
-			res.ProofOps.Ops = append(res.ProofOps.Ops, commitInfo.ProofOp(storeInfo.Name))	
-		}
-		return res
+		return rs.doProofsQuery(req)
 	}
 
 	store := rs.getStoreByName(firstPath)
@@ -1024,6 +1009,24 @@ type storeParams struct {
 	db             dbm.DB
 	typ            types.StoreType
 	initialVersion uint64
+}
+
+func (rs *Store) doProofsQuery(req abci.RequestQuery) abci.ResponseQuery {
+	commitInfo, err := getCommitInfo(rs.db, req.Height)
+	if err != nil {
+		return sdkerrors.QueryResult(err)
+	}
+	res := abci.ResponseQuery{
+		Height:   req.Height,
+		Key:      []byte(proofsPath),
+		Value:    commitInfo.CommitID().Hash,
+		ProofOps: &crypto.ProofOps{Ops: make([]crypto.ProofOp, 0, len(commitInfo.StoreInfos))},
+	}
+
+	for _, storeInfo := range commitInfo.StoreInfos {
+		res.ProofOps.Ops = append(res.ProofOps.Ops, commitInfo.ProofOp(storeInfo.Name))
+	}
+	return res
 }
 
 func getLatestVersion(db dbm.DB) int64 {
