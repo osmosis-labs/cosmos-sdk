@@ -218,7 +218,7 @@ func (m *Manager) flushPruningHeights(batch dbm.Batch) {
 func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
 	m.mx.Lock()
 	defer m.mx.Unlock()
-	bz := make([]byte, 0, m.pruneSnapshotHeights.Len())
+	bz := make([]byte, 0, m.pruneSnapshotHeights.Len() * uint64Size)
 	for e := m.pruneSnapshotHeights.Front(); e != nil; e = e.Next() {
 		buf := make([]byte, uint64Size)
 		binary.BigEndian.PutUint64(buf, uint64(e.Value.(int64)))
