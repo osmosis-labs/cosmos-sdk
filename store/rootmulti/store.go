@@ -567,6 +567,9 @@ func (rs *Store) getStoreByName(name string) types.Store {
 // Query calls substore.Query with the same `req` where `req.Path` is
 // modified to remove the substore prefix.
 // Ie. `req.Path` here is `/<substore>/<path>`, and trimmed to `/<path>` for the substore.
+// Special case: if `req.Path` is `/proofs`, the commit hash is included 
+// as response value. In addition, proofs of every store are appended to the response for 
+// the requested height
 func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	path := req.Path
 	firstPath, subpath, err := parsePath(path)
