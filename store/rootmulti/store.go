@@ -1011,7 +1011,7 @@ func (rs *Store) flushLastCommitInfo(cInfo *types.CommitInfo) {
 	setCommitInfo(batch, cInfo)
 	setLatestVersion(batch, cInfo.Version)
 
-	if err := batch.Write(); err != nil {
+	if err := batch.WriteSync(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))
 	}
 }

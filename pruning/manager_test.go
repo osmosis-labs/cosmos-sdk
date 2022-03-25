@@ -143,30 +143,34 @@ func Test_Strategies(t *testing.T) {
 }
 
 func Test_FlushLoad(t *testing.T) {
-	manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
+	const (
+		totalHeights = 1000
+		snapshotInterval = uint64(10)
+
+		pruningKeepRecent = 100
+		pruningInterval = 15
+	)
+
+	var (
+		db = db.NewMemDB()
+		manager = pruning.NewManager(log.NewNopLogger(), db)
+		curStrategy = types.NewCustomPruningOptions(pruningKeepRecent, pruningInterval)
+		heightsToPruneMirror = make([]int64, 0)
+	)
 	require.NotNil(t, manager)
-
-	db := db.NewMemDB()
-
-	curStrategy := types.NewCustomPruningOptions(100, 15)
-
-	snapshotInterval := uint64(10)
+	
 	manager.SetSnapshotInterval(snapshotInterval)
 
 	manager.SetOptions(curStrategy)
 	require.Equal(t, curStrategy, manager.GetOptions())
-
-	keepRecent := curStrategy.KeepRecent
-
-	heightsToPruneMirror := make([]int64, 0)
 
 	for curHeight := int64(0); curHeight < 1000; curHeight++ {
 		handleHeightActual := manager.HandleHeight(curHeight)
 
 		curHeightStr := fmt.Sprintf("height: %d", curHeight)
 
-		if curHeight > int64(keepRecent) && (snapshotInterval != 0 && (curHeight-int64(keepRecent))%int64(snapshotInterval) != 0 || snapshotInterval == 0) {
-			expectedHandleHeight := curHeight - int64(keepRecent)
+		if curHeight > int64(pruningKeepRecent) && (snapshotInterval != 0 && (curHeight-int64(pruningKeepRecent))%int64(snapshotInterval) != 0 || snapshotInterval == 0) {
+			expectedHandleHeight := curHeight - int64(pruningKeepRecent)
 			require.Equal(t, expectedHandleHeight, handleHeightActual, curHeightStr)
 			heightsToPruneMirror = append(heightsToPruneMirror, expectedHandleHeight)
 		} else {
@@ -181,10 +185,7 @@ func Test_FlushLoad(t *testing.T) {
 		// N.B.: There is no reason behind the choice of 3.
 		if curHeight%3 == 0 {
 			require.Equal(t, heightsToPruneMirror, manager.GetPruningHeights(), curHeightStr)
-			batch := db.NewBatch()
 			manager.FlushPruningHeights()
-			require.NoError(t, batch.Write())
-			require.NoError(t, batch.Close())
 
 			manager.ResetPruningHeights()
 			require.Equal(t, make([]int64, 0), manager.GetPruningHeights(), curHeightStr)
