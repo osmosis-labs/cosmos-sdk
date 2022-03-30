@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/tendermint/tendermint/libs/log"
 	"io"
-	"sync"
 	"time"
 
 	ics23 "github.com/confio/ics23/go"
@@ -19,7 +18,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/tracekv"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
