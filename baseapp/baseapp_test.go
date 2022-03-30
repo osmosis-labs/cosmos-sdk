@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -29,7 +28,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
-	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
+	"github.com/cosmos/cosmos-sdk/testutil"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -156,7 +155,7 @@ func testTxHandler(options middleware.TxHandlerOptions, customTxHandlerMiddlewar
 }
 
 // simple one store baseapp with data and snapshots. Each tx is 1 MB in size (uncompressed).
-func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*baseapp.BaseApp, func(), error) {
+func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*baseapp.BaseApp, error) {
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 	routerOpt := func(bapp *baseapp.BaseApp) {
@@ -185,17 +184,12 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*baseapp.Base
 	}
 
 	snapshotTimeout := 1 * time.Minute
-	snapshotDir, err := os.MkdirTemp("", "baseapp")
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), testutil.GetTempDir(t))
 	require.NoError(t, err)
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snapshotDir)
-	require.NoError(t, err)
-	teardown := func() {
-		os.RemoveAll(snapshotDir)
-	}
 
 	app, err := setupBaseApp(t, routerOpt, baseapp.SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(config.snapshotInterval, uint32(config.snapshotKeepRecent))), baseapp.SetPruning(config.pruningOpts))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	app.InitChain(abci.RequestInitChain{})
@@ -239,7 +233,7 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*baseapp.Base
 		}
 	}
 
-	return app, teardown, nil
+	return app, nil
 }
 
 func TestMountStores(t *testing.T) {
@@ -496,7 +490,7 @@ func TestLoadVersionPruning(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
 
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), testutil.GetTempDir(t))
 	require.NoError(t, err)
 	snapshotOpt := baseapp.SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(3, 1))
 
@@ -1942,9 +1936,8 @@ func TestListSnapshots(t *testing.T) {
 		pruningOpts: sdk.NewPruningOptions(storeTypes.PruningNothing),
 	}
 
-	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	app, err := setupBaseAppWithSnapshots(t, setupConfig)
 	require.NoError(t, err)
-	defer teardown()
 
 	resp := app.ListSnapshots(abci.RequestListSnapshots{})
 	for _, s := range resp.Snapshots {
@@ -2041,7 +2034,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-			app, teardown, err := setupBaseAppWithSnapshots(t, tc.config)
+			app, err := setupBaseAppWithSnapshots(t, tc.config)
 
 			if tc.expectedErr != nil {
 				require.Error(t, err)
@@ -2049,8 +2042,6 @@ func TestSnapshotWithPruning(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-
-			defer teardown()
 
 			resp := app.ListSnapshots(abci.RequestListSnapshots{})
 			for _, s := range resp.Snapshots {
@@ -2101,9 +2092,8 @@ func TestLoadSnapshotChunk(t *testing.T) {
 		snapshotKeepRecent: 2,
 		pruningOpts: sdk.NewPruningOptions(storeTypes.PruningNothing),
 	}
-	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	app, err := setupBaseAppWithSnapshots(t, setupConfig)
 	require.NoError(t, err)
-	defer teardown()
 
 	testcases := map[string]struct {
 		height      uint64
@@ -2145,9 +2135,8 @@ func TestOfferSnapshot_Errors(t *testing.T) {
 		snapshotKeepRecent: 2,
 		pruningOpts: sdk.NewPruningOptions(storeTypes.PruningNothing),
 	}
-	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	app, err := setupBaseAppWithSnapshots(t, setupConfig)
 	require.NoError(t, err)
-	defer teardown()
 
 	m := snapshottypes.Metadata{ChunkHashes: [][]byte{{1}, {2}, {3}}}
 	metadata, err := m.Marshal()
@@ -2208,9 +2197,8 @@ func TestApplySnapshotChunk(t *testing.T) {
 		snapshotKeepRecent: 2,
 		pruningOpts: sdk.NewPruningOptions(storeTypes.PruningNothing),
 	}
-	source, teardown, err := setupBaseAppWithSnapshots(t, setupConfig1)
+	source, err := setupBaseAppWithSnapshots(t, setupConfig1)
 	require.NoError(t, err)
-	defer teardown()
 
 	setupConfig2 := &setupConfig{
 		blocks: 0, 
@@ -2219,9 +2207,8 @@ func TestApplySnapshotChunk(t *testing.T) {
 		snapshotKeepRecent: 2,
 		pruningOpts: sdk.NewPruningOptions(storeTypes.PruningNothing),
 	}
-	target, teardown, err := setupBaseAppWithSnapshots(t, setupConfig2)
+	target, err := setupBaseAppWithSnapshots(t, setupConfig2)
 	require.NoError(t, err)
-	defer teardown()
 
 	// Fetch latest snapshot to restore
 	respList := source.ListSnapshots(abci.RequestListSnapshots{})
@@ -2365,7 +2352,7 @@ func TestBaseApp_Init(t *testing.T) {
 	name := t.Name()
 	logger := defaultLogger()
 
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), testutil.GetTempDir(t))
 	require.NoError(t, err)
 
 	testCases := map[string]struct {
