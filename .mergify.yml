@@ -26,6 +26,24 @@ pull_request_rules:
         branches:
           - release/v0.42.x
 
+  - name: backport patches to v0.42.9-osmo-v4 branch
+    conditions:
+      - base=osmosis-main
+      - label=A:backport/v0.42.9-osmo-v4
+    actions:
+      backport:
+        branches:
+          - v0.42.9-osmo-v4
+
+  - name: backport patches to v0.44.3x-osmo-v5 branch
+    conditions:
+      - base=osmosis-main
+      - label=A:backport/v0.44.3x-osmo-v5
+    actions:
+      backport:
+        branches:
+          - v0.44.3x-osmo-v5
+
   - name: backport patches to v0.45.0x-osmo-v7 branch
     conditions:
       - base=osmosis-main
