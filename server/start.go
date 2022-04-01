@@ -312,7 +312,11 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 			grpcClient, err := grpc.Dial(
 				grpcAddress,
 				grpc.WithInsecure(),
-				grpc.WithDefaultCallOptions(grpc.ForceCodec(encoding.GetCodec(proto.Name))),
+				grpc.WithDefaultCallOptions(
+					grpc.ForceCodec(encoding.GetCodec(proto.Name)),
+					grpc.MaxCallRecvMsgSize(config.GRPC.MaxRecvMsgSize),
+					grpc.MaxCallSendMsgSize(config.GRPC.MaxSendMsgSize),
+				),
 			)
 			if err != nil {
 				return err
@@ -343,7 +347,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		grpcWebSrv *http.Server
 	)
 	if config.GRPC.Enable {
-		grpcSrv, err = servergrpc.StartGRPCServer(clientCtx, app, config.GRPC.Address)
+		grpcSrv, err = servergrpc.StartGRPCServer(clientCtx, app, config.GRPC)
 		if err != nil {
 			return err
 		}
