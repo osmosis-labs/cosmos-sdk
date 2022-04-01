@@ -16,7 +16,7 @@ import (
 	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/snapshots"
-	snapshotTypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	snapshotypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -74,7 +74,7 @@ func snapshotItems(items [][]byte) [][]byte {
 		zWriter, _ := zlib.NewWriterLevel(bufWriter, 7)
 		protoWriter := protoio.NewDelimitedWriter(zWriter)
 		for _, item := range items {
-			snapshotTypes.WriteExtensionItem(protoWriter, item)
+			snapshotypes.WriteExtensionItem(protoWriter, item)
 		}
 		protoWriter.Close()
 		zWriter.Close()
@@ -94,43 +94,43 @@ func snapshotItems(items [][]byte) [][]byte {
 }
 
 type mockSnapshotter struct {
-	items [][]byte
-	prunedHeights map[int64]struct{}
+	items            [][]byte
+	prunedHeights    map[int64]struct{}
 	snapshotInterval uint64
 }
 
 func (m *mockSnapshotter) Restore(
 	height uint64, format uint32, protoReader protoio.Reader,
-) (snapshotTypes.SnapshotItem, error) {
+) (snapshotypes.SnapshotItem, error) {
 	if format == 0 {
-		return snapshotTypes.SnapshotItem{}, snapshotTypes.ErrUnknownFormat
+		return snapshotypes.SnapshotItem{}, snapshotypes.ErrUnknownFormat
 	}
 	if m.items != nil {
-		return snapshotTypes.SnapshotItem{}, errors.New("already has contents")
+		return snapshotypes.SnapshotItem{}, errors.New("already has contents")
 	}
 
 	m.items = [][]byte{}
 	for {
-		item := &snapshotTypes.SnapshotItem{}
+		item := &snapshotypes.SnapshotItem{}
 		err := protoReader.ReadMsg(item)
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return snapshotTypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
+			return snapshotypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
 		}
 		payload := item.GetExtensionPayload()
 		if payload == nil {
-			return snapshotTypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
+			return snapshotypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
 		}
 		m.items = append(m.items, payload.Payload)
 	}
 
-	return snapshotTypes.SnapshotItem{}, nil
+	return snapshotypes.SnapshotItem{}, nil
 }
 
 func (m *mockSnapshotter) Snapshot(height uint64, protoWriter protoio.Writer) error {
 	for _, item := range m.items {
-		if err := snapshotTypes.WriteExtensionItem(protoWriter, item); err != nil {
+		if err := snapshotypes.WriteExtensionItem(protoWriter, item); err != nil {
 			return err
 		}
 	}
@@ -138,11 +138,11 @@ func (m *mockSnapshotter) Snapshot(height uint64, protoWriter protoio.Writer) er
 }
 
 func (m *mockSnapshotter) SnapshotFormat() uint32 {
-	return snapshotTypes.CurrentFormat
+	return snapshotypes.CurrentFormat
 }
 
 func (m *mockSnapshotter) SupportedFormats() []uint32 {
-	return []uint32{snapshotTypes.CurrentFormat}
+	return []uint32{snapshotypes.CurrentFormat}
 }
 
 func (m *mockSnapshotter) PruneSnapshotHeight(height int64) {
@@ -180,14 +180,14 @@ func setupBusyManager(t *testing.T) *snapshots.Manager {
 
 // hungSnapshotter can be used to test operations in progress. Call close to end the snapshot.
 type hungSnapshotter struct {
-	ch chan struct{}
-	prunedHeights map[int64]struct{}
+	ch               chan struct{}
+	prunedHeights    map[int64]struct{}
 	snapshotInterval uint64
 }
 
 func newHungSnapshotter() *hungSnapshotter {
 	return &hungSnapshotter{
-		ch: make(chan struct{}),
+		ch:            make(chan struct{}),
 		prunedHeights: make(map[int64]struct{}),
 	}
 }
@@ -211,6 +211,6 @@ func (m *hungSnapshotter) SetSnapshotInterval(snapshotInterval uint64) {
 
 func (m *hungSnapshotter) Restore(
 	height uint64, format uint32, protoReader protoio.Reader,
-) (snapshotTypes.SnapshotItem, error) {
+) (snapshotypes.SnapshotItem, error) {
 	panic("not implemented")
 }
