@@ -8377,7 +8377,7 @@ MsgCreateClawbackVestingAccount defines a message that enables creating a Clawba
 | ----- | ---- | ----- | ----------- |
 | `from_address` | [string](#string) |  | from_address specifies the account to provide the funds and sign the clawback request |
 | `to_address` | [string](#string) |  | to_address specifies the account to receive the funds |
-| `start_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | start_time defines the time at which the vesting period begins |
+| `start_time` | [int64](#int64) |  | start_time defines the time at which the vesting period begins |
 | `lockup_periods` | [Period](#cosmos.vesting.v1beta1.Period) | repeated | lockup_periods defines the unlocking schedule relative to the start_time |
 | `vesting_periods` | [Period](#cosmos.vesting.v1beta1.Period) | repeated | vesting_periods defines the vesting schedule relative to the start_time |
 | `merge` | [bool](#bool) |  | merge specifies a creation mechanism for existing ClawbackVestingAccounts. If true, merge this new grant into an existing ClawbackVestingAccount, or create it if it does not exist. If false, creates a new account. New grants to an existing account must be from the same from_address. |
