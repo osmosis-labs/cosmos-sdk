@@ -136,7 +136,7 @@ type GRPCConfig struct {
 	Address string `mapstructure:"address"`
 
 	// MaxRecvMsgSize defines the max message size in bytes the server can receive.
-	// The default value is 4MB.
+	// The default value is 10MB.
 	MaxRecvMsgSize int `mapstructure:"max-recv-msg-size"`
 
 	// MaxSendMsgSize defines the max message size in bytes the server can send.
@@ -235,7 +235,7 @@ func DefaultConfig() *Config {
 		GRPC: GRPCConfig{
 			Enable:         true,
 			Address:        DefaultGRPCAddress,
-			MaxRecvMsgSize: 1024 * 1024 * 4,
+			MaxRecvMsgSize: 1024 * 1024 * 10,
 			MaxSendMsgSize: math.MaxInt32,
 		},
 		Rosetta: RosettaConfig{

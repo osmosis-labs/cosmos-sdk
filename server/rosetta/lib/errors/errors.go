@@ -67,8 +67,6 @@ func WrapError(err *Error, msg string) *Error {
 // ToRosetta attempts to converting an error into a rosetta
 // error, if the error cannot be converted it will be parsed as unknown
 func ToRosetta(err error) *types.Error {
-	fmt.Println("DEBUG - ROSETTA ERROR:", err)
-
 	// if it's null or not known
 	rosErr, ok := err.(*Error)
 	if rosErr == nil || !ok {
