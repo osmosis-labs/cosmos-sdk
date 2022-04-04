@@ -160,9 +160,9 @@ type MsgCreateClawbackVestingAccount struct {
 	StartTime time.Time `protobuf:"bytes,3,opt,name=start_time,json=startTime,proto3,stdtime" json:"start_time"`
 	// lockup_periods defines the unlocking schedule relative to the start_time
 	LockupPeriods []Period `protobuf:"bytes,4,rep,name=lockup_periods,json=lockupPeriods,proto3" json:"lockup_periods"`
-	// vesting_periods defines thevesting schedule relative to the start_time
+	// vesting_periods defines the vesting schedule relative to the start_time
 	VestingPeriods []Period `protobuf:"bytes,5,rep,name=vesting_periods,json=vestingPeriods,proto3" json:"vesting_periods"`
-	// merge specifies a the creation mechanism for existing
+	// merge specifies a creation mechanism for existing
 	// ClawbackVestingAccounts. If true, merge this new grant into an existing
 	// ClawbackVestingAccount, or create it if it does not exist. If false,
 	// creates a new account. New grants to an existing account must be from the

@@ -50,9 +50,9 @@ message MsgCreateClawbackVestingAccount {
   google.protobuf.Timestamp start_time = 3 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
   // lockup_periods defines the unlocking schedule relative to the start_time
   repeated cosmos.vesting.v1beta1.Period lockup_periods = 4 [(gogoproto.nullable) = false];
-  // vesting_periods defines thevesting schedule relative to the start_time
+  // vesting_periods defines the vesting schedule relative to the start_time
   repeated cosmos.vesting.v1beta1.Period vesting_periods = 5 [(gogoproto.nullable) = false];
-  // merge specifies a the creation mechanism for existing
+  // merge specifies a creation mechanism for existing
   // ClawbackVestingAccounts. If true, merge this new grant into an existing
   // ClawbackVestingAccount, or create it if it does not exist. If false,
   // creates a new account. New grants to an existing account must be from the
