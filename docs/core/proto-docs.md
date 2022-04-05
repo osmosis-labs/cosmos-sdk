@@ -8349,7 +8349,7 @@ ClawbackVestingAccount.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `funder_address` | [string](#string) |  | funder_address is the address which funded the account |
-| `account_address` | [string](#string) |  | account_address is the address of the ClawbackVestingAccount to claw back from. |
+| `address` | [string](#string) |  | address is the address of the ClawbackVestingAccount to claw back from. |
 | `dest_address` | [string](#string) |  | dest_address specifies where the clawed-back tokens should be transferred to. If empty, the tokens will be transferred back to the original funder of the account. |
 
 
