@@ -163,7 +163,7 @@ func (msg MsgCreateClawbackVestingAccount) ValidateBasic() error {
 // The dest address may be nil - defaulting to the funder.
 //nolint:interfacer
 func NewMsgClawback(funder, addr, dest sdk.AccAddress) *MsgClawback {
-	destString := ""
+	var destString string
 	if dest != nil {
 		destString = dest.String()
 	}
