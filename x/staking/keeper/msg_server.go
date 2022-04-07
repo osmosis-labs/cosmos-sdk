@@ -56,8 +56,7 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 		)
 	}
 
-	//Uses GT instead of GTE for consistency with other MinSelfDelegation checks
-	if msg.MinSelfDelegation.GT(msg.Value.Amount) {
+	if msg.Value.Amount.LTE(msg.MinSelfDelegation) {
 		return nil, types.ErrSelfDelegationBelowMinimum
 	}
 
@@ -107,7 +106,7 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 	globalMinSelfDelegation := k.MinSelfDelegation(ctx)
 
 	//Minimum validator self delegation must be greater than or equal to global minimum
-	if globalMinSelfDelegation.GT(validator.MinSelfDelegation) {
+	if validator.MinSelfDelegation.LT(globalMinSelfDelegation) {
 		return nil, types.ErrMinSelfDelegationBelowMinimum
 	}
 

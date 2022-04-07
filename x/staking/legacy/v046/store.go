@@ -1,6 +1,5 @@
 package v046
 
-
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -18,6 +17,7 @@ func MigrateStore(ctx sdk.Context, paramstore paramtypes.Subspace) error {
 }
 
 func migrateParamsStore(ctx sdk.Context, paramstore paramtypes.Subspace) {
+	DefaultMinSelfDelegation := sdk.ZeroInt()
 	paramstore.WithKeyTable(types.ParamKeyTable())
-	paramstore.Set(ctx, types.KeyMinSelfDelegation, types.DefaultMinSelfDelegation)
+	paramstore.Set(ctx, types.KeyMinSelfDelegation, DefaultMinSelfDelegation)
 }
