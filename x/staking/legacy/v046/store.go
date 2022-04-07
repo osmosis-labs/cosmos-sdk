@@ -1,6 +1,5 @@
 package v046
 
-//package v046
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
