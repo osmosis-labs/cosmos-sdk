@@ -173,6 +173,14 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", moduleAccAddr)
 	}
 
+	// do not allow delegation if clawback vesting account
+	acc := k.ak.GetAccount(ctx, delegatorAddr)
+	_, ok := acc.(vestexported.ClawbackVestingAccountI)
+	if ok {
+		return fmt.Errorf("clawback vesting account is restricted for delegation")
+
+	}
+
 	if !amt.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
