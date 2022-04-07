@@ -56,7 +56,7 @@ func (k msgServer) CreateValidator(goCtx context.Context, msg *types.MsgCreateVa
 		)
 	}
 
-	if msg.Value.Amount.LTE(msg.MinSelfDelegation) {
+	if msg.Value.Amount.LT(msg.MinSelfDelegation) {
 		return nil, types.ErrSelfDelegationBelowMinimum
 	}
 
