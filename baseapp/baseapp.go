@@ -305,10 +305,7 @@ func (app *BaseApp) init() error {
 	if !ok && app.snapshotManager != nil {
 		return errors.New("state sync snapshots require a rootmulti store")
 	}
-	if err := rms.GetPruning().Validate(); err != nil {
-		return err
-	}
-	return nil
+	return rms.GetPruning().Validate()
 }
 
 func (app *BaseApp) setMinGasPrices(gasPrices sdk.DecCoins) {

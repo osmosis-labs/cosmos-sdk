@@ -533,33 +533,39 @@ func (rs *Store) handlePruning(version int64) error {
 	defer rs.pruningManager.FlushPruningHeights()
 
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
-	if rs.pruningManager.ShouldPruneAtHeight(version) {
-		rs.logger.Info("prune start", "height", version)
-
-		pruningHeights := rs.pruningManager.GetPruningHeights()
-		rs.logger.Debug(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
-
-		if len(pruningHeights) == 0 {
-			return nil
-		}
-
-		for key, store := range rs.stores {
-			if store.GetStoreType() == types.StoreTypeIAVL {
-				// If the store is wrapped with an inter-block cache, we must first unwrap
-				// it to get the underlying IAVL store.
-				store = rs.GetCommitKVStore(key)
-
-				if err := store.(*iavl.Store).DeleteVersions(pruningHeights...); err != nil {
-					if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
-						return err
-					}
-				}
-			}
-		}
-		rs.pruningManager.ResetPruningHeights()
-		rs.logger.Info("prune end", "height", version)
+	if !rs.pruningManager.ShouldPruneAtHeight(version) {
 		return nil
 	}
+	
+	rs.logger.Info("prune start", "height", version)
+
+	pruningHeights := rs.pruningManager.GetPruningHeights()
+	rs.logger.Debug(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
+
+	if len(pruningHeights) == 0 {
+		return nil
+	}
+
+	for key, store := range rs.stores {
+		// If the store is wrapped with an inter-block cache, we must first unwrap
+		// it to get the underlying IAVL store.
+		if store.GetStoreType() != types.StoreTypeIAVL {
+			continue
+		}
+
+		store = rs.GetCommitKVStore(key)
+
+		err := store.(*iavl.Store).DeleteVersions(pruningHeights...)
+		if err == nil {
+			continue
+		}
+
+		if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
+			return err
+		}
+	}
+	rs.pruningManager.ResetPruningHeights()
+	rs.logger.Info("prune end", "height", version)
 	return nil
 }
 
