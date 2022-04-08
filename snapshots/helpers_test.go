@@ -16,7 +16,7 @@ import (
 	db "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/snapshots"
-	snapshotypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -74,7 +74,7 @@ func snapshotItems(items [][]byte) [][]byte {
 		zWriter, _ := zlib.NewWriterLevel(bufWriter, 7)
 		protoWriter := protoio.NewDelimitedWriter(zWriter)
 		for _, item := range items {
-			snapshotypes.WriteExtensionItem(protoWriter, item)
+			snapshottypes.WriteExtensionItem(protoWriter, item)
 		}
 		protoWriter.Close()
 		zWriter.Close()
@@ -101,36 +101,36 @@ type mockSnapshotter struct {
 
 func (m *mockSnapshotter) Restore(
 	height uint64, format uint32, protoReader protoio.Reader,
-) (snapshotypes.SnapshotItem, error) {
+) (snapshottypes.SnapshotItem, error) {
 	if format == 0 {
-		return snapshotypes.SnapshotItem{}, snapshotypes.ErrUnknownFormat
+		return snapshottypes.SnapshotItem{}, snapshottypes.ErrUnknownFormat
 	}
 	if m.items != nil {
-		return snapshotypes.SnapshotItem{}, errors.New("already has contents")
+		return snapshottypes.SnapshotItem{}, errors.New("already has contents")
 	}
 
 	m.items = [][]byte{}
 	for {
-		item := &snapshotypes.SnapshotItem{}
+		item := &snapshottypes.SnapshotItem{}
 		err := protoReader.ReadMsg(item)
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return snapshotypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
+			return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
 		}
 		payload := item.GetExtensionPayload()
 		if payload == nil {
-			return snapshotypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
+			return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "invalid protobuf message")
 		}
 		m.items = append(m.items, payload.Payload)
 	}
 
-	return snapshotypes.SnapshotItem{}, nil
+	return snapshottypes.SnapshotItem{}, nil
 }
 
 func (m *mockSnapshotter) Snapshot(height uint64, protoWriter protoio.Writer) error {
 	for _, item := range m.items {
-		if err := snapshotypes.WriteExtensionItem(protoWriter, item); err != nil {
+		if err := snapshottypes.WriteExtensionItem(protoWriter, item); err != nil {
 			return err
 		}
 	}
@@ -138,11 +138,11 @@ func (m *mockSnapshotter) Snapshot(height uint64, protoWriter protoio.Writer) er
 }
 
 func (m *mockSnapshotter) SnapshotFormat() uint32 {
-	return snapshotypes.CurrentFormat
+	return snapshottypes.CurrentFormat
 }
 
 func (m *mockSnapshotter) SupportedFormats() []uint32 {
-	return []uint32{snapshotypes.CurrentFormat}
+	return []uint32{snapshottypes.CurrentFormat}
 }
 
 func (m *mockSnapshotter) PruneSnapshotHeight(height int64) {
@@ -211,6 +211,6 @@ func (m *hungSnapshotter) SetSnapshotInterval(snapshotInterval uint64) {
 
 func (m *hungSnapshotter) Restore(
 	height uint64, format uint32, protoReader protoio.Reader,
-) (snapshotypes.SnapshotItem, error) {
+) (snapshottypes.SnapshotItem, error) {
 	panic("not implemented")
 }
