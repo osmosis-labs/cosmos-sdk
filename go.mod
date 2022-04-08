@@ -25,13 +25,7 @@ require (
 	github.com/hdevalence/ed25519consensus v0.0.0-20210204194344-59a8610d2b87
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/jhump/protoreflect v1.9.0
-<<<<<<< HEAD
-	github.com/kr/text v0.2.0 // indirect
-	github.com/lib/pq v1.10.2 // indirect
-	github.com/magiconair/properties v1.8.5
-=======
 	github.com/magiconair/properties v1.8.6
->>>>>>> 772e82855 (chore: update TM dep + go.mod cleanup (#175))
 	github.com/mattn/go-isatty v0.0.14
 	github.com/otiai10/copy v1.7.0
 	github.com/pkg/errors v0.9.1
