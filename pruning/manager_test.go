@@ -190,7 +190,7 @@ func Test_FlushLoad(t *testing.T) {
 			manager.ResetPruningHeights()
 			require.Equal(t, make([]int64, 0), manager.GetPruningHeights(), curHeightStr)
 
-			err := manager.LoadPruningHeights(db)
+			err := manager.LoadPruningHeights()
 			require.NoError(t, err)
 			require.Equal(t, heightsToPruneMirror, manager.GetPruningHeights(), curHeightStr)
 		}
@@ -198,15 +198,7 @@ func Test_FlushLoad(t *testing.T) {
 }
 
 func TestLoadPruningHeights(t *testing.T) {
-	var (
-		manager = pruning.NewManager(log.NewNopLogger())
-		err error
-	)
-	require.NotNil(t, manager)
-
-	// must not be PruningNothing
-	manager.SetOptions(types.NewPruningOptions(types.PruningDefault))
-	
+	var err error
 	testcases := map[string]struct{
 		flushedPruningHeights[]int64
 		getFlushedPruningSnapshotHeights func () *list.List
@@ -261,24 +253,30 @@ func TestLoadPruningHeights(t *testing.T) {
 				err = db.Set(pruning.PruneSnapshotHeightsKey, pruning.ListToBytes(tc.getFlushedPruningSnapshotHeights()))
 				require.NoError(t, err)
 			}
+
+			manager := pruning.NewManager(log.NewNopLogger(), db)
+			require.NotNil(t, manager)
+		
+			// must not be PruningNothing
+			manager.SetOptions(types.NewPruningOptions(types.PruningDefault))
 	
-			err = manager.LoadPruningHeights(db)
+			err = manager.LoadPruningHeights()
 			require.Equal(t, tc.expectedResult, err)
 		})
 	}
 }
 
 func TestLoadPruningHeights_PruneNothing(t *testing.T) {
-	var manager = pruning.NewManager(log.NewNopLogger())
+	var manager = pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 	require.NotNil(t, manager)
 
 	manager.SetOptions(types.NewPruningOptions(types.PruningNothing))
 
-	require.Nil(t, manager.LoadPruningHeights(db.NewMemDB()))
+	require.Nil(t, manager.LoadPruningHeights())
 }
 
 func TestWithSnapshot(t *testing.T) {
-	manager := pruning.NewManager(log.NewNopLogger())
+	manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 	require.NotNil(t, manager)
 
 	curStrategy := types.NewCustomPruningOptions(10, 10)

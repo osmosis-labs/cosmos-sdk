@@ -143,18 +143,18 @@ func (m *Manager) FlushPruningHeights() {
 }
 
 // LoadPruningHeights loads the pruning heights from the database as a crash recovery.
-func (m *Manager) LoadPruningHeights(db dbm.DB) error {
+func (m *Manager) LoadPruningHeights() error {
 	if m.opts.GetPruningStrategy() == types.PruningNothing {
 		return nil
 	}
-	if err := m.loadPruningHeights(db); err != nil {
+	if err := m.loadPruningHeights(); err != nil {
 		return err
 	}
-	return m.loadPruningSnapshotHeights(db)
+	return m.loadPruningSnapshotHeights()
 }
 
-func (m *Manager) loadPruningHeights(db dbm.DB) error {
-	bz, err := db.Get(pruneHeightsKey)
+func (m *Manager) loadPruningHeights() error {
+	bz, err := m.db.Get(pruneHeightsKey)
 	if err != nil {
 		return fmt.Errorf("failed to get pruned heights: %w", err)
 	}
@@ -182,8 +182,8 @@ func (m *Manager) loadPruningHeights(db dbm.DB) error {
 	return nil
 }
 
-func (m *Manager) loadPruningSnapshotHeights(db dbm.DB) error {
-	bz, err := db.Get(pruneSnapshotHeightsKey)
+func (m *Manager) loadPruningSnapshotHeights() error {
+	bz, err := m.db.Get(pruneSnapshotHeightsKey)
 	if err != nil {
 		return fmt.Errorf("failed to get post-snapshot pruned heights: %w", err)
 	}
