@@ -27,7 +27,7 @@ const (
 	uint64Size = 8
 )
 
-var(
+var (
 	pruneHeightsKey         = []byte("s/pruneheights")
 	pruneSnapshotHeightsKey = []byte("s/pruneSnheights")
 )
