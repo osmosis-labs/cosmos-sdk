@@ -30,7 +30,7 @@ import (
 type Manager struct {
 	// store is the snapshot store where all completed snapshots are persisted.
 	store  *Store
-	opts   *types.SnapshotOptions
+	opts   types.SnapshotOptions
 	// target is the store from which snapshots are taken.
 	target types.Snapshotter
 	logger log.Logger
@@ -66,7 +66,7 @@ var (
 )
 
 // NewManager creates a new manager.
-func NewManager(store *Store, opts *types.SnapshotOptions, target types.Snapshotter, logger log.Logger) *Manager {
+func NewManager(store *Store, opts types.SnapshotOptions, target types.Snapshotter, logger log.Logger) *Manager {
 	target.SetSnapshotInterval(opts.Interval)
 	return &Manager{
 		store:  store,
