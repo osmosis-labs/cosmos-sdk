@@ -59,39 +59,39 @@ var (
 	ErrPruningKeepRecentTooSmall = fmt.Errorf("'pruning-keep-recent' must not be less than %d. For the most aggressive pruning, select pruning = \"everything\"", pruneEverythingKeepRecent)
 )
 
-func NewPruningOptions(pruningStrategy PruningStrategy) *PruningOptions {
+func NewPruningOptions(pruningStrategy PruningStrategy) PruningOptions {
 	switch pruningStrategy {
 	case PruningDefault:
-		return &PruningOptions{
+		return PruningOptions{
 			KeepRecent: 100_000,
 			Interval:   100,
 			Strategy:   PruningDefault,
 		}
 	case PruningEverything:
-		return &PruningOptions{
+		return PruningOptions{
 			KeepRecent: pruneEverythingKeepRecent,
 			Interval:   pruneEverythingInterval,
 			Strategy:   PruningEverything,
 		}
 	case PruningNothing:
-		return &PruningOptions{
+		return PruningOptions{
 			KeepRecent: 0,
 			Interval:   0,
 			Strategy:   PruningNothing,
 		}
 	case PruningCustom:
-		return &PruningOptions{
+		return PruningOptions{
 			Strategy: PruningCustom,
 		}
 	default:
-		return &PruningOptions{
+		return PruningOptions{
 			Strategy: PruningUndefined,
 		}
 	}
 }
 
-func NewCustomPruningOptions(keepRecent, interval uint64) *PruningOptions {
-	return &PruningOptions{
+func NewCustomPruningOptions(keepRecent, interval uint64) PruningOptions {
+	return PruningOptions{
 		KeepRecent: keepRecent,
 		Interval:   interval,
 		Strategy:   PruningCustom,
@@ -118,7 +118,7 @@ func (po PruningOptions) Validate() error {
 	return nil
 }
 
-func NewPruningOptionsFromString(strategy string) *PruningOptions {
+func NewPruningOptionsFromString(strategy string) PruningOptions {
 	switch strategy {
 	case PruningOptionEverything:
 		return NewPruningOptions(PruningEverything)

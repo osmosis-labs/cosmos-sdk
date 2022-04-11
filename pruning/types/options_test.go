@@ -8,8 +8,8 @@ import (
 
 func TestPruningOptions_Validate(t *testing.T) {
 	testCases := []struct {
-		opts   *PruningOptions
-		expectErr  error
+		opts      PruningOptions
+		expectErr error
 	}{
 		{NewPruningOptions(PruningDefault), nil},
 		{NewPruningOptions(PruningEverything), nil},
@@ -31,7 +31,7 @@ func TestPruningOptions_Validate(t *testing.T) {
 func TestNewPruningOptionsFromString(t *testing.T) {
 	testCases := []struct {
 		optString string
-		expect *PruningOptions
+		expect PruningOptions
 	}{
 		{PruningOptionDefault, NewPruningOptions(PruningDefault)},
 		{PruningOptionEverything, NewPruningOptions(PruningEverything)},

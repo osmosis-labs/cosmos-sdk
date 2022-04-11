@@ -15,7 +15,7 @@ import (
 type Manager struct {
 	logger               log.Logger
 	db dbm.DB
-	opts                 *types.PruningOptions
+	opts                 types.PruningOptions
 	snapshotInterval     uint64
 	pruneHeights         []int64
 	pruneSnapshotHeights *list.List
@@ -46,12 +46,12 @@ func NewManager(logger log.Logger, db dbm.DB) *Manager {
 }
 
 // SetOptions sets the pruning strategy on the manager.
-func (m *Manager) SetOptions(opts *types.PruningOptions) {
+func (m *Manager) SetOptions(opts types.PruningOptions) {
 	m.opts = opts
 }
 
 // GetOptions fetches the pruning strategy from the manager.
-func (m *Manager) GetOptions() *types.PruningOptions {
+func (m *Manager) GetOptions() types.PruningOptions {
 	return m.opts
 }
 

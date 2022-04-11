@@ -48,7 +48,7 @@ type setupConfig struct {
 	blockTxs int
 	snapshotInterval uint64 
 	snapshotKeepEvery uint32
-	pruningOpts *pruningtypes.PruningOptions
+	pruningOpts pruningtypes.PruningOptions
 }
 
 func (ps *paramStore) Set(_ sdk.Context, key []byte, value interface{}) {
@@ -2251,7 +2251,7 @@ func TestBaseApp_Init(t *testing.T) {
 
 	testCases := map[string]struct {
 		bapp     *BaseApp
-		expectedPruning *pruningtypes.PruningOptions
+		expectedPruning pruningtypes.PruningOptions
 		expectedSnapshot *snapshottypes.SnapshotOptions
 		expectedErr error
 	}{

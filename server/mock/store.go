@@ -64,11 +64,11 @@ func (ms multiStore) LastCommitID() sdk.CommitID {
 	panic("not implemented")
 }
 
-func (ms multiStore) SetPruning(opts *pruningtypes.PruningOptions) {
+func (ms multiStore) SetPruning(opts pruningtypes.PruningOptions) {
 	panic("not implemented")
 }
 
-func (ms multiStore) GetPruning() *pruningtypes.PruningOptions {
+func (ms multiStore) GetPruning() pruningtypes.PruningOptions {
 	panic("not implemented")
 }
 
