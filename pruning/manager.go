@@ -13,12 +13,14 @@ import (
 )
 
 type Manager struct {
+	db             dbm.DB
 	logger               log.Logger
 	opts                 types.PruningOptions
 	snapshotInterval     uint64
 	pruneHeights         []int64
+	pruneHeightsMx	   sync.Mutex
 	pruneSnapshotHeights *list.List
-	mx                   sync.Mutex
+	pruneSnapshotHeightsMx                   sync.Mutex
 }
 
 const errNegativeHeightsFmt = "failed to get pruned heights: %d"
@@ -28,15 +30,17 @@ var (
 	pruneSnapshotHeightsKey = []byte("s/pruneSnheights")
 )
 
-func NewManager(logger log.Logger) *Manager {
+func NewManager(db dbm.DB, logger log.Logger) *Manager {
 	return &Manager{
+		db: db,
 		logger:       logger,
 		opts:         types.NewPruningOptions(types.PruningNothing),
 		pruneHeights: []int64{},
+		pruneHeightsMx: sync.Mutex{},
 		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
 		// The heights are added to this list to be pruned when a snapshot is complete.
 		pruneSnapshotHeights: list.New(),
-		mx:                   sync.Mutex{},
+		pruneSnapshotHeightsMx:                   sync.Mutex{},
 	}
 }
 
@@ -50,15 +54,25 @@ func (m *Manager) GetOptions() types.PruningOptions {
 	return m.opts
 }
 
-// GetPruningHeights returns all heights to be pruned during the next call to Prune().
-func (m *Manager) GetPruningHeights() []int64 {
-	return m.pruneHeights
-}
+// GetFlushAndResetPruningHeights returns all heights to be pruned during the next call to Prune().
+// It also flushes and resets the pruning heights.
+func (m *Manager) GetFlushAndResetPruningHeights() ([]int64, error) {
+	if m.opts.GetPruningStrategy() == types.PruningNothing {
+		return []int64{}, nil
+	}
+	m.pruneHeightsMx.Lock()
+	defer m.pruneHeightsMx.Unlock()
 
-// ResetPruningHeights resets the heights to be pruned.
-func (m *Manager) ResetPruningHeights() {
-	// reuse previously allocated memory.
-	m.pruneHeights = m.pruneHeights[:0]
+	pruningHeights := m.pruneHeights
+	
+	// flush the update to disk so that it is not lost if crash happens.
+	if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(pruningHeights)); err != nil {
+		return nil, err
+	}
+
+	m.pruneHeights = make([]int64, 0, m.opts.Interval)
+	
+	return pruningHeights, nil
 }
 
 // HandleHeight determines if pruneHeight height needs to be kept for pruning at the right interval prescribed by
@@ -71,9 +85,14 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 	}
 
 	defer func() {
-		// handle persisted snapshot heights
-		m.mx.Lock()
-		defer m.mx.Unlock()
+		m.pruneHeightsMx.Lock()
+		defer m.pruneHeightsMx.Unlock()
+
+		m.pruneSnapshotHeightsMx.Lock()
+		defer m.pruneSnapshotHeightsMx.Unlock()
+
+		// move persisted snapshot heights to pruneHeights which
+		// represent the heights to be pruned at the next pruning interval.
 		var next *list.Element
 		for e := m.pruneSnapshotHeights.Front(); e != nil; e = next {
 			snHeight := e.Value.(int64)
@@ -87,6 +106,11 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 				next = e.Next()
 			}
 		}
+
+		// flush the update to disk so that they are not lost if crash happens.
+		if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(m.pruneHeights)); err != nil {
+			panic(err)
+		}
 	}()
 
 	if int64(m.opts.KeepRecent) < previousHeight {
@@ -97,7 +121,15 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		// - snapshotInterval % (height - KeepRecent) != 0 as that means the height is not
 		// a 'snapshot' height.
 		if m.snapshotInterval == 0 || pruneHeight%int64(m.snapshotInterval) != 0 {
+			m.pruneHeightsMx.Lock()
+			defer m.pruneHeightsMx.Unlock()
+
 			m.pruneHeights = append(m.pruneHeights, pruneHeight)
+
+			// flush the update to disk so that they are not lost if crash happens.
+			if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(m.pruneHeights)); err != nil {
+				panic(err)
+			}
 			return pruneHeight
 		}
 	}
@@ -108,10 +140,15 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 	if m.opts.GetPruningStrategy() == types.PruningNothing {
 		return
 	}
-	m.mx.Lock()
-	defer m.mx.Unlock()
+	m.pruneSnapshotHeightsMx.Lock()
+	defer m.pruneSnapshotHeightsMx.Unlock()
 	m.logger.Debug("HandleHeightSnapshot", "height", height)
 	m.pruneSnapshotHeights.PushBack(height)
+
+	// flush the update to disk so that they are not lost if crash happens.
+	if err := m.db.SetSync(pruneSnapshotHeightsKey, listToBytes(m.pruneSnapshotHeights)); err != nil {
+		panic(err)
+	}
 }
 
 // SetSnapshotInterval sets the interval at which the snapshots are taken.
@@ -122,15 +159,6 @@ func (m *Manager) SetSnapshotInterval(snapshotInterval uint64) {
 // ShouldPruneAtHeight return true if the given height should be pruned, false otherwise
 func (m *Manager) ShouldPruneAtHeight(height int64) bool {
 	return m.opts.Interval > 0 && m.opts.GetPruningStrategy() != types.PruningNothing && height%int64(m.opts.Interval) == 0
-}
-
-// FlushPruningHeights flushes the pruning heights to the database for crash recovery.
-func (m *Manager) FlushPruningHeights(batch dbm.Batch) {
-	if m.opts.GetPruningStrategy() == types.PruningNothing {
-		return
-	}
-	m.flushPruningHeights(batch)
-	m.flushPruningSnapshotHeights(batch)
 }
 
 // LoadPruningHeights loads the pruning heights from the database as a crash recovery.
@@ -167,6 +195,8 @@ func (m *Manager) loadPruningHeights(db dbm.DB) error {
 	}
 
 	if len(prunedHeights) > 0 {
+		m.pruneHeightsMx.Lock()
+		defer m.pruneHeightsMx.Unlock()
 		m.pruneHeights = prunedHeights
 	}
 
@@ -195,24 +225,13 @@ func (m *Manager) loadPruningSnapshotHeights(db dbm.DB) error {
 		offset += 8
 	}
 
-	m.mx.Lock()
-	defer m.mx.Unlock()
+	m.pruneSnapshotHeightsMx.Lock()
+	defer m.pruneSnapshotHeightsMx.Unlock()
 	m.pruneSnapshotHeights = pruneSnapshotHeights
 
 	return nil
 }
 
-func (m *Manager) flushPruningHeights(batch dbm.Batch) {
-	batch.Set(pruneHeightsKey, int64SliceToBytes(m.pruneHeights))
-}
-
-func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
-	m.mx.Lock()
-	defer m.mx.Unlock()
-	batch.Set(pruneSnapshotHeightsKey, listToBytes(m.pruneSnapshotHeights))
-}
-
-// TODO: convert to a generic version with Go 1.18.
 func int64SliceToBytes(slice []int64) []byte {
 	bz := make([]byte, 0, len(slice)*8)
 	for _, ph := range slice {
