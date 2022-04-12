@@ -152,9 +152,9 @@ func TestHandleHeight_Inputs(t *testing.T) {
 	var keepRecent int64 = int64(types.NewPruningOptions(types.PruningEverything).KeepRecent)
 
 	testcases := map[string]struct {
-		height int64
-		expectedResult int64
-		strategy types.PruningStrategy
+		height          int64
+		expectedResult  int64
+		strategy        types.PruningStrategy
 		expectedHeights []int64
 	}{
 		"previousHeight is negative - prune everything - invalid previousHeight": {
@@ -208,67 +208,67 @@ func TestHandleHeight_Inputs(t *testing.T) {
 
 func TestHandleHeight_FlushLoadFromDisk(t *testing.T) {
 	testcases := map[string]struct {
-		previousHeight int64
-		keepRecent uint64
-		snapshotInterval uint64
-		movedSnapshotHeights []int64
-		expectedHandleHeightResult int64
+		previousHeight                   int64
+		keepRecent                       uint64
+		snapshotInterval                 uint64
+		movedSnapshotHeights             []int64
+		expectedHandleHeightResult       int64
 		expectedLoadPruningHeightsResult error
-		expectedLoadedHeights []int64
+		expectedLoadedHeights            []int64
 	}{
 		"simple flush occurs": {
-			previousHeight: 11,
-			keepRecent: 10,
-			snapshotInterval: 0,
-			movedSnapshotHeights: []int64{},
-			expectedHandleHeightResult: 11 - 10,
+			previousHeight:                   11,
+			keepRecent:                       10,
+			snapshotInterval:                 0,
+			movedSnapshotHeights:             []int64{},
+			expectedHandleHeightResult:       11 - 10,
 			expectedLoadPruningHeightsResult: nil,
-			expectedLoadedHeights: []int64{11 - 10},
+			expectedLoadedHeights:            []int64{11 - 10},
 		},
 		"previous height <= keep recent - no update and no flush": {
-			previousHeight: 9,
-			keepRecent: 10,
-			snapshotInterval: 0,
-			movedSnapshotHeights: []int64{},
-			expectedHandleHeightResult: 0,
+			previousHeight:                   9,
+			keepRecent:                       10,
+			snapshotInterval:                 0,
+			movedSnapshotHeights:             []int64{},
+			expectedHandleHeightResult:       0,
 			expectedLoadPruningHeightsResult: nil,
-			expectedLoadedHeights: []int64{},
+			expectedLoadedHeights:            []int64{},
 		},
 		"previous height alligns with snapshot interval - no update and no flush": {
-			previousHeight: 12,
-			keepRecent: 10,
-			snapshotInterval: 2,
-			movedSnapshotHeights: []int64{},
-			expectedHandleHeightResult: 0,
+			previousHeight:                   12,
+			keepRecent:                       10,
+			snapshotInterval:                 2,
+			movedSnapshotHeights:             []int64{},
+			expectedHandleHeightResult:       0,
 			expectedLoadPruningHeightsResult: nil,
-			expectedLoadedHeights: []int64{},
+			expectedLoadedHeights:            []int64{},
 		},
 		"previous height does not align with snapshot interval - flush": {
-			previousHeight: 12,
-			keepRecent: 10,
-			snapshotInterval: 3,
-			movedSnapshotHeights: []int64{},
-			expectedHandleHeightResult: 2,
+			previousHeight:                   12,
+			keepRecent:                       10,
+			snapshotInterval:                 3,
+			movedSnapshotHeights:             []int64{},
+			expectedHandleHeightResult:       2,
 			expectedLoadPruningHeightsResult: nil,
-			expectedLoadedHeights: []int64{2},
+			expectedLoadedHeights:            []int64{2},
 		},
 		"moved snapshot heights - flushed": {
-			previousHeight: 32,
-			keepRecent: 10,
-			snapshotInterval: 5,
-			movedSnapshotHeights: []int64{15, 20, 25},
-			expectedHandleHeightResult: 22,
+			previousHeight:                   32,
+			keepRecent:                       10,
+			snapshotInterval:                 5,
+			movedSnapshotHeights:             []int64{15, 20, 25},
+			expectedHandleHeightResult:       22,
 			expectedLoadPruningHeightsResult: nil,
-			expectedLoadedHeights: []int64{15, 20, 22},
+			expectedLoadedHeights:            []int64{15, 20, 22},
 		},
 		"previous height alligns with snapshot interval - no update but flush snapshot heights": {
-			previousHeight: 30,
-			keepRecent: 10,
-			snapshotInterval: 5,
-			movedSnapshotHeights: []int64{15, 20, 25},
-			expectedHandleHeightResult: 0,
+			previousHeight:                   30,
+			keepRecent:                       10,
+			snapshotInterval:                 5,
+			movedSnapshotHeights:             []int64{15, 20, 25},
+			expectedHandleHeightResult:       0,
 			expectedLoadPruningHeightsResult: nil,
-			expectedLoadedHeights: []int64{15},
+			expectedLoadedHeights:            []int64{15},
 		},
 	}
 
@@ -319,7 +319,7 @@ func TestHandleHeightSnapshot_FlushLoadFromDisk(t *testing.T) {
 	for snapshotHeight := int64(-1); snapshotHeight < 100; snapshotHeight++ {
 		// Test flush
 		manager.HandleHeightSnapshot(snapshotHeight)
-		
+
 		// Post test
 		if snapshotHeight > 0 {
 			loadedHeightsMirror = append(loadedHeightsMirror, snapshotHeight)

@@ -510,13 +510,13 @@ func TestMultiStore_Pruning(t *testing.T) {
 
 func TestMultiStore_Pruning_SameHeightsTwice(t *testing.T) {
 	const (
-		numVersions int64 = 10
-		keepRecent uint64 = 2
-		interval uint64 = 10
+		numVersions int64  = 10
+		keepRecent  uint64 = 2
+		interval    uint64 = 10
 	)
 
 	expectedHeights := []int64{}
-	for i := int64(1); i < numVersions - int64(keepRecent); i++ {
+	for i := int64(1); i < numVersions-int64(keepRecent); i++ {
 		expectedHeights = append(expectedHeights, i)
 	}
 
@@ -532,7 +532,7 @@ func TestMultiStore_Pruning_SameHeightsTwice(t *testing.T) {
 
 	require.Equal(t, numVersions, lastCommitInfo.Version)
 
-	for v := int64(1); v < numVersions - int64(keepRecent); v++ {
+	for v := int64(1); v < numVersions-int64(keepRecent); v++ {
 		err := ms.LoadVersion(v)
 		require.Error(t, err, "expected error when loading pruned height: %d", v)
 	}
@@ -559,7 +559,7 @@ func TestMultiStore_Pruning_SameHeightsTwice(t *testing.T) {
 
 	// Ensure that can commit one more height with no panic
 	lastCommitInfo = ms.Commit()
-	require.Equal(t, numVersions + 1, lastCommitInfo.Version)
+	require.Equal(t, numVersions+1, lastCommitInfo.Version)
 }
 
 func TestMultiStore_PruningRestart(t *testing.T) {

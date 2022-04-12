@@ -13,14 +13,14 @@ import (
 )
 
 type Manager struct {
-	db             dbm.DB
-	logger               log.Logger
-	opts                 types.PruningOptions
-	snapshotInterval     uint64
-	pruneHeights         []int64
-	pruneHeightsMx	   sync.Mutex
-	pruneSnapshotHeights *list.List
-	pruneSnapshotHeightsMx                   sync.Mutex
+	db                     dbm.DB
+	logger                 log.Logger
+	opts                   types.PruningOptions
+	snapshotInterval       uint64
+	pruneHeights           []int64
+	pruneHeightsMx         sync.Mutex
+	pruneSnapshotHeights   *list.List
+	pruneSnapshotHeightsMx sync.Mutex
 }
 
 const errNegativeHeightsFmt = "failed to get pruned heights: %d"
@@ -32,15 +32,15 @@ var (
 
 func NewManager(db dbm.DB, logger log.Logger) *Manager {
 	return &Manager{
-		db: db,
-		logger:       logger,
-		opts:         types.NewPruningOptions(types.PruningNothing),
-		pruneHeights: []int64{},
+		db:             db,
+		logger:         logger,
+		opts:           types.NewPruningOptions(types.PruningNothing),
+		pruneHeights:   []int64{},
 		pruneHeightsMx: sync.Mutex{},
 		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
 		// The heights are added to this list to be pruned when a snapshot is complete.
-		pruneSnapshotHeights: list.New(),
-		pruneSnapshotHeightsMx:                   sync.Mutex{},
+		pruneSnapshotHeights:   list.New(),
+		pruneSnapshotHeightsMx: sync.Mutex{},
 	}
 }
 
@@ -64,14 +64,14 @@ func (m *Manager) GetFlushAndResetPruningHeights() ([]int64, error) {
 	defer m.pruneHeightsMx.Unlock()
 
 	pruningHeights := m.pruneHeights
-	
+
 	// flush the update to disk so that it is not lost if crash happens.
 	if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(pruningHeights)); err != nil {
 		return nil, err
 	}
 
 	m.pruneHeights = make([]int64, 0, m.opts.Interval)
-	
+
 	return pruningHeights, nil
 }
 

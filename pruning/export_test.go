@@ -7,8 +7,8 @@ var (
 	PruneSnapshotHeightsKey = pruneSnapshotHeightsKey
 
 	// functions
-	Int64SliceToBytes = int64SliceToBytes
-	ListToBytes       = listToBytes
-	LoadPruningHeights = loadPruningHeights
+	Int64SliceToBytes          = int64SliceToBytes
+	ListToBytes                = listToBytes
+	LoadPruningHeights         = loadPruningHeights
 	LoadPruningSnapshotHeights = loadPruningSnapshotHeights
 )
