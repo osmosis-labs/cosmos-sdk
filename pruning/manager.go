@@ -36,10 +36,15 @@ func NewManager(db dbm.DB, logger log.Logger) *Manager {
 		logger:         logger,
 		opts:           types.NewPruningOptions(types.PruningNothing),
 		pruneHeights:   []int64{},
+		// Although pruneHeights happen in the same goroutine with the normal execution,
+		// we sync access to them to avoid soundness issues in the future if concurrency pattern changes.
 		pruneHeightsMx: sync.Mutex{},
 		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
 		// The heights are added to this list to be pruned when a snapshot is complete.
 		pruneSnapshotHeights:   list.New(),
+		// Snapshots are taken in a separate goroutine fromt the regular execution
+		// and can be delivered asynchrounously via HandleHeightSnapshot.
+		// Therefore, we sync access to pruneSnapshotHeights with this mutex. 
 		pruneSnapshotHeightsMx: sync.Mutex{},
 	}
 }
@@ -65,7 +70,7 @@ func (m *Manager) GetFlushAndResetPruningHeights() ([]int64, error) {
 
 	pruningHeights := m.pruneHeights
 
-	// flush the update to disk so that it is not lost if crash happens.
+	// flush the updates to disk so that it is not lost if crash happens.
 	if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(pruningHeights)); err != nil {
 		return nil, err
 	}
@@ -107,7 +112,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 			}
 		}
 
-		// flush the update to disk so that they are not lost if crash happens.
+		// flush the updates to disk so that they are not lost if crash happens.
 		if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(m.pruneHeights)); err != nil {
 			panic(err)
 		}
@@ -126,7 +131,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 
 			m.pruneHeights = append(m.pruneHeights, pruneHeight)
 
-			// flush the update to disk so that they are not lost if crash happens.
+			// flush the updates to disk so that they are not lost if crash happens.
 			if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(m.pruneHeights)); err != nil {
 				panic(err)
 			}
@@ -138,8 +143,8 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 
 // HandleHeightSnapshot persists the snapshot height to be pruned at the next appropriate
 // height defined by the pruning strategy. Flushes the update to disk and panics if the flush fails
-// height must be greater than 0 and pruning strategy any but pruning nothing. If one of these conditions
-// is not met, this function does nothing.
+// The input height must be greater than 0 and pruning strategy any but pruning nothing. 
+// If one of these conditions is not met, this function does nothing.
 func (m *Manager) HandleHeightSnapshot(height int64) {
 	if m.opts.GetPruningStrategy() == types.PruningNothing || height <= 0 {
 		return
@@ -149,7 +154,7 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 	m.logger.Debug("HandleHeightSnapshot", "height", height)
 	m.pruneSnapshotHeights.PushBack(height)
 
-	// flush the update to disk so that they are not lost if crash happens.
+	// flush the updates to disk so that they are not lost if crash happens.
 	if err := m.db.SetSync(pruneSnapshotHeightsKey, listToBytes(m.pruneSnapshotHeights)); err != nil {
 		panic(err)
 	}
