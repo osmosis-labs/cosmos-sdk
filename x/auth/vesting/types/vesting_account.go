@@ -695,7 +695,7 @@ func (va ClawbackVestingAccount) GetVestingPeriods() Periods {
 
 // coinEq returns whether two Coins are equal.
 // The IsEqual() method can panic.
-func coinEq(a, b sdk.Coins) bool {
+func CoinEq(a, b sdk.Coins) bool {
 	return a.IsAllLTE(b) && b.IsAllLTE(a)
 }
 
@@ -719,7 +719,7 @@ func (va ClawbackVestingAccount) Validate() error {
 	}
 
 	// use coinEq to prevent panic
-	if !coinEq(lockupCoins, va.OriginalVesting) {
+	if !CoinEq(lockupCoins, va.OriginalVesting) {
 		return errors.New("original vesting coins does not match the sum of all coins in lockup periods")
 	}
 
@@ -735,7 +735,7 @@ func (va ClawbackVestingAccount) Validate() error {
 		return errors.New("vesting schedule exteds beyond account end time")
 	}
 
-	if !coinEq(vestingCoins, va.OriginalVesting) {
+	if !CoinEq(vestingCoins, va.OriginalVesting) {
 		return errors.New("original vesting coins does not match the sum of all coins in vesting periods")
 	}
 

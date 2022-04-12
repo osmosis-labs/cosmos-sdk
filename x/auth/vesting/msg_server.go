@@ -128,9 +128,11 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 		lockupCoins = lockupCoins.Add(period.Amount...)
 	}
 
-	// If lockup absent, default to an instant unlock schedule
+	// if lockup absent, default to an instant unlock schedule
+	lockupPeriods := msg.LockupPeriods
+	vestingPeriods := msg.VestingPeriods
 	if !vestingCoins.IsZero() && len(msg.LockupPeriods) == 0 {
-		msg.LockupPeriods = []types.Period{
+		lockupPeriods = []types.Period{
 			{Length: 0, Amount: vestingCoins},
 		}
 		lockupCoins = vestingCoins
@@ -138,7 +140,7 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 
 	if !lockupCoins.IsZero() && len(msg.VestingPeriods) == 0 {
 		// If vesting absent, default to an instant vesting schedule
-		msg.VestingPeriods = []types.Period{
+		vestingPeriods = []types.Period{
 			{Length: 0, Amount: lockupCoins},
 		}
 		vestingCoins = lockupCoins
@@ -146,24 +148,23 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 
 	// The vesting and lockup schedules must describe the same total amount.
 	// IsEqual can panic, so use (a == b) <=> (a <= b && b <= a).
-	if !(vestingCoins.IsAllLTE(lockupCoins) && lockupCoins.IsAllLTE(vestingCoins)) {
+	if !types.CoinEq(lockupCoins, vestingCoins) {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "lockup and vesting amounts must be equal")
 	}
 
-	madeNewAcc := false
+	var madeNewAcc bool
 	acc := ak.GetAccount(ctx, to)
 	var vestingAcc *types.ClawbackVestingAccount
 
+	// a grant can be added only if toAddress exists, msg.Merge && isClawback && to.FunderAddress == msg.FromAddress
 	if acc != nil {
 		var isClawback bool
 		vestingAcc, isClawback = acc.(*types.ClawbackVestingAccount)
 		switch {
-		case !msg.Merge && isClawback:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists; consider using --merge", msg.ToAddress)
-		case !msg.Merge && !isClawback:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists", msg.ToAddress)
-		case msg.Merge && !isClawback:
+		case !isClawback:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrNotSupported, "account %s must be a clawback vesting account", msg.ToAddress)
+		case !msg.Merge && isClawback:
+			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s already exists; consider setting  'merge' to 'true'", msg.ToAddress)
 		case msg.FromAddress != vestingAcc.FunderAddress:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s can only accept grants from account %s", msg.ToAddress, vestingAcc.FunderAddress)
 		}
@@ -180,8 +181,8 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 			from,
 			vestingCoins,
 			msg.StartTime,
-			msg.LockupPeriods,
-			msg.VestingPeriods,
+			lockupPeriods,
+			vestingPeriods,
 		)
 		acc := ak.NewAccount(ctx, vestingAcc)
 		madeNewAcc = true
@@ -225,14 +226,17 @@ func (s msgServer) Clawback(goCtx context.Context, msg *types.MsgClawback) (*typ
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	ak := s.AccountKeeper
 	bk := s.BankKeeper
+
 	funder, err := sdk.AccAddressFromBech32(msg.GetFunderAddress())
 	if err != nil {
 		return nil, err
 	}
+
 	addr, err := sdk.AccAddressFromBech32(msg.GetAddress())
 	if err != nil {
 		return nil, err
 	}
+
 	dest := funder
 	if msg.GetDestAddress() != "" {
 		dest, err = sdk.AccAddressFromBech32(msg.GetDestAddress())

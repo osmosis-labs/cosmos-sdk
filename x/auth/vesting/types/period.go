@@ -29,25 +29,25 @@ func (vp Periods) String() string {
 }
 
 // A "schedule" is an increasing step function of Coins over time.
-// It's specified as an absolute start time and a sequence of relative
+// It's specified with an absolute start time and a sequence of relative
 // periods, with each step at the end of a period. A schedule may also
 // give the time and total value at the last step, which can speed
 // evaluation of the step function after the last step.
 
-// ReadSchedule returns the value of a schedule at readTime.
-func ReadSchedule(startTime, endTime int64, periods []Period, totalCoins sdk.Coins, readTime int64) sdk.Coins {
-	if readTime <= startTime {
+// ReadSchedule returns the value of a schedule at the current provided time.
+func ReadSchedule(startTime, endTime int64, periods []Period, totalCoins sdk.Coins, currTime int64) sdk.Coins {
+	if currTime <= startTime {
 		return sdk.NewCoins()
 	}
-	if readTime >= endTime {
+	if currTime >= endTime {
 		return totalCoins
 	}
 
-	coins := sdk.NewCoins() // sum of amounts for events before readTime
+	coins := sdk.NewCoins() // sum of amounts for events before currTime
 	time := startTime
 
 	for _, period := range periods {
-		if readTime < time+period.Length {
+		if currTime < time+period.Length {
 			// we're reading before the next event
 			break
 		}

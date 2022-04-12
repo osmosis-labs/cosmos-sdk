@@ -48,7 +48,7 @@ type AddGrantAction interface {
 	AddToAccount(ctx sdk.Context, rawAccount VestingAccount) error
 }
 
-// ClabackAction encapsulates the data needed to perform clawback.
+// ClawbackAction encapsulates the data needed to perform clawback.
 type ClawbackAction interface {
 	// TakeFromAccount removes unvested tokens from the specified account.
 	// The rawAccount should bypass any account wrappers.
