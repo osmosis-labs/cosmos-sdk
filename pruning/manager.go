@@ -18,8 +18,15 @@ type Manager struct {
 	opts                   types.PruningOptions
 	snapshotInterval       uint64
 	pruneHeights           []int64
+	// Although pruneHeights happen in the same goroutine with the normal execution,
+	// we sync access to them to avoid soundness issues in the future if concurrency pattern changes.
 	pruneHeightsMx         sync.Mutex
+	// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
+	// The heights are added to this list to be pruned when a snapshot is complete.
 	pruneSnapshotHeights   *list.List
+	// Snapshots are taken in a separate goroutine fromt the regular execution
+	// and can be delivered asynchrounously via HandleHeightSnapshot.
+	// Therefore, we sync access to pruneSnapshotHeights with this mutex. 
 	pruneSnapshotHeightsMx sync.Mutex
 }
 
@@ -36,16 +43,7 @@ func NewManager(db dbm.DB, logger log.Logger) *Manager {
 		logger:         logger,
 		opts:           types.NewPruningOptions(types.PruningNothing),
 		pruneHeights:   []int64{},
-		// Although pruneHeights happen in the same goroutine with the normal execution,
-		// we sync access to them to avoid soundness issues in the future if concurrency pattern changes.
-		pruneHeightsMx: sync.Mutex{},
-		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
-		// The heights are added to this list to be pruned when a snapshot is complete.
 		pruneSnapshotHeights:   list.New(),
-		// Snapshots are taken in a separate goroutine fromt the regular execution
-		// and can be delivered asynchrounously via HandleHeightSnapshot.
-		// Therefore, we sync access to pruneSnapshotHeights with this mutex. 
-		pruneSnapshotHeightsMx: sync.Mutex{},
 	}
 }
 
@@ -203,7 +201,7 @@ func (m *Manager) LoadPruningHeights(db dbm.DB) error {
 func loadPruningHeights(db dbm.DB) ([]int64, error) {
 	bz, err := db.Get(pruneHeightsKey)
 	if err != nil {
-		return []int64{}, fmt.Errorf("failed to get pruned heights: %w", err)
+		return nil, fmt.Errorf("failed to get pruned heights: %w", err)
 	}
 	if len(bz) == 0 {
 		return []int64{}, nil
@@ -229,7 +227,7 @@ func loadPruningSnapshotHeights(db dbm.DB) (*list.List, error) {
 	bz, err := db.Get(pruneSnapshotHeightsKey)
 	pruneSnapshotHeights := list.New()
 	if err != nil {
-		return pruneSnapshotHeights, fmt.Errorf("failed to get post-snapshot pruned heights: %w", err)
+		return nil, fmt.Errorf("failed to get post-snapshot pruned heights: %w", err)
 	}
 	if len(bz) == 0 {
 		return pruneSnapshotHeights, nil

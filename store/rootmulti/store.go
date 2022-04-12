@@ -556,11 +556,11 @@ func (rs *Store) pruneStores() error {
 	}
 
 	if len(pruningHeights) == 0 {
-		rs.logger.Debug("pruning skipped, no heights to prune")
+		rs.logger.Debug("pruning skipped; no heights to prune")
 		return nil
 	}
 
-	rs.logger.Debug(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
+	rs.logger.Debug("pruning heights", "heights", pruningHeights)
 
 	for key, store := range rs.stores {
 		// If the store is wrapped with an inter-block cache, we must first unwrap
