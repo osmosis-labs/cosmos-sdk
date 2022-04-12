@@ -206,7 +206,7 @@ func TestHandleHeight_Inputs(t *testing.T) {
 	}
 }
 
-func TestHandleHeight_FlushToDisk(t *testing.T) {
+func TestHandleHeight_FlushLoadFromDisk(t *testing.T) {
 	testcases := map[string]struct {
 		previousHeight int64
 		keepRecent uint64
@@ -286,11 +286,16 @@ func TestHandleHeight_FlushToDisk(t *testing.T) {
 				manager.HandleHeightSnapshot(snapshotHeight)
 			}
 
-			// Test
+			// Test HandleHeight and flush
 			handleHeightActual := manager.HandleHeight(tc.previousHeight)
 			require.Equal(t, tc.expectedHandleHeightResult, handleHeightActual)
 
-			err := manager.LoadPruningHeights(db)
+			loadedPruneHeights, err := pruning.LoadPruningHeights(db)
+			require.NoError(t, err)
+			require.Equal(t, len(loadedPruneHeights), len(loadedPruneHeights))
+
+			// Test load back
+			err = manager.LoadPruningHeights(db)
 			require.NoError(t, err)
 
 			heights, err := manager.GetFlushAndResetPruningHeights()
@@ -298,6 +303,39 @@ func TestHandleHeight_FlushToDisk(t *testing.T) {
 			require.Equal(t, len(tc.expectedLoadedHeights), len(heights))
 			require.ElementsMatch(t, tc.expectedLoadedHeights, heights)
 		})
+	}
+}
+
+func TestHandleHeightSnapshot_FlushLoadFromDisk(t *testing.T) {
+	loadedHeightsMirror := []int64{}
+
+	// Setup
+	db := db.NewMemDB()
+	manager := pruning.NewManager(db, log.NewNopLogger())
+	require.NotNil(t, manager)
+
+	manager.SetOptions(types.NewPruningOptions(types.PruningEverything))
+
+	for snapshotHeight := int64(-1); snapshotHeight < 100; snapshotHeight++ {
+		// Test flush
+		manager.HandleHeightSnapshot(snapshotHeight)
+		
+		// Post test
+		if snapshotHeight > 0 {
+			loadedHeightsMirror = append(loadedHeightsMirror, snapshotHeight)
+		}
+
+		loadedSnapshotHeights, err := pruning.LoadPruningSnapshotHeights(db)
+		require.NoError(t, err)
+		require.Equal(t, len(loadedHeightsMirror), loadedSnapshotHeights.Len())
+
+		// Test load back
+		err = manager.LoadPruningHeights(db)
+		require.NoError(t, err)
+
+		loadedSnapshotHeights, err = pruning.LoadPruningSnapshotHeights(db)
+		require.NoError(t, err)
+		require.Equal(t, len(loadedHeightsMirror), loadedSnapshotHeights.Len())
 	}
 }
 

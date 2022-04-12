@@ -968,7 +968,6 @@ func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo
 	}
 
 	flushLatestVersion(batch, version)
-	// rs.pruningManager.FlushPruningHeights(batch)
 
 	if err := batch.WriteSync(); err != nil {
 		panic(fmt.Errorf("error on batch write %w", err))

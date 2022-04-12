@@ -9,4 +9,6 @@ var (
 	// functions
 	Int64SliceToBytes = int64SliceToBytes
 	ListToBytes       = listToBytes
+	LoadPruningHeights = loadPruningHeights
+	LoadPruningSnapshotHeights = loadPruningSnapshotHeights
 )

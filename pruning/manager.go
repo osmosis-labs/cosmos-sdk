@@ -136,8 +136,12 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 	return 0
 }
 
+// HandleHeightSnapshot persists the snapshot height to be pruned at the next appropriate
+// height defined by the pruning strategy. Flushes the update to disk and panics if the flush fails
+// height must be greater than 0 and pruning strategy any but pruning nothing. If one of these conditions
+// is not met, this function does nothing.
 func (m *Manager) HandleHeightSnapshot(height int64) {
-	if m.opts.GetPruningStrategy() == types.PruningNothing {
+	if m.opts.GetPruningStrategy() == types.PruningNothing || height <= 0 {
 		return
 	}
 	m.pruneSnapshotHeightsMx.Lock()
@@ -166,19 +170,38 @@ func (m *Manager) LoadPruningHeights(db dbm.DB) error {
 	if m.opts.GetPruningStrategy() == types.PruningNothing {
 		return nil
 	}
-	if err := m.loadPruningHeights(db); err != nil {
+	loadedPruneHeights, err := loadPruningHeights(db)
+	if err != nil {
 		return err
 	}
-	return m.loadPruningSnapshotHeights(db)
+
+	if len(loadedPruneHeights) > 0 {
+		m.pruneHeightsMx.Lock()
+		defer m.pruneHeightsMx.Unlock()
+		m.pruneHeights = loadedPruneHeights
+	}
+
+	loadedPruneSnapshotHeights, err := loadPruningSnapshotHeights(db)
+	if err != nil {
+		return err
+	}
+
+	if loadedPruneSnapshotHeights.Len() > 0 {
+		m.pruneSnapshotHeightsMx.Lock()
+		defer m.pruneSnapshotHeightsMx.Unlock()
+		m.pruneSnapshotHeights = loadedPruneSnapshotHeights
+	}
+
+	return nil
 }
 
-func (m *Manager) loadPruningHeights(db dbm.DB) error {
+func loadPruningHeights(db dbm.DB) ([]int64, error) {
 	bz, err := db.Get(pruneHeightsKey)
 	if err != nil {
-		return fmt.Errorf("failed to get pruned heights: %w", err)
+		return []int64{}, fmt.Errorf("failed to get pruned heights: %w", err)
 	}
 	if len(bz) == 0 {
-		return nil
+		return []int64{}, nil
 	}
 
 	prunedHeights := make([]int64, len(bz)/8)
@@ -186,7 +209,7 @@ func (m *Manager) loadPruningHeights(db dbm.DB) error {
 	for offset < len(bz) {
 		h := int64(binary.BigEndian.Uint64(bz[offset : offset+8]))
 		if h < 0 {
-			return fmt.Errorf(errNegativeHeightsFmt, h)
+			return []int64{}, fmt.Errorf(errNegativeHeightsFmt, h)
 		}
 
 		prunedHeights[i] = h
@@ -194,30 +217,24 @@ func (m *Manager) loadPruningHeights(db dbm.DB) error {
 		offset += 8
 	}
 
-	if len(prunedHeights) > 0 {
-		m.pruneHeightsMx.Lock()
-		defer m.pruneHeightsMx.Unlock()
-		m.pruneHeights = prunedHeights
-	}
-
-	return nil
+	return prunedHeights, nil
 }
 
-func (m *Manager) loadPruningSnapshotHeights(db dbm.DB) error {
+func loadPruningSnapshotHeights(db dbm.DB) (*list.List, error) {
 	bz, err := db.Get(pruneSnapshotHeightsKey)
+	pruneSnapshotHeights := list.New()
 	if err != nil {
-		return fmt.Errorf("failed to get post-snapshot pruned heights: %w", err)
+		return pruneSnapshotHeights, fmt.Errorf("failed to get post-snapshot pruned heights: %w", err)
 	}
 	if len(bz) == 0 {
-		return nil
+		return pruneSnapshotHeights, nil
 	}
 
-	pruneSnapshotHeights := list.New()
 	i, offset := 0, 0
 	for offset < len(bz) {
 		h := int64(binary.BigEndian.Uint64(bz[offset : offset+8]))
 		if h < 0 {
-			return fmt.Errorf(errNegativeHeightsFmt, h)
+			return pruneSnapshotHeights, fmt.Errorf(errNegativeHeightsFmt, h)
 		}
 
 		pruneSnapshotHeights.PushBack(h)
@@ -225,11 +242,7 @@ func (m *Manager) loadPruningSnapshotHeights(db dbm.DB) error {
 		offset += 8
 	}
 
-	m.pruneSnapshotHeightsMx.Lock()
-	defer m.pruneSnapshotHeightsMx.Unlock()
-	m.pruneSnapshotHeights = pruneSnapshotHeights
-
-	return nil
+	return pruneSnapshotHeights, nil
 }
 
 func int64SliceToBytes(slice []int64) []byte {
