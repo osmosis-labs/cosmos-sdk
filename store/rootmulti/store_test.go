@@ -593,7 +593,7 @@ func TestMultiStore_PruningRestart(t *testing.T) {
 
 	actualHeightsToPrune, err = ms.pruningManager.GetFlushAndResetPruningHeights()
 	require.NoError(t, err)
-	require.Equal(t, pruneHeights, len(actualHeightsToPrune))
+	require.Equal(t, pruneHeights, actualHeightsToPrune)
 
 	// commit one more block and ensure the heights have been pruned
 	ms.Commit()
