@@ -60,7 +60,7 @@ type Store struct {
 	db             dbm.DB
 	logger         log.Logger
 	lastCommitInfo *types.CommitInfo
-	mx             *sync.RWMutex // mutex to sync access to lastCommitInfo
+	mx             sync.RWMutex // mutex to sync access to lastCommitInfo
 	pruningManager *pruning.Manager
 	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
@@ -95,8 +95,7 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 		stores:         make(map[types.StoreKey]types.CommitKVStore),
 		keysByName:     make(map[string]types.StoreKey),
 		listeners:      make(map[types.StoreKey][]types.WriteListener),
-		pruningManager: pruning.NewManager(logger, db),
-		mx:             &sync.RWMutex{},
+		pruningManager: pruning.NewManager(db, logger),
 	}
 }
 
@@ -530,21 +529,27 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
-	defer rs.pruningManager.FlushPruningHeights()
-
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
 	if !rs.pruningManager.ShouldPruneAtHeight(version) {
 		return nil
 	}
-
 	rs.logger.Info("prune start", "height", version)
+	defer rs.logger.Info("prune end", "height", version)
+	return rs.pruneStores()
+}
 
-	pruningHeights := rs.pruningManager.GetPruningHeights()
-	rs.logger.Debug(fmt.Sprintf("pruning the following heights: %v\n", pruningHeights))
+func (rs *Store) pruneStores() error {
+	pruningHeights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
+	if err != nil {
+		return err
+	}
 
 	if len(pruningHeights) == 0 {
+		rs.logger.Debug("pruning skipped; no heights to prune")
 		return nil
 	}
+
+	rs.logger.Debug("pruning heights", "heights", pruningHeights)
 
 	for key, store := range rs.stores {
 		// If the store is wrapped with an inter-block cache, we must first unwrap
@@ -564,8 +569,6 @@ func (rs *Store) handlePruning(version int64) error {
 			return err
 		}
 	}
-	rs.pruningManager.ResetPruningHeights()
-	rs.logger.Info("prune end", "height", version)
 	return nil
 }
 
@@ -897,7 +900,6 @@ func (rs *Store) Restore(
 	}
 
 	rs.flushLastCommitInfo(rs.buildCommitInfo(int64(height)))
-	rs.pruningManager.FlushPruningHeights()
 	return rs.LoadLatestVersion()
 }
 
