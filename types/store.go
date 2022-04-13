@@ -5,15 +5,15 @@ import (
 	"sort"
 	"strings"
 
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
-	snapshotTypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
-	PruningOptions  = pruningTypes.PruningOptions
-	SnapshotOptions = snapshotTypes.SnapshotOptions
+	PruningOptions  = pruningtypes.PruningOptions
+	SnapshotOptions = snapshottypes.SnapshotOptions
 )
 
 type (
@@ -88,14 +88,14 @@ type (
 )
 
 type (
-	PruningStrategy = pruningTypes.PruningStrategy
+	PruningStrategy = pruningtypes.PruningStrategy
 )
 
 const (
-	Default    PruningStrategy = pruningTypes.PruningDefault
-	Everything                 = pruningTypes.PruningEverything
-	Nothing                    = pruningTypes.PruningNothing
-	Custom                     = pruningTypes.PruningCustom
+	Default    PruningStrategy = pruningtypes.PruningDefault
+	Everything                 = pruningtypes.PruningEverything
+	Nothing                    = pruningtypes.PruningNothing
+	Custom                     = pruningtypes.PruningCustom
 )
 
 // assertNoCommonPrefix will panic if there are two keys: k1 and k2 in keys, such that
@@ -208,14 +208,14 @@ func NewInfiniteGasMeter() GasMeter {
 	return types.NewInfiniteGasMeter()
 }
 
-func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshotTypes.SnapshotOptions {
-	return snapshotTypes.NewSnapshotOptions(interval, keepRecent)
+func NewSnapshotOptions(interval uint64, keepRecent uint32) *snapshottypes.SnapshotOptions {
+	return snapshottypes.NewSnapshotOptions(interval, keepRecent)
 }
 
-func NewPruningOptions(pruningStrategy PruningStrategy) *pruningTypes.PruningOptions {
-	return pruningTypes.NewPruningOptions(pruningStrategy)
+func NewPruningOptions(pruningStrategy PruningStrategy) *pruningtypes.PruningOptions {
+	return pruningtypes.NewPruningOptions(pruningStrategy)
 }
 
-func NewCustomPruningOptions(keepRecent, interval uint64) *pruningTypes.PruningOptions {
-	return pruningTypes.NewCustomPruningOptions(keepRecent, interval)
+func NewCustomPruningOptions(keepRecent, interval uint64) *pruningtypes.PruningOptions {
+	return pruningtypes.NewCustomPruningOptions(keepRecent, interval)
 }

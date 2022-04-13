@@ -25,9 +25,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
-	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
-	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
+	snaphotstestutil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -269,13 +269,13 @@ func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
 	rs := rootmulti.NewStore(db, log.NewNopLogger())
 	rs.SetPruning(sdk.NewPruningOptions(sdk.Nothing))
 	key := sdk.NewKVStoreKey(storeKey)
-	rs.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, nil)
+	rs.MountStoreWithDB(key, storetypes.StoreTypeIAVL, nil)
 	err := rs.LoadLatestVersion()
 	require.Nil(t, err)
 	require.Equal(t, int64(0), rs.LastCommitID().Version)
 
 	// write some data in substore
-	kv, _ := rs.GetStore(key).(storeTypes.KVStore)
+	kv, _ := rs.GetStore(key).(storetypes.KVStore)
 	require.NotNil(t, kv)
 	kv.Set(k, v)
 	commitID := rs.Commit()
@@ -286,13 +286,13 @@ func checkStore(t *testing.T, db dbm.DB, ver int64, storeKey string, k, v []byte
 	rs := rootmulti.NewStore(db, log.NewNopLogger())
 	rs.SetPruning(sdk.NewPruningOptions(sdk.Default))
 	key := sdk.NewKVStoreKey(storeKey)
-	rs.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, nil)
+	rs.MountStoreWithDB(key, storetypes.StoreTypeIAVL, nil)
 	err := rs.LoadLatestVersion()
 	require.Nil(t, err)
 	require.Equal(t, ver, rs.LastCommitID().Version)
 
 	// query data in substore
-	kv, _ := rs.GetStore(key).(storeTypes.KVStore)
+	kv, _ := rs.GetStore(key).(storetypes.KVStore)
 	require.NotNil(t, kv)
 	require.Equal(t, v, kv.Get(k))
 }
@@ -407,7 +407,7 @@ func TestLoadVersionPruning(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
 
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotstestutil.GetTempDir(t))
 	require.NoError(t, err)
 	snapshotOpt := SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(3, 1))
 
@@ -2246,7 +2246,7 @@ func TestBaseApp_Init(t *testing.T) {
 	name := t.Name()
 	logger := defaultLogger()
 
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotsTestUtil.GetTempDir(t))
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotstestutil.GetTempDir(t))
 	require.NoError(t, err)
 
 	testCases := map[string]struct {
@@ -2339,7 +2339,7 @@ func TestBaseApp_Init(t *testing.T) {
 			),
 			sdk.NewCustomPruningOptions(10, 0),
 			sdk.NewSnapshotOptions(1500, 2),
-			pruningTypes.ErrPruningIntervalZero,
+			pruningtypes.ErrPruningIntervalZero,
 		},
 		"error custom pruning too small interval": {
 			NewBaseApp(name, logger, db, nil,
@@ -2348,7 +2348,7 @@ func TestBaseApp_Init(t *testing.T) {
 			),
 			sdk.NewCustomPruningOptions(10, 9),
 			sdk.NewSnapshotOptions(1500, 2),
-			pruningTypes.ErrPruningIntervalTooSmall,
+			pruningtypes.ErrPruningIntervalTooSmall,
 		},
 		"error custom pruning too small keep recent": {
 			NewBaseApp(name, logger, db, nil,
@@ -2357,7 +2357,7 @@ func TestBaseApp_Init(t *testing.T) {
 			),
 			sdk.NewCustomPruningOptions(9, 10),
 			sdk.NewSnapshotOptions(1500, 2),
-			pruningTypes.ErrPruningKeepRecentTooSmall,
+			pruningtypes.ErrPruningKeepRecentTooSmall,
 		},
 		"snapshot zero interval - manager not set": {
 			NewBaseApp(name, logger, db, nil,

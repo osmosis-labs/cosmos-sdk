@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/cosmos/cosmos-sdk/pruning"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/cachemulti"
@@ -101,14 +101,14 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 }
 
 // GetPruning fetches the pruning strategy from the root store.
-func (rs *Store) GetPruning() *pruningTypes.PruningOptions {
+func (rs *Store) GetPruning() *pruningtypes.PruningOptions {
 	return rs.pruningManager.GetOptions()
 }
 
 // SetPruning sets the pruning strategy on the root store and all the sub-stores.
 // Note, calling SetPruning on the root store prior to LoadVersion or
 // LoadLatestVersion performs a no-op as the stores aren't mounted yet.
-func (rs *Store) SetPruning(pruningOpts *pruningTypes.PruningOptions) {
+func (rs *Store) SetPruning(pruningOpts *pruningtypes.PruningOptions) {
 	rs.pruningManager.SetOptions(pruningOpts)
 }
 
