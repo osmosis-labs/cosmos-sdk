@@ -185,7 +185,7 @@ func TestHandleHeight_Inputs(t *testing.T) {
 
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-			manager := pruning.NewManager(log.NewNopLogger())
+			manager := pruning.NewManager(log.NewNopLogger(), db.NewMemDB())
 			require.NotNil(t, manager)
 			manager.SetOptions(types.NewPruningOptions(tc.strategy))
 
