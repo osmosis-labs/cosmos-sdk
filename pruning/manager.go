@@ -30,10 +30,16 @@ type Manager struct {
 	pruneSnapshotHeightsMx sync.Mutex
 }
 
-const (
-	errNegativeHeightsFmt = "failed to get pruned heights: %d"
-	uint64Size            = 8
-)
+// NegativeHeightsError is returned when a negative height is provided to the manager.
+type NegativeHeightsError struct {
+	Height int64
+}
+
+var _ error = &NegativeHeightsError{}
+
+func (e *NegativeHeightsError) Error() string {
+	return fmt.Sprintf("failed to get pruned heights: %d", e.Height)
+}
 
 var (
 	pruneHeightsKey         = []byte("s/pruneheights")
@@ -42,11 +48,9 @@ var (
 
 func NewManager(db dbm.DB, logger log.Logger) *Manager {
 	return &Manager{
-		db:     db,
-		logger: logger,
-		opts:   types.NewPruningOptions(types.PruningNothing),
-		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
-		// The heights are added to this list to be pruned when a snapshot is complete.
+		db:                   db,
+		logger:               logger,
+		opts:                 types.NewPruningOptions(types.PruningNothing),
 		pruneHeights:         []int64{},
 		pruneSnapshotHeights: list.New(),
 	}
@@ -212,7 +216,7 @@ func loadPruningHeights(db dbm.DB) ([]int64, error) {
 	for offset < len(bz) {
 		h := int64(binary.BigEndian.Uint64(bz[offset : offset+8]))
 		if h < 0 {
-			return []int64{}, fmt.Errorf(errNegativeHeightsFmt, h)
+			return []int64{}, &NegativeHeightsError{Height: h}
 		}
 
 		prunedHeights[i] = h
@@ -237,9 +241,8 @@ func loadPruningSnapshotHeights(db dbm.DB) (*list.List, error) {
 	for offset < len(bz) {
 		h := int64(binary.BigEndian.Uint64(bz[offset : offset+8]))
 		if h < 0 {
-			return pruneSnapshotHeights, fmt.Errorf(errNegativeHeightsFmt, h)
+			return nil, &NegativeHeightsError{Height: h}
 		}
-
 		pruneSnapshotHeights.PushBack(h)
 		i++
 		offset += 8

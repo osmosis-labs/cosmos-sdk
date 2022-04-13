@@ -458,7 +458,7 @@ func TestLoadPruningHeights(t *testing.T) {
 	}{
 		"negative pruningHeight - error": {
 			flushedPruningHeights: []int64{10, 0, -1},
-			expectedResult:        fmt.Errorf(pruning.ErrNegativeHeightsFmt, -1),
+			expectedResult:        &pruning.NegativeHeightsError{Height: -1},
 		},
 		"negative snapshotPruningHeight - error": {
 			getFlushedPruningSnapshotHeights: func() *list.List {
@@ -468,7 +468,7 @@ func TestLoadPruningHeights(t *testing.T) {
 				l.PushBack(int64(3))
 				return l
 			},
-			expectedResult: fmt.Errorf(pruning.ErrNegativeHeightsFmt, -2),
+			expectedResult: &pruning.NegativeHeightsError{Height: -2},
 		},
 		"both have negative - pruningHeight error": {
 			flushedPruningHeights: []int64{10, 0, -1},
@@ -479,7 +479,7 @@ func TestLoadPruningHeights(t *testing.T) {
 				l.PushBack(int64(3))
 				return l
 			},
-			expectedResult: fmt.Errorf(pruning.ErrNegativeHeightsFmt, -1),
+			expectedResult: &pruning.NegativeHeightsError{Height: -1},
 		},
 		"both non-negative - success": {
 			flushedPruningHeights: []int64{10, 0, 3},
