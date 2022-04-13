@@ -7,6 +7,7 @@ import (
 
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 )
 
 var _ sdk.MultiStore = multiStore{}
@@ -63,11 +64,11 @@ func (ms multiStore) LastCommitID() sdk.CommitID {
 	panic("not implemented")
 }
 
-func (ms multiStore) SetPruning(opts *sdk.PruningOptions) {
+func (ms multiStore) SetPruning(opts *pruningtypes.PruningOptions) {
 	panic("not implemented")
 }
 
-func (ms multiStore) GetPruning() *sdk.PruningOptions {
+func (ms multiStore) GetPruning() *pruningtypes.PruningOptions {
 	panic("not implemented")
 }
 

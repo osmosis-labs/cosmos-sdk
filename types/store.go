@@ -12,11 +12,6 @@ import (
 )
 
 type (
-	PruningOptions  = pruningtypes.PruningOptions
-	SnapshotOptions = snapshottypes.SnapshotOptions
-)
-
-type (
 	Store                     = types.Store
 	Committer                 = types.Committer
 	CommitStore               = types.CommitStore

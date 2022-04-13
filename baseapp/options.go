@@ -9,6 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
+	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -16,7 +18,7 @@ import (
 // for options that need access to non-exported fields of the BaseApp
 
 // SetPruning sets a pruning option on the multistore associated with the app
-func SetPruning(opts *sdk.PruningOptions) func(*BaseApp) {
+func SetPruning(opts *pruningtypes.PruningOptions) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetPruning(opts) }
 }
 
@@ -69,7 +71,7 @@ func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
 }
 
 // SetSnapshot sets the snapshot store.
-func SetSnapshot(snapshotStore *snapshots.Store, opts *sdk.SnapshotOptions) func(*BaseApp) {
+func SetSnapshot(snapshotStore *snapshots.Store, opts *snapshottypes.SnapshotOptions) func(*BaseApp) {
 	return func(app *BaseApp) { app.SetSnapshot(snapshotStore, opts) }
 }
 
@@ -199,7 +201,7 @@ func (app *BaseApp) SetRouter(router sdk.Router) {
 }
 
 // SetSnapshot sets the snapshot store and options.
-func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, opts *sdk.SnapshotOptions) {
+func (app *BaseApp) SetSnapshot(snapshotStore *snapshots.Store, opts *snapshottypes.SnapshotOptions) {
 	if app.sealed {
 		panic("SetSnapshot() on sealed BaseApp")
 	}
