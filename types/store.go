@@ -82,17 +82,6 @@ type (
 	MemoryStoreKey    = types.MemoryStoreKey
 )
 
-type (
-	PruningStrategy = pruningtypes.PruningStrategy
-)
-
-const (
-	Default    PruningStrategy = pruningtypes.PruningDefault
-	Everything                 = pruningtypes.PruningEverything
-	Nothing                    = pruningtypes.PruningNothing
-	Custom                     = pruningtypes.PruningCustom
-)
-
 // assertNoCommonPrefix will panic if there are two keys: k1 and k2 in keys, such that
 // k1 is a prefix of k2
 func assertNoPrefix(keys []string) {

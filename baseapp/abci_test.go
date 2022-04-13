@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snaphotsTestUtil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +44,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 		"pruning iavl snapshot only": {
 			bapp: NewBaseApp(
 				name, logger, db, nil,
-				SetPruning(sdk.NewPruningOptions(sdk.Nothing)),
+				SetPruning(sdk.NewPruningOptions(pruningtypes.PruningDefault)),
 				SetMinRetainBlocks(1),
 				SetSnapshot(snapshotStore, sdk.NewSnapshotOptions(10000, 1)),
 			),
