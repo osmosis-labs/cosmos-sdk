@@ -177,7 +177,7 @@ func (k msgServer) EditValidator(goCtx context.Context, msg *types.MsgEditValida
 	globalMinSelfDelegation := k.MinSelfDelegation(ctx)
 
 	// minimum validator self delegation must be greater than or equal to global minimum
-	if globalMinSelfDelegation.GT(validator.MinSelfDelegation) {
+	if validator.MinSelfDelegation.LT(globalMinSelfDelegation) {
 		return nil, types.ErrMinSelfDelegationBelowMinimum
 	}
 
