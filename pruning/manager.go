@@ -62,7 +62,7 @@ func (m *Manager) GetPruningHeights() []int64 {
 
 // ResetPruningHeights resets the heights to be pruned.
 func (m *Manager) ResetPruningHeights() {
-	// reuse previously allocated memory.
+	// reuse previously allocated memory
 	m.pruneHeights = m.pruneHeights[:0]
 }
 
@@ -227,7 +227,6 @@ func (m *Manager) flushPruningSnapshotHeights(batch dbm.Batch) {
 	}
 }
 
-// TODO: convert to a generic version with Go 1.18.
 func int64SliceToBytes(slice []int64) []byte {
 	bz := make([]byte, 0, len(slice)*8)
 	for _, ph := range slice {
