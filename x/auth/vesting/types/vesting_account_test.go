@@ -4,10 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
-
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
@@ -17,6 +13,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	"github.com/stretchr/testify/require"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtime "github.com/tendermint/tendermint/types/time"
 )
 
 var (
@@ -858,10 +858,10 @@ func TestClawback(t *testing.T) {
 	valAddr, val := createValidator(t, ctx, app, 100)
 	require.Equal(t, "stake", app.StakingKeeper.BondDenom(ctx))
 
-	lockupPeriods := types.Periods{
-		{Length: int64(12 * 3600), Amount: c(fee(1000), stake(100))}, // noon
+	lockupPeriods := []types.Period{
+		{Length: int64(12 * 3600), Amount: c(fee(1000), stake(100))},
 	}
-	vestingPeriods := types.Periods{
+	vestingPeriods := []types.Period{
 		{Length: int64(8 * 3600), Amount: c(fee(200))},            // 8am
 		{Length: int64(1 * 3600), Amount: c(fee(200), stake(50))}, // 9am
 		{Length: int64(6 * 3600), Amount: c(fee(200), stake(50))}, // 3pm
@@ -889,11 +889,48 @@ func TestClawback(t *testing.T) {
 	_, err = app.StakingKeeper.Undelegate(ctx, addr, valAddr, sdk.NewDec(5))
 	require.Error(t, err)
 
-	// lockup period ends at noon, should not be able to clawback any fund
-	ctx = ctx.WithBlockTime(now.Add(11 * time.Hour))
+	// test prior to lockup time start, vesting time start
+	ctx = ctx.WithBlockTime(now.Add(7 * time.Hour))
 	_, _, dest := testdata.KeyTestPubAddr()
 	va2 := app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
 	clawbackAction := types.NewClawbackAction(funder, dest, app.AccountKeeper, app.BankKeeper)
+	err = va2.Clawback(ctx, clawbackAction)
+	require.NoError(t, err)
+
+	// lockup period and vesting periods has been initialized
+	require.Equal(t, []types.Period{}, va2.LockupPeriods)
+	require.Equal(t, []types.Period{}, va2.VestingPeriods)
+
+	addrFeeBalance := app.BankKeeper.GetBalance(ctx, addr, feeDenom)
+	require.Equal(t, int64(1000), addrFeeBalance.Amount.Int64())
+	addrStakeBalance := app.BankKeeper.GetBalance(ctx, addr, stakeDenom)
+	require.Equal(t, int64(100), addrStakeBalance.Amount.Int64())
+
+	addrSpendableCoins := app.BankKeeper.SpendableCoins(ctx, addr)
+	require.Equal(t, 0, addrSpendableCoins.Len())
+
+	lockedCoins := va2.LockedCoins(ctx.BlockTime())
+	vestingCoins := va2.GetVestingCoins(ctx.BlockTime())
+	vestedCoins := va2.GetVestedCoins(ctx.BlockTime())
+
+	require.Equal(t, 0, lockedCoins.Len())
+	require.Equal(t, 0, vestingCoins.Len())
+	require.Equal(t, 0, vestedCoins.Len())
+
+	va2 = app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
+	lockedCoins = va2.LockedCoins(ctx.BlockTime())
+	vestingCoins = va2.GetVestingCoins(ctx.BlockTime())
+	vestedCoins = va2.GetVestedCoins(ctx.BlockTime())
+
+	expectedCoins := sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(1000)), sdk.NewCoin(stakeDenom, sdk.NewInt(100)))
+	require.Equal(t, expectedCoins, lockedCoins)
+	require.Equal(t, expectedCoins, vestingCoins)
+	require.Equal(t, 0, vestedCoins.Len())
+
+	// lockup period ends at noon, should not be able to clawback any fund
+	ctx = ctx.WithBlockTime(now.Add(11 * time.Hour))
+	va2 = app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
+	clawbackAction = types.NewClawbackAction(funder, dest, app.AccountKeeper, app.BankKeeper)
 	err = va2.Clawback(ctx, clawbackAction)
 	require.NoError(t, err)
 
