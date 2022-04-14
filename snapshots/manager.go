@@ -29,8 +29,8 @@ import (
 //    errors via io.Pipe.CloseWithError().
 type Manager struct {
 	// store is the snapshot store where all completed snapshots are persisted.
-	store  *Store
-	opts   types.SnapshotOptions
+	store *Store
+	opts  types.SnapshotOptions
 	// target is the store from which snapshots are taken.
 	target types.Snapshotter
 	logger log.Logger
@@ -293,7 +293,7 @@ func (m *Manager) RestoreChunk(chunk []byte) (bool, error) {
 	return false, nil
 }
 
-// SnapshotIfApplicable takes a snapshot of the current state if we are on a snapshot height. 
+// SnapshotIfApplicable takes a snapshot of the current state if we are on a snapshot height.
 // It also prunes any old snapshots. The snapshotting and pruning happen in separate goroutines.
 func (m *Manager) SnapshotIfApplicable(height int64) {
 	if m == nil {

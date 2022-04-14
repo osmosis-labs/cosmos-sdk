@@ -14,7 +14,7 @@ import (
 
 type Manager struct {
 	logger               log.Logger
-	db dbm.DB
+	db                   dbm.DB
 	opts                 types.PruningOptions
 	snapshotInterval     uint64
 	pruneHeights         []int64
@@ -24,7 +24,7 @@ type Manager struct {
 
 const (
 	errNegativeHeightsFmt = "failed to get pruned heights: %d"
-	uint64Size = 8
+	uint64Size            = 8
 )
 
 var (
@@ -35,7 +35,7 @@ var (
 func NewManager(logger log.Logger, db dbm.DB) *Manager {
 	return &Manager{
 		logger:       logger,
-		db: db,
+		db:           db,
 		opts:         types.NewPruningOptions(types.PruningNothing),
 		pruneHeights: []int64{},
 		// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.

@@ -31,7 +31,7 @@ func TestPruningOptions_Validate(t *testing.T) {
 func TestNewPruningOptionsFromString(t *testing.T) {
 	testCases := []struct {
 		optString string
-		expect PruningOptions
+		expect    PruningOptions
 	}{
 		{PruningOptionDefault, NewPruningOptions(PruningDefault)},
 		{PruningOptionEverything, NewPruningOptions(PruningEverything)},

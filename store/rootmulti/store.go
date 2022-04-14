@@ -60,7 +60,7 @@ type Store struct {
 	db             dbm.DB
 	logger         log.Logger
 	lastCommitInfo *types.CommitInfo
-	mx *sync.RWMutex // mutex to sync access to lastCommitInfo
+	mx             *sync.RWMutex // mutex to sync access to lastCommitInfo
 	pruningManager *pruning.Manager
 	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
@@ -96,7 +96,7 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 		keysByName:     make(map[string]types.StoreKey),
 		listeners:      make(map[types.StoreKey][]types.WriteListener),
 		pruningManager: pruning.NewManager(logger, db),
-		mx: &sync.RWMutex{},
+		mx:             &sync.RWMutex{},
 	}
 }
 
@@ -536,7 +536,7 @@ func (rs *Store) handlePruning(version int64) error {
 	if !rs.pruningManager.ShouldPruneAtHeight(version) {
 		return nil
 	}
-	
+
 	rs.logger.Info("prune start", "height", version)
 
 	pruningHeights := rs.pruningManager.GetPruningHeights()
@@ -585,8 +585,8 @@ func (rs *Store) getStoreByName(name string) types.Store {
 // Query calls substore.Query with the same `req` where `req.Path` is
 // modified to remove the substore prefix.
 // Ie. `req.Path` here is `/<substore>/<path>`, and trimmed to `/<path>` for the substore.
-// Special case: if `req.Path` is `/proofs`, the commit hash is included 
-// as response value. In addition, proofs of every store are appended to the response for 
+// Special case: if `req.Path` is `/proofs`, the commit hash is included
+// as response value. In addition, proofs of every store are appended to the response for
 // the requested height
 func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	path := req.Path
@@ -620,7 +620,6 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	if res.ProofOps == nil || len(res.ProofOps.Ops) == 0 {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proof is unexpectedly empty; ensure height has not been pruned"))
 	}
-
 
 	commitInfo, err := rs.getCommitInfoFromDb(res.Height)
 	if err != nil {
@@ -1054,7 +1053,7 @@ func (rs *Store) doProofsQuery(req abci.RequestQuery) abci.ResponseQuery {
 	}
 
 	for _, storeInfo := range commitInfo.StoreInfos {
-		res.ProofOps.Ops = append(res.ProofOps.Ops, crypto.ProofOp{Key: []byte(storeInfo.Name), Data: storeInfo.CommitId.Hash, })
+		res.ProofOps.Ops = append(res.ProofOps.Ops, crypto.ProofOp{Key: []byte(storeInfo.Name), Data: storeInfo.CommitId.Hash})
 	}
 	return res
 }

@@ -14,9 +14,9 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

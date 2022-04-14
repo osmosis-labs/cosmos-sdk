@@ -29,47 +29,47 @@ func TestStrategies(t *testing.T) {
 		strategy         types.PruningOptions
 		snapshotInterval uint64
 		strategyToAssert types.PruningStrategy
-		isValid  bool
+		isValid          bool
 	}{
 		"prune nothing - no snapshot": {
-			strategy: types.NewPruningOptions(types.PruningNothing),
+			strategy:         types.NewPruningOptions(types.PruningNothing),
 			strategyToAssert: types.PruningNothing,
 		},
 		"prune nothing - snapshot": {
-			strategy: types.NewPruningOptions(types.PruningNothing),
+			strategy:         types.NewPruningOptions(types.PruningNothing),
 			strategyToAssert: types.PruningNothing,
 			snapshotInterval: 100,
 		},
 		"prune default - no snapshot": {
-			strategy: types.NewPruningOptions(types.PruningDefault),
+			strategy:         types.NewPruningOptions(types.PruningDefault),
 			strategyToAssert: types.PruningDefault,
 		},
 		"prune default - snapshot": {
-			strategy: types.NewPruningOptions(types.PruningDefault),
+			strategy:         types.NewPruningOptions(types.PruningDefault),
 			strategyToAssert: types.PruningDefault,
 			snapshotInterval: 100,
 		},
 		"prune everything - no snapshot": {
-			strategy: types.NewPruningOptions(types.PruningEverything),
+			strategy:         types.NewPruningOptions(types.PruningEverything),
 			strategyToAssert: types.PruningEverything,
 		},
 		"prune everything - snapshot": {
-			strategy: types.NewPruningOptions(types.PruningEverything),
+			strategy:         types.NewPruningOptions(types.PruningEverything),
 			strategyToAssert: types.PruningEverything,
 			snapshotInterval: 100,
 		},
 		"custom 100-10-15": {
-			strategy: types.NewCustomPruningOptions(100, 15),
+			strategy:         types.NewCustomPruningOptions(100, 15),
 			snapshotInterval: 10,
 			strategyToAssert: types.PruningCustom,
 		},
 		"custom 10-10-15": {
-			strategy: types.NewCustomPruningOptions(10, 15),
+			strategy:         types.NewCustomPruningOptions(10, 15),
 			snapshotInterval: 10,
 			strategyToAssert: types.PruningCustom,
 		},
 		"custom 100-0-15": {
-			strategy: types.NewCustomPruningOptions(100, 15),
+			strategy:         types.NewCustomPruningOptions(100, 15),
 			snapshotInterval: 0,
 			strategyToAssert: types.PruningCustom,
 		},
@@ -81,9 +81,9 @@ func TestStrategies(t *testing.T) {
 
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-			curStrategy := tc.strategy 
+			curStrategy := tc.strategy
 			manager.SetSnapshotInterval(tc.snapshotInterval)
-			
+
 			pruneStrategy := curStrategy.GetPruningStrategy()
 			require.Equal(t, tc.strategyToAssert, pruneStrategy)
 
@@ -146,9 +146,9 @@ func TestHandleHeight_Inputs(t *testing.T) {
 	var keepRecent int64 = int64(types.NewPruningOptions(types.PruningEverything).KeepRecent)
 
 	testcases := map[string]struct {
-		height int64
-		expectedResult int64
-		strategy types.PruningStrategy
+		height          int64
+		expectedResult  int64
+		strategy        types.PruningStrategy
 		expectedHeights []int64
 	}{
 		"previousHeight is negative - prune everything - invalid previousHeight": {
@@ -199,20 +199,20 @@ func TestHandleHeight_Inputs(t *testing.T) {
 
 func TestFlushLoad(t *testing.T) {
 	const (
-		totalHeights = 1000
-		snapshotInterval = uint64(10)
+		totalHeights      = 1000
+		snapshotInterval  = uint64(10)
 		pruningKeepRecent = 100
-		pruningInterval = 15
+		pruningInterval   = 15
 	)
 
 	var (
-		db = db.NewMemDB()
-		manager = pruning.NewManager(log.NewNopLogger(), db)
-		curStrategy = types.NewCustomPruningOptions(pruningKeepRecent, pruningInterval)
+		db                   = db.NewMemDB()
+		manager              = pruning.NewManager(log.NewNopLogger(), db)
+		curStrategy          = types.NewCustomPruningOptions(pruningKeepRecent, pruningInterval)
 		heightsToPruneMirror = make([]int64, 0)
 	)
 	require.NotNil(t, manager)
-	
+
 	manager.SetSnapshotInterval(snapshotInterval)
 
 	manager.SetOptions(curStrategy)
@@ -253,14 +253,14 @@ func TestFlushLoad(t *testing.T) {
 
 func TestLoadPruningHeights(t *testing.T) {
 	var err error
-	testcases := map[string]struct{
-		flushedPruningHeights[]int64
-		getFlushedPruningSnapshotHeights func () *list.List
-		expectedResult error
-	} {
+	testcases := map[string]struct {
+		flushedPruningHeights            []int64
+		getFlushedPruningSnapshotHeights func() *list.List
+		expectedResult                   error
+	}{
 		"negative pruningHeight - error": {
 			flushedPruningHeights: []int64{10, 0, -1},
-			expectedResult: fmt.Errorf(pruning.ErrNegativeHeightsFmt, -1),
+			expectedResult:        fmt.Errorf(pruning.ErrNegativeHeightsFmt, -1),
 		},
 		"negative snapshotPruningHeight - error": {
 			getFlushedPruningSnapshotHeights: func() *list.List {
@@ -310,10 +310,10 @@ func TestLoadPruningHeights(t *testing.T) {
 
 			manager := pruning.NewManager(log.NewNopLogger(), db)
 			require.NotNil(t, manager)
-		
+
 			// must not be PruningNothing
 			manager.SetOptions(types.NewPruningOptions(types.PruningDefault))
-	
+
 			err = manager.LoadPruningHeights()
 			require.Equal(t, tc.expectedResult, err)
 		})
@@ -334,7 +334,7 @@ func TestWithSnapshot(t *testing.T) {
 	require.NotNil(t, manager)
 
 	curStrategy := types.NewCustomPruningOptions(10, 10)
-	
+
 	snapshotInterval := uint64(15)
 	manager.SetSnapshotInterval(snapshotInterval)
 
