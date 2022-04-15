@@ -895,6 +895,7 @@ func (va *ClawbackVestingAccount) clawback(ctx sdk.Context, dest sdk.AccAddress,
 		return nil
 	}
 	addr := va.GetAddress()
+	ak.SetAccount(ctx, va)
 
 	// Now that future vesting events (and associated lockup) are removed,
 	// the balance of the account is unlocked and can be freely transferred.
