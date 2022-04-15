@@ -270,16 +270,12 @@ func (s msgServer) Clawback(goCtx context.Context, msg *types.MsgClawback) (*typ
 
 	clawbackAction := types.NewClawbackAction(funder, dest, ak, bk)
 
-	// Perform clawback transfer
+	// Perform clawback transfer,
+	// this updates state for both the vesting account and the destination account.
 	err = va.Clawback(ctx, clawbackAction)
 	if err != nil {
 		return nil, err
 	}
-
-	// Write now now so that the bank module sees unvested tokens are unlocked.
-	// Note that all store writes are aborted if there is a panic, so there is
-	// no danger in writing incomplete results.
-	s.AccountKeeper.SetAccount(ctx, va)
 
 	return &types.MsgClawbackResponse{}, nil
 }

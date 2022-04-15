@@ -894,6 +894,8 @@ func (va *ClawbackVestingAccount) clawback(ctx sdk.Context, dest sdk.AccAddress,
 		return nil
 	}
 	addr := va.GetAddress()
+
+	// update the account's vesting settings
 	ak.SetAccount(ctx, va)
 
 	// Now that future vesting events (and associated lockup) are removed,
