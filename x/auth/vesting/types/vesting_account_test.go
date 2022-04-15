@@ -938,6 +938,7 @@ func TestClawbackBeforeStartTime(t *testing.T) {
 	valAddr, val := createValidator(t, ctx, app, 100)
 	require.Equal(t, "stake", app.StakingKeeper.BondDenom(ctx))
 
+	totalVestingCoins := sdk.NewCoins(sdk.NewInt64Coin(feeDenom, 1000), sdk.NewInt64Coin(stakeDenom, 100))
 	lockupPeriods := []types.Period{
 		{Length: int64(12 * 3600), Amount: c(fee(1000), stake(100))},
 	}
@@ -969,7 +970,8 @@ func TestClawbackBeforeStartTime(t *testing.T) {
 	_, err = app.StakingKeeper.Undelegate(ctx, addr, valAddr, sdk.NewDec(5))
 	require.Error(t, err)
 
-	// clawback prior to lockup time start, vesting time start
+	// clawback prior to vesting starting, or any lockups ending
+	// all coins should get clawed back.
 	ctx = ctx.WithBlockTime(now.Add(7 * time.Hour))
 	_, _, dest := testdata.KeyTestPubAddr()
 	va2 := app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
@@ -982,10 +984,11 @@ func TestClawbackBeforeStartTime(t *testing.T) {
 	require.Equal(t, []types.Period{}, va2.LockupPeriods)
 	require.Equal(t, []types.Period{}, va2.VestingPeriods)
 
-	addrFeeBalance := app.BankKeeper.GetBalance(ctx, addr, feeDenom)
-	require.Equal(t, int64(1000), addrFeeBalance.Amount.Int64())
-	addrStakeBalance := app.BankKeeper.GetBalance(ctx, addr, stakeDenom)
-	require.Equal(t, int64(100), addrStakeBalance.Amount.Int64())
+	destBalances := app.BankKeeper.GetAllBalances(ctx, dest)
+	require.Equal(t, totalVestingCoins, destBalances)
+
+	addrBalances := app.BankKeeper.GetAllBalances(ctx, addr)
+	require.Equal(t, sdk.Coins{}, addrBalances)
 
 	va2 = app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
 	lockedCoins := va2.LockedCoins(ctx.BlockTime())

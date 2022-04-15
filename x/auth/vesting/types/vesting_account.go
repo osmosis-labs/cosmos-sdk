@@ -820,7 +820,10 @@ func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins 
 	totalUnvested := sdk.NewCoins()
 	unvestedIdx := 0
 	for i, period := range va.VestingPeriods {
+		// this period vests at time t, if this occured before clawback time,
+		// then its already vested.
 		t += period.Length
+		fmt.Println(t, clawbackTime, t-clawbackTime)
 		// tie in time goes to clawback
 		if t < clawbackTime {
 			totalVested = totalVested.Add(period.Amount...)
@@ -829,6 +832,7 @@ func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins 
 			totalUnvested = totalUnvested.Add(period.Amount...)
 		}
 	}
+	fmt.Println("vest, ", totalVested, " , unvest", totalUnvested)
 	newVestingPeriods := va.VestingPeriods[:unvestedIdx]
 
 	// To cap the unlocking schedule to the new total vested, conjunct with a limiting schedule
@@ -896,6 +900,7 @@ func (va *ClawbackVestingAccount) clawback(ctx sdk.Context, dest sdk.AccAddress,
 	// the balance of the account is unlocked and can be freely transferred.
 	spendable := bk.SpendableCoins(ctx, addr)
 	toXfer := coinsMin(toClawBack, spendable)
+	fmt.Println("toClawback", toClawBack, "spendable", spendable, toXfer)
 	err := bk.SendCoins(ctx, addr, dest, toXfer)
 	if err != nil {
 		return err // shouldn't happen, given spendable check
