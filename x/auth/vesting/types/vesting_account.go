@@ -821,11 +821,10 @@ func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins 
 	totalUnvested := sdk.NewCoins()
 	unvestedIdx := 0
 	for i, period := range va.VestingPeriods {
-		// this period vests at time t, if this occured before clawback time,
+		// this period vests at time t, if this occurred before clawback time,
 		// then its already vested.
 		t += period.Length
-		fmt.Println(t, clawbackTime, t-clawbackTime)
-		// tie in time goes to clawback
+		// tie in time gets clawed back
 		if t < clawbackTime {
 			totalVested = totalVested.Add(period.Amount...)
 			unvestedIdx = i + 1
@@ -833,7 +832,6 @@ func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins 
 			totalUnvested = totalUnvested.Add(period.Amount...)
 		}
 	}
-	fmt.Println("vest, ", totalVested, " , unvest", totalUnvested)
 	newVestingPeriods := va.VestingPeriods[:unvestedIdx]
 
 	// To cap the unlocking schedule to the new total vested, conjunct with a limiting schedule
