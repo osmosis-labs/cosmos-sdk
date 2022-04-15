@@ -812,6 +812,7 @@ func (va ClawbackVestingAccount) GetVestedOnly(blockTime time.Time) sdk.Coins {
 // (But future unlocking events might be preserved if they unlock currently vested coins.)
 // If the amount returned is zero, then the returned account should be unchanged.
 // Does not adjust DelegatedVesting
+// TODO: Rename this function, its doing more than computing a clawback, its altering the struct.
 func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins {
 	// Compute the truncated vesting schedule and amounts.
 	// Work with the schedule as the primary data and recompute derived fields, e.g. OriginalVesting.
@@ -899,12 +900,10 @@ func (va *ClawbackVestingAccount) clawback(ctx sdk.Context, dest sdk.AccAddress,
 
 	// Now that future vesting events (and associated lockup) are removed,
 	// the balance of the account is unlocked and can be freely transferred.
-	spendable := bk.SpendableCoins(ctx, addr)
-	toXfer := coinsMin(toClawBack, spendable)
-	fmt.Println("toClawback", toClawBack, "spendable", spendable, toXfer)
-	err := bk.SendCoins(ctx, addr, dest, toXfer)
+	err := bk.SendCoins(ctx, addr, dest, toClawBack)
 	if err != nil {
-		return err // shouldn't happen, given spendable check
+		// shouldn't happen, we have a correctness issue in toClawBack in this case
+		return err
 	}
 	return nil
 }
