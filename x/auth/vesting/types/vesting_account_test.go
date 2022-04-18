@@ -862,6 +862,10 @@ func TestClawback(t *testing.T) {
 		{Length: int64(2 * 3600), Amount: c(fee(200))},            // 5pm
 		{Length: int64(1 * 3600), Amount: c(fee(200))},            // 6pm
 	}
+	// each test creates a new clawback vesting account, with the lockup and vesting periods defined above.
+	// the clawback is executed at the test case's provided time, and expects that post clawback,
+	// the address has a total of `vestingAccBalance` coins, but only `spendableCoins` are spendable.
+	// It expects the clawback acct funder to have `funderBalance` (aka that amt clawed back)
 	testCases := []struct {
 		name              string
 		ctxTime           time.Time
