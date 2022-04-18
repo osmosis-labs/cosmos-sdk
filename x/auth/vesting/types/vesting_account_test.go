@@ -942,13 +942,13 @@ func TestClawback(t *testing.T) {
 			app.AccountKeeper.SetAccount(ctx, va)
 
 			vestingAccBalance := app.BankKeeper.GetAllBalances(ctx, addr)
-			require.Equal(t, tc.vestingAccBalance, vestingAccBalance)
+			require.Equal(t, tc.vestingAccBalance, vestingAccBalance, "vesting account balance test")
 
 			funderBalance := app.BankKeeper.GetAllBalances(ctx, funder)
-			require.Equal(t, tc.funderBalance, funderBalance)
+			require.Equal(t, tc.funderBalance, funderBalance, "funder account balance test")
 
 			spendableCoins := app.BankKeeper.SpendableCoins(ctx, addr)
-			require.Equal(t, tc.spendableCoins, spendableCoins)
+			require.Equal(t, tc.spendableCoins, spendableCoins, "vesting account spendable test")
 		})
 	}
 }
