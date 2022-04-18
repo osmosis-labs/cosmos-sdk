@@ -869,7 +869,6 @@ func TestClawback(t *testing.T) {
 		spendableCoins    sdk.Coins
 		funderBalance     sdk.Coins
 	}{
-		// fails
 		{
 			"clawback before all vesting periods, before cliff ended",
 			now.Add(7 * time.Hour),
@@ -889,7 +888,6 @@ func TestClawback(t *testing.T) {
 			// all funds should be returned to funder account
 			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(1000)), sdk.NewCoin(stakeDenom, sdk.NewInt(100))),
 		},
-		// fails
 		{
 			"clawback right after cliff has finsihed",
 			now.Add(13 * time.Hour),
@@ -897,7 +895,6 @@ func TestClawback(t *testing.T) {
 			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(400)), sdk.NewCoin(stakeDenom, sdk.NewInt(50))),
 			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(600)), sdk.NewCoin(stakeDenom, sdk.NewInt(50))),
 		},
-		// fails
 		{
 			"clawback after cliff has finished, 3 vesting periods have finished",
 			now.Add(16 * time.Hour),
@@ -937,11 +934,9 @@ func TestClawback(t *testing.T) {
 			_, err = app.StakingKeeper.Undelegate(ctx, addr, valAddr, sdk.NewDec(5))
 			require.Error(t, err)
 
-			_, _, dest := testdata.KeyTestPubAddr()
-
 			ctx = ctx.WithBlockTime(tc.ctxTime)
 			va = app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
-			clawbackAction := types.NewClawbackAction(funder, dest, app.AccountKeeper, app.BankKeeper)
+			clawbackAction := types.NewClawbackAction(funder, funder, app.AccountKeeper, app.BankKeeper)
 			err = va.Clawback(ctx, clawbackAction)
 			require.NoError(t, err)
 			app.AccountKeeper.SetAccount(ctx, va)
