@@ -1,11 +1,15 @@
 package ormtable
 
 import (
-	"math"
-
 	"github.com/cosmos/cosmos-sdk/orm/internal/listinternal"
 
 	queryv1beta1 "github.com/cosmos/cosmos-sdk/api/cosmos/base/query/v1beta1"
+)
+
+const (
+	intSize = 32 << (^uint(0) >> 63) // 32 or 64
+
+	MaxInt = 1<<(intSize-1) - 1
 )
 
 func paginate(it Iterator, options *listinternal.Options) Iterator {
@@ -31,7 +35,7 @@ func paginate(it Iterator, options *listinternal.Options) Iterator {
 	if limit != 0 {
 		done = limit + offset
 	} else {
-		done = math.MaxInt
+		done = MaxInt
 	}
 
 	return &paginationIterator{
