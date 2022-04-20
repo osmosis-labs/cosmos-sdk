@@ -61,12 +61,6 @@ var (
 
 func NewPruningOptions(pruningStrategy PruningStrategy) PruningOptions {
 	switch pruningStrategy {
-	case PruningDefault:
-		return PruningOptions{
-			KeepRecent: 100_000,
-			Interval:   100,
-			Strategy:   PruningDefault,
-		}
 	case PruningEverything:
 		return PruningOptions{
 			KeepRecent: pruneEverythingKeepRecent,
@@ -81,7 +75,9 @@ func NewPruningOptions(pruningStrategy PruningStrategy) PruningOptions {
 		}
 	default:
 		return PruningOptions{
-			Strategy: PruningCustom,
+			KeepRecent: 100_000,
+			Interval:   100,
+			Strategy:   PruningDefault,
 		}
 	}
 }
