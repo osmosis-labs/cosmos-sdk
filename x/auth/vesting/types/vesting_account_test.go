@@ -1141,3 +1141,113 @@ func TestPermanentLockedAccountMarshal(t *testing.T) {
 	_, err = app.AccountKeeper.UnmarshalAccount(bz[:len(bz)/2])
 	require.NotNil(t, err)
 }
+
+func TestClawback1(t *testing.T) {
+	c := sdk.NewCoins
+	fee := func(x int64) sdk.Coin { return sdk.NewInt64Coin(feeDenom, x) }
+	stake := func(x int64) sdk.Coin { return sdk.NewInt64Coin(stakeDenom, x) }
+	now := tmtime.Now()
+
+	lockupPeriods := types.Periods{
+		{Length: int64(12 * 3600), Amount: c(fee(1000), stake(100))}, // noon
+	}
+	vestingPeriods := types.Periods{
+		{Length: int64(8 * 3600), Amount: c(fee(200))},            // 8am
+		{Length: int64(1 * 3600), Amount: c(fee(200), stake(50))}, // 9am
+		{Length: int64(6 * 3600), Amount: c(fee(200), stake(50))}, // 3pm
+		{Length: int64(2 * 3600), Amount: c(fee(200))},            // 5pm
+		{Length: int64(1 * 3600), Amount: c(fee(200))},            // 6pm
+	}
+	// each test creates a new clawback vesting account, with the lockup and vesting periods defined above.
+	// the clawback is executed at the test case's provided time, and expects that post clawback,
+	// the address has a total of `vestingAccBalance` coins, but only `spendableCoins` are spendable.
+	// It expects the clawback acct funder to have `funderBalance` (aka that amt clawed back)
+	testCases := []struct {
+		name              string
+		ctxTime           time.Time
+		vestingAccBalance sdk.Coins
+		spendableCoins    sdk.Coins
+		funderBalance     sdk.Coins
+	}{
+		{
+			"clawback before all vesting periods, before cliff ended",
+			now.Add(7 * time.Hour),
+			// vesting account should not have funds after clawback
+			sdk.NewCoins(),
+			sdk.Coins(nil),
+			// all funds should be returned to funder account
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(1000)), sdk.NewCoin(stakeDenom, sdk.NewInt(100))),
+		},
+		// fails
+		{
+			"clawback after two vesting periods, before cliff ended",
+			now.Add(10 * time.Hour),
+			sdk.NewCoins(fee(400), stake(50)),
+			sdk.Coins(nil),
+			// everything but first two vesting periods of fund should be returned to sender
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(600)), sdk.NewCoin(stakeDenom, sdk.NewInt(50))),
+		},
+		{
+			"clawback right after cliff has finsihed",
+			now.Add(13 * time.Hour),
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(400)), sdk.NewCoin(stakeDenom, sdk.NewInt(50))),
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(400)), sdk.NewCoin(stakeDenom, sdk.NewInt(50))),
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(600)), sdk.NewCoin(stakeDenom, sdk.NewInt(50))),
+		},
+		{
+			"clawback after cliff has finished, 3 vesting periods have finished",
+			now.Add(16 * time.Hour),
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(600)), sdk.NewCoin(stakeDenom, sdk.NewInt(100))),
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(600)), sdk.NewCoin(stakeDenom, sdk.NewInt(100))),
+			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(400))),
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			// set up simapp and validators
+			app := simapp.Setup(false)
+			ctx := app.BaseApp.NewContext(false, tmproto.Header{}).WithBlockTime((now))
+			valAddr, val := createValidator(t, ctx, app, 100)
+			require.Equal(t, "stake", app.StakingKeeper.BondDenom(ctx))
+
+			bacc, origCoins := initBaseAccount()
+			_, _, funder := testdata.KeyTestPubAddr()
+			va := types.NewClawbackVestingAccount(bacc, funder, origCoins, now.Unix(), lockupPeriods, vestingPeriods)
+			addr := va.GetAddress()
+			app.AccountKeeper.SetAccount(ctx, va)
+
+			// fund the vesting account
+			err := simapp.FundAccount(app.BankKeeper, ctx, addr, c(fee(1000), stake(100)))
+			require.NoError(t, err)
+			require.Equal(t, int64(1000), app.BankKeeper.GetBalance(ctx, addr, feeDenom).Amount.Int64())
+			require.Equal(t, int64(100), app.BankKeeper.GetBalance(ctx, addr, stakeDenom).Amount.Int64())
+
+			// try delegating, clawback vesting account not allowed to delegate
+			_, err = app.StakingKeeper.Delegate(ctx, addr, sdk.NewInt(65), stakingtypes.Unbonded, val, true)
+			require.Error(t, err)
+
+			// undelegation should emit an error(delegator does not contain delegation)
+			_, err = app.StakingKeeper.Undelegate(ctx, addr, valAddr, sdk.NewDec(5))
+			require.Error(t, err)
+
+			ctx = ctx.WithBlockTime(tc.ctxTime)
+			va = app.AccountKeeper.GetAccount(ctx, addr).(*types.ClawbackVestingAccount)
+			clawbackAction := types.NewClawbackAction(funder, funder, app.AccountKeeper, app.BankKeeper)
+			err = va.Clawback(ctx, clawbackAction)
+			require.NoError(t, err)
+			app.AccountKeeper.SetAccount(ctx, va)
+
+			vestingAccBalance := app.BankKeeper.GetAllBalances(ctx, addr)
+			require.Equal(t, tc.vestingAccBalance, vestingAccBalance, "vesting account balance test")
+
+			funderBalance := app.BankKeeper.GetAllBalances(ctx, funder)
+			require.Equal(t, tc.funderBalance, funderBalance, "funder account balance test")
+
+			spendableCoins := app.BankKeeper.SpendableCoins(ctx, addr)
+			require.Equal(t, tc.spendableCoins, spendableCoins, "vesting account spendable test")
+		})
+	}
+}
