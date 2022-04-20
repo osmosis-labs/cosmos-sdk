@@ -15,7 +15,7 @@ func TestPruningOptions_Validate(t *testing.T) {
 		{NewPruningOptions(PruningEverything), nil},
 		{NewPruningOptions(PruningNothing), nil},
 		{NewCustomPruningOptions(10, 10), nil},
-		{NewPruningOptions(PruningCustom), ErrPruningIntervalZero},
+		{NewPruningOptions(PruningCustom), nil},
 		{NewCustomPruningOptions(100, 15), nil},
 		{NewCustomPruningOptions(9, 10), ErrPruningKeepRecentTooSmall},
 		{NewCustomPruningOptions(10, 9), ErrPruningIntervalTooSmall},
@@ -37,7 +37,7 @@ func TestPruningOptions_GetStrategy(t *testing.T) {
 		{NewPruningOptions(PruningDefault), PruningDefault},
 		{NewPruningOptions(PruningEverything), PruningEverything},
 		{NewPruningOptions(PruningNothing), PruningNothing},
-		{NewPruningOptions(PruningCustom), PruningCustom},
+		{NewPruningOptions(PruningCustom), PruningDefault},
 		{NewCustomPruningOptions(2, 10), PruningCustom},
 	}
 
