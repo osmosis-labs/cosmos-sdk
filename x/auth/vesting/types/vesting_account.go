@@ -816,22 +816,24 @@ func (va ClawbackVestingAccount) GetVestedOnly(blockTime time.Time) sdk.Coins {
 func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins {
 	// Compute the truncated vesting schedule and amounts.
 	// Work with the schedule as the primary data and recompute derived fields, e.g. OriginalVesting.
-	t := va.GetStartTime()
+	vestTime := va.GetStartTime()
 	totalVested := sdk.NewCoins()
 	totalUnvested := sdk.NewCoins()
 	unvestedIdx := 0
 	for i, period := range va.VestingPeriods {
 		// this period vests at time t, if this occurred before clawback time,
 		// then its already vested.
-		t += period.Length
+		vestTime += period.Length
 		// tie in time gets clawed back
-		if t < clawbackTime {
+		if vestTime < clawbackTime {
 			totalVested = totalVested.Add(period.Amount...)
 			unvestedIdx = i + 1
 		} else {
 			totalUnvested = totalUnvested.Add(period.Amount...)
 		}
 	}
+	lastVestTime := vestTime
+
 	newVestingPeriods := va.VestingPeriods[:unvestedIdx]
 
 	// To cap the unlocking schedule to the new total vested, conjunct with a limiting schedule
@@ -841,11 +843,11 @@ func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins 
 			Amount: totalVested,
 		},
 	}
-	_, _, newLockupPeriods := ConjunctPeriods(va.GetStartTime(), va.GetStartTime(), va.LockupPeriods, capPeriods)
+	_, lastLockTime, newLockupPeriods := ConjunctPeriods(va.StartTime, va.StartTime, va.LockupPeriods, capPeriods)
 
 	// Now construct the new account state
 	va.OriginalVesting = totalVested
-	va.EndTime = t
+	va.EndTime = max64(lastVestTime, lastLockTime)
 	va.LockupPeriods = newLockupPeriods
 	va.VestingPeriods = newVestingPeriods
 

@@ -882,7 +882,6 @@ func TestClawback(t *testing.T) {
 			// all funds should be returned to funder account
 			sdk.NewCoins(sdk.NewCoin(feeDenom, sdk.NewInt(1000)), sdk.NewCoin(stakeDenom, sdk.NewInt(100))),
 		},
-		// fails
 		{
 			"clawback after two vesting periods, before cliff ended",
 			now.Add(10 * time.Hour),
