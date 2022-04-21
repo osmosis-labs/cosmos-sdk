@@ -121,6 +121,7 @@ func setupBusyManager(t *testing.T) *snapshots.Manager {
 	store, err := snapshots.NewStore(db.NewMemDB(), tempdir)
 	require.NoError(t, err)
 	hung := newHungSnapshotter()
+	hung.SetSnapshotInterval(opts.Interval)
 	mgr := snapshots.NewManager(store, opts, hung, log.NewNopLogger())
 	require.Equal(t, opts.Interval, hung.snapshotInterval)
 
