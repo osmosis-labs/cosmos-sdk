@@ -104,13 +104,15 @@ func readScheduleFile(path string) (int64, []types.Period, error) {
 	if err != nil {
 		return 0, nil, err
 	}
+
 	var data VestingData
-	err = json.Unmarshal(contents, &data)
-	if err != nil {
+	if err := json.Unmarshal(contents, &data); err != nil {
 		return 0, nil, err
 	}
+
 	startTime := data.StartTime
-	var periods []types.Period
+	periods := make([]types.Period, len(data.periods))
+
 	for i, p := range data.Periods {
 		amount, err := sdk.ParseCoinsNormalized(p.Coins)
 		if err != nil {
@@ -119,9 +121,10 @@ func readScheduleFile(path string) (int64, []types.Period, error) {
 		if p.Length < 1 {
 			return 0, nil, fmt.Errorf("invalid period length of %d in period %d, length must be greater than 0", p.Length, i)
 		}
-		period := types.Period{Length: p.Length, Amount: amount}
-		periods = append(periods, period)
+
+		periods[i] = types.Period{Length: p.Length, Amount: amount}
 	}
+
 	return startTime, periods, nil
 }
 
