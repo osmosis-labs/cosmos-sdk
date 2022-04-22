@@ -36,6 +36,8 @@ func GetTxCmd() *cobra.Command {
 
 	txCmd.AddCommand(
 		NewMsgCreateVestingAccountCmd(),
+		NewMsgCreateClawbackVestingAccountCmd(),
+		NewMsgClawbackCmd(),
 	)
 
 	return txCmd
