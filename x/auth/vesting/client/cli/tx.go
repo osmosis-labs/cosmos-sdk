@@ -113,7 +113,7 @@ func readScheduleFile(path string) (int64, []types.Period, error) {
 	}
 
 	startTime := data.StartTime
-	periods := make([]types.Period, len(data.periods))
+	periods := make([]types.Period, len(data.Periods))
 
 	for i, p := range data.Periods {
 		amount, err := sdk.ParseCoinsNormalized(p.Coins)
@@ -180,8 +180,8 @@ with a start time and an array of coins strings and durations relative to the st
 			}
 
 			var (
-			  lockupStart, vestingStart int64
-			  lockupPeriods, vestingPeriods []types.Period
+				lockupStart, vestingStart     int64
+				lockupPeriods, vestingPeriods []types.Period
 			)
 			if lockupFile != "" {
 				lockupStart, lockupPeriods, err = readScheduleFile(lockupFile)
