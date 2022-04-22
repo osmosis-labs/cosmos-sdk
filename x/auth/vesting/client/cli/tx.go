@@ -145,18 +145,20 @@ Staking rewards are subject to a proportional vesting encumbrance.
 A periods file is a JSON object describing a sequence of unlocking or vesting events,
 with a start time and an array of coins strings and durations relative to the start or previous event.`,
 		Example: `Sample period file contents:
-		{ "start_time": 1625204910,
-	      "periods": [
-			  {
-				  "coins": "10test",
-				  "length": 2592000 //30 days
-			  },
-			  {
-				"coins": "10test",
-				"length": 2592000 //30 days
-			}
-		]}
-	    `,
+{
+  "start_time": 1625204910,
+  "periods": [
+    {
+      "coins": "10test",
+      "length": 2592000 // 30 days
+    },
+    {
+      "coins": "10test",
+      "length": 2592000 // 30 days
+    }
+  ]
+}
+`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
