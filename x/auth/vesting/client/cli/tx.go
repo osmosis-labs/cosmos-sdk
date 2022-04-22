@@ -106,13 +106,15 @@ func readScheduleFile(path string) (int64, []types.Period, error) {
 	if err != nil {
 		return 0, nil, err
 	}
+
 	var data VestingData
-	err = json.Unmarshal(contents, &data)
-	if err != nil {
+	if err := json.Unmarshal(contents, &data); err != nil {
 		return 0, nil, err
 	}
+
 	startTime := data.StartTime
-	var periods []types.Period
+	periods := make([]types.Period, len(data.periods))
+
 	for i, p := range data.Periods {
 		amount, err := sdk.ParseCoinsNormalized(p.Coins)
 		if err != nil {
@@ -121,9 +123,10 @@ func readScheduleFile(path string) (int64, []types.Period, error) {
 		if p.Length < 1 {
 			return 0, nil, fmt.Errorf("invalid period length of %d in period %d, length must be greater than 0", p.Length, i)
 		}
-		period := types.Period{Length: p.Length, Amount: amount}
-		periods = append(periods, period)
+
+		periods[i] = types.Period{Length: p.Length, Amount: amount}
 	}
+
 	return startTime, periods, nil
 }
 
@@ -144,18 +147,20 @@ Staking rewards are subject to a proportional vesting encumbrance.
 A periods file is a JSON object describing a sequence of unlocking or vesting events,
 with a start time and an array of coins strings and durations relative to the start or previous event.`,
 		Example: `Sample period file contents:
-		{ "start_time": 1625204910,
-	      "periods": [
-			  {
-				  "coins": "10test",
-				  "length": 2592000 //30 days
-			  },
-			  {
-				"coins": "10test",
-				"length": 2592000 //30 days
-			}
-		]}
-	    `,
+{
+  "start_time": 1625204910,
+  "periods": [
+    {
+      "coins": "10test",
+      "length": 2592000 // 30 days
+    },
+    {
+      "coins": "10test",
+      "length": 2592000 // 30 days
+    }
+  ]
+}
+`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -173,8 +178,11 @@ with a start time and an array of coins strings and durations relative to the st
 			if lockupFile == "" && vestingFile == "" {
 				return fmt.Errorf("must specify at least one of %s or %s", FlagLockup, FlagVesting)
 			}
-			var lockupStart, vestingStart int64
-			var lockupPeriods, vestingPeriods []types.Period
+
+			var (
+			  lockupStart, vestingStart int64
+			  lockupPeriods, vestingPeriods []types.Period
+			)
 			if lockupFile != "" {
 				lockupStart, lockupPeriods, err = readScheduleFile(lockupFile)
 				if err != nil {
