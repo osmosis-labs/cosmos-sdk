@@ -25,12 +25,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-<<<<<<< HEAD
-	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
-=======
 	"github.com/cosmos/cosmos-sdk/codec"
-	pruningTypes "github.com/cosmos/cosmos-sdk/pruning/types"
->>>>>>> ca48456f7 (feat: support send and recv msg size for gRPC (#170))
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
