@@ -217,7 +217,16 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 // goroutine.
 // CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	return st.tree.Iterator(start, end, true)
+	var iTree *iavl.ImmutableTree
+
+	switch tree := st.tree.(type) {
+	case *immutableTree:
+		iTree = tree.ImmutableTree
+	case *iavl.MutableTree:
+		iTree = tree.ImmutableTree
+	}
+
+	return newIAVLIterator(iTree, start, end, true)
 }
 
 // Implements types.KVStore.
@@ -225,7 +234,16 @@ func (st *Store) Iterator(start, end []byte) types.Iterator {
 // goroutine.
 // CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	return st.tree.Iterator(start, end, false)
+	var iTree *iavl.ImmutableTree
+
+	switch tree := st.tree.(type) {
+	case *immutableTree:
+		iTree = tree.ImmutableTree
+	case *iavl.MutableTree:
+		iTree = tree.ImmutableTree
+	}
+
+	return newIAVLIterator(iTree, start, end, false)
 }
 
 // SetInitialVersion sets the initial version of the IAVL tree. It is used when
@@ -384,3 +402,13 @@ type iavlIterator struct {
 }
 
 var _ types.Iterator = (*iavlIterator)(nil)
+
+// newIAVLIterator will create a new iavlIterator.
+// CONTRACT: Caller must release the iavlIterator, as each one creates a new
+// goroutine.
+func newIAVLIterator(tree *iavl.ImmutableTree, start, end []byte, ascending bool) *iavlIterator {
+	iter := &iavlIterator{
+		Iterator: tree.Iterator(start, end, ascending),
+	}
+	return iter
+}
