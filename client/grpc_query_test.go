@@ -24,6 +24,23 @@ type IntegrationTestSuite struct {
 	network *network.Network
 }
 
+type testcase struct {
+	clientContextHeight int64
+	grpcHeight          int64
+	expectedHeight      int64
+}
+
+const (
+	// if this height is set to clientContextHeight or grpcHeight testcase,
+	// the test assumes that it is not set.
+	heightNotSetFlag = int64(-1)
+	// given the current block time, this should never be reached by the time
+	// a test is run.
+	invalidBeyondLatestHeight = 1_000_000_000
+	// if this flag is set to expectedHeight, error is assummed.
+	errorHeightFlag = int64(-2)
+)
+
 func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
@@ -50,50 +67,34 @@ func (s *IntegrationTestSuite) TestGRPCQuery_TestService() {
 }
 
 func (s *IntegrationTestSuite) TestGRPCQuery_BankService_VariousInputs() {
-
-	const (
-		// if this height is set to clientContextHeight or grpcHeight testcase,
-		// the test assumes that it is not set.
-		heightNotSetFlag = int64(-1)
-		// given the current block time, this should never be reached by the time
-		// a test is run.
-		invalidBeyondLatestHeight = 1_000_000_000
-		// if this flag is set to expectedHeight, error is assummed.
-		errorHeightFlag = int64(-2)
-	)
-
 	val0 := s.network.Validators[0]
 
-	testcases := map[string]struct {
-		clientContextHeight int64
-		grpcHeight          int64
-		expectedHeight      int64
-	}{
-		// "clientContextHeight 1; grpcHeight not set - clientContextHeight selected": {
-		// 	clientContextHeight: 1, // chosen
-		// 	grpcHeight:          heightNotSetFlag,
-		// 	expectedHeight:      1,
-		// },
-		// "clientContextHeight not set; grpcHeight is 2 - grpcHeight is chosen": {
-		// 	clientContextHeight: heightNotSetFlag,
-		// 	grpcHeight:          2, // chosen
-		// 	expectedHeight:      2,
-		// },
-		// "both not set - 0 returned": {
-		// 	clientContextHeight: heightNotSetFlag,
-		// 	grpcHeight:          heightNotSetFlag,
-		// 	expectedHeight:      3, // latest height
-		// },
-		// "clientContextHeight 3; grpcHeight is 0 - grpcHeight is chosen": {
-		// 	clientContextHeight: 1,
-		// 	grpcHeight:          0, // chosen
-		// 	expectedHeight:      3, // latest height
-		// },
-		// "clientContextHeight 3; grpcHeight is 3 - 3 is returned": {
-		// 	clientContextHeight: 3,
-		// 	grpcHeight:          3,
-		// 	expectedHeight:      3,
-		// },
+	testcases := map[string]testcase{
+		"clientContextHeight 1; grpcHeight not set - clientContextHeight selected": {
+			clientContextHeight: 1, // chosen
+			grpcHeight:          heightNotSetFlag,
+			expectedHeight:      1,
+		},
+		"clientContextHeight not set; grpcHeight is 2 - grpcHeight is chosen": {
+			clientContextHeight: heightNotSetFlag,
+			grpcHeight:          2, // chosen
+			expectedHeight:      2,
+		},
+		"both not set - 0 returned": {
+			clientContextHeight: heightNotSetFlag,
+			grpcHeight:          heightNotSetFlag,
+			expectedHeight:      3, // latest height
+		},
+		"clientContextHeight 3; grpcHeight is 0 - grpcHeight is chosen": {
+			clientContextHeight: 1,
+			grpcHeight:          0, // chosen
+			expectedHeight:      3, // latest height
+		},
+		"clientContextHeight 3; grpcHeight is 3 - 3 is returned": {
+			clientContextHeight: 3,
+			grpcHeight:          3,
+			expectedHeight:      3,
+		},
 		"clientContextHeight is 1_000_000_000; grpcHeight is 1_000_000_000 - requested beyond latest height - error": {
 			clientContextHeight: invalidBeyondLatestHeight,
 			grpcHeight:          invalidBeyondLatestHeight,
@@ -151,14 +152,7 @@ func TestIntegrationTestSuite(t *testing.T) {
 }
 
 func TestSelectHeight(t *testing.T) {
-	// if height is set to this, the tests assume that it is not set
-	const heightNotSetFlag = int64(-1)
-
-	testcases := map[string]struct {
-		clientContextHeight int64
-		grpcHeight          int64
-		expectedHeight      int64
-	}{
+	testcases := map[string]testcase{
 		"clientContextHeight 1; grpcHeight not set - clientContextHeight selected": {
 			clientContextHeight: 1,
 			grpcHeight:          heightNotSetFlag,
