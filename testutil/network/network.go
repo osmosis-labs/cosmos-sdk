@@ -76,6 +76,7 @@ type Config struct {
 	InterfaceRegistry codectypes.InterfaceRegistry
 
 	TxConfig         client.TxConfig
+	GRPCConfig       srvconfig.GRPCConfig
 	AccountRetriever client.AccountRetriever
 	AppConstructor   AppConstructor             // the ABCI application constructor
 	GenesisState     map[string]json.RawMessage // custom gensis state to provide
