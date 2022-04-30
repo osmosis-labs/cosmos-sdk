@@ -69,6 +69,8 @@ func (s *IntegrationTestSuite) TestGRPCQuery_TestService() {
 func (s *IntegrationTestSuite) TestGRPCQuery_BankService_VariousInputs() {
 	val0 := s.network.Validators[0]
 
+	const method = "/cosmos.bank.v1beta1.Query/Balance"
+
 	testcases := map[string]testcase{
 		"clientContextHeight 1; grpcHeight not set - clientContextHeight selected": {
 			clientContextHeight: 1, // chosen
@@ -112,25 +114,20 @@ func (s *IntegrationTestSuite) TestGRPCQuery_BankService_VariousInputs() {
 				clientCtx = clientCtx.WithHeight(tc.clientContextHeight)
 			}
 
-			grpcContxt := context.Background()
+			grpcContext := context.Background()
 			if tc.grpcHeight != heightNotSetFlag {
 				header := metadata.Pairs(grpctypes.GRPCBlockHeightHeader, fmt.Sprintf("%d", tc.grpcHeight))
-				grpcContxt = metadata.NewOutgoingContext(grpcContxt, header)
+				grpcContext = metadata.NewOutgoingContext(grpcContext, header)
 			}
-
-			bankClient := banktypes.NewQueryClient(clientCtx)
-			denom := fmt.Sprintf("%stoken", val0.Moniker)
 
 			// Test
 			var header metadata.MD
-			bankRes, err := bankClient.Balance(
-				grpcContxt,
-				&banktypes.QueryBalanceRequest{Address: val0.Address.String(), Denom: denom},
-				grpc.Header(&header),
-			)
+			denom := fmt.Sprintf("%stoken", val0.Moniker)
+			request := &banktypes.QueryBalanceRequest{Address: val0.Address.String(), Denom: denom}
+			response := &banktypes.QueryBalanceResponse{}
+			err := clientCtx.Invoke(grpcContext, method, request, response, grpc.Header(&header))
 
 			// Assert results
-
 			if tc.expectedHeight == errorHeightFlag {
 				s.Require().Error(err)
 				return
@@ -139,7 +136,7 @@ func (s *IntegrationTestSuite) TestGRPCQuery_BankService_VariousInputs() {
 			s.Require().NoError(err)
 			s.Require().Equal(
 				sdk.NewCoin(denom, s.network.Config.AccountTokens),
-				*bankRes.GetBalance(),
+				*response.GetBalance(),
 			)
 			blockHeight := header.Get(grpctypes.GRPCBlockHeightHeader)
 			s.Require().Equal([]string{fmt.Sprintf("%d", tc.expectedHeight)}, blockHeight)
