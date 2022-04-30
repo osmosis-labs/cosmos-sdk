@@ -31,13 +31,13 @@ type testcase struct {
 }
 
 const (
-	// if this height is set to clientContextHeight or grpcHeight testcase,
-	// the test assumes that it is not set.
+	// if clientContextHeight or grpcHeight is set to this flag,
+	// the test assumes that the respective height is not provided.
 	heightNotSetFlag = int64(-1)
 	// given the current block time, this should never be reached by the time
 	// a test is run.
 	invalidBeyondLatestHeight = 1_000_000_000
-	// if this flag is set to expectedHeight, error is assummed.
+	// if this flag is set to expectedHeight, an error is assumed.
 	errorHeightFlag = int64(-2)
 )
 
