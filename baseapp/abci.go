@@ -603,13 +603,17 @@ func (app *BaseApp) createQueryContext(height int64, prove bool) (sdk.Context, e
 			)
 	}
 
-	cacheMS, err := app.cms.CacheMultiStoreWithVersion(height)
-	if err != nil {
+	if height > app.LastBlockHeight() {
 		return sdk.Context{},
 			sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"failed to load state at height %d; %s (latest height: %d)", height, err, app.LastBlockHeight(),
+				"failed to load state at height %d; %s (latest height: %d)", height, app.LastBlockHeight(),
 			)
+	}
+
+	cacheMS, err := app.cms.CacheMultiStoreWithVersion(height)
+	if err != nil {
+		return sdk.Context{}, err
 	}
 
 	// branch the commit-multistore for safety
