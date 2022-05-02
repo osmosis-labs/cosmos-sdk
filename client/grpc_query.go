@@ -122,13 +122,15 @@ func (Context) NewStream(gocontext.Context, *grpc.StreamDesc, string, ...grpc.Ca
 
 // selectHeight returns the height chosen from client context and grpc context.
 // If exists, height extracted from grpcCtx takes precedence.
-func selectHeight(clientContext Context, grpcCtx gocontext.Context) (height int64, err error) {
+func selectHeight(clientContext Context, grpcCtx gocontext.Context) (int64, error) {
+	var height int64
 	if clientContext.Height > 0 {
 		height = clientContext.Height
 	}
 
 	md, _ := metadata.FromOutgoingContext(grpcCtx)
 	if heights := md.Get(grpctypes.GRPCBlockHeightHeader); len(heights) > 0 {
+		var err error
 		height, err = strconv.ParseInt(heights[0], 10, 64)
 		if err != nil {
 			return 0, err
