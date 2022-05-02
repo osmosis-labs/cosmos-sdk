@@ -613,7 +613,7 @@ func (app *BaseApp) createQueryContext(height int64, prove bool) (sdk.Context, e
 
 	cacheMS, err := app.cms.CacheMultiStoreWithVersion(height)
 	if err != nil {
-		return sdk.Context{}, err
+		return sdk.Context{}, fmt.Errorf("failed to load cache multi store for height %d: %w", height, err)
 	}
 
 	// branch the commit-multistore for safety
