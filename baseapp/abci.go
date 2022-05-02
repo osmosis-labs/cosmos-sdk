@@ -603,11 +603,12 @@ func (app *BaseApp) createQueryContext(height int64, prove bool) (sdk.Context, e
 			)
 	}
 
-	if height > app.LastBlockHeight() {
+	lastBlockHeight := app.LastBlockHeight()
+	if height > lastBlockHeight {
 		return sdk.Context{},
 			sdkerrors.Wrapf(
 				sdkerrors.ErrInvalidRequest,
-				"failed to load state at height %d; (latest height: %d)", height, app.LastBlockHeight(),
+				"failed to load state at height %d; (latest height: %d)", height, lastBlockHeight,
 			)
 	}
 
