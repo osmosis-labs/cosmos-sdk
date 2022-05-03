@@ -32,8 +32,6 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
 	s.cfg = network.DefaultConfig()
-
-
 	s.network = network.New(s.T(), s.cfg)
 
 	_, err := s.network.WaitForHeight(1)
@@ -141,6 +139,7 @@ func (s *IntegrationTestSuite) TestCreateClawbackVestingAccountCmd() {
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
 			}
+
 			out, err = clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
 			s.Require().NoError(err)
 			s.Require().NoError(err, out.String)
@@ -148,7 +147,6 @@ func (s *IntegrationTestSuite) TestCreateClawbackVestingAccountCmd() {
 			s.Require().NoError(err, out.String())
 			txResp := tc.respType.(*sdk.TxResponse)
 			s.Require().Equal(tc.expectedCode, txResp.Code, out.String())
-
 		})
 	}
 }

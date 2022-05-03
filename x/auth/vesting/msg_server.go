@@ -146,15 +146,16 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 		vestingCoins = lockupCoins
 	}
 
-	// The vesting and lockup schedules must describe the same total amount.
-	// IsEqual can panic, so use (a == b) <=> (a <= b && b <= a).
 	if !types.CoinEq(lockupCoins, vestingCoins) {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "lockup and vesting amounts must be equal")
 	}
 
-	var madeNewAcc bool
+	var (
+		madeNewAcc bool
+		vestingAcc *types.ClawbackVestingAccount
+	)
+
 	acc := ak.GetAccount(ctx, to)
-	var vestingAcc *types.ClawbackVestingAccount
 
 	// a grant can be added only if toAddress exists, msg.Merge && isClawback && to.FunderAddress == msg.FromAddress
 	if acc != nil {
@@ -214,6 +215,8 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.FromAddress),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, vestingCoins.String()),
 		),
 	)
 
@@ -224,8 +227,8 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 // The destination defaults to the funder address, but can be overridden.
 func (s msgServer) Clawback(goCtx context.Context, msg *types.MsgClawback) (*types.MsgClawbackResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	ak := s.AccountKeeper
-	bk := s.BankKeeper
+	accountKeeper := s.AccountKeeper
+	bankKeeper := s.BankKeeper
 
 	funder, err := sdk.AccAddressFromBech32(msg.GetFunderAddress())
 	if err != nil {
@@ -245,34 +248,34 @@ func (s msgServer) Clawback(goCtx context.Context, msg *types.MsgClawback) (*typ
 		}
 	}
 
-	if bk.BlockedAddr(dest) {
+	if bankKeeper.BlockedAddr(dest) {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized,
 			"%s is not allowed to receive funds", msg.DestAddress,
 		)
 	}
 
 	// Check if account exists
-	acc := ak.GetAccount(ctx, addr)
-	if acc == nil {
+	account := accountKeeper.GetAccount(ctx, addr)
+	if account == nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "account %s does not exist", msg.Address)
 	}
 
 	// Check if account has a clawback account
-	va, ok := acc.(*types.ClawbackVestingAccount)
+	vestingAccount, ok := account.(*types.ClawbackVestingAccount)
 	if !ok {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account not subject to clawback: %s", msg.Address)
 	}
 
 	// Check if account funder is same as in msg
-	if va.FunderAddress != msg.FunderAddress {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "clawback can only be requested by original funder %s", va.FunderAddress)
+	if vestingAccount.FunderAddress != msg.FunderAddress {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "clawback can only be requested by original funder %s", vestingAccount.FunderAddress)
 	}
 
-	clawbackAction := types.NewClawbackAction(funder, dest, ak, bk)
+	clawbackAction := types.NewClawbackAction(funder, dest, accountKeeper, bankKeeper)
 
 	// Perform clawback transfer,
 	// this updates state for both the vesting account and the destination account.
-	err = va.Clawback(ctx, clawbackAction)
+	err = vestingAccount.Clawback(ctx, clawbackAction)
 	if err != nil {
 		return nil, err
 	}

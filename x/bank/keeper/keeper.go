@@ -175,8 +175,7 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 
 	// do not allow delegation if clawback vesting account
 	acc := k.ak.GetAccount(ctx, delegatorAddr)
-	_, ok := acc.(vestexported.ClawbackVestingAccountI)
-	if ok {
+	if _, ok := acc.(vestexported.ClawbackVestingAccountI); ok {
 		return fmt.Errorf("clawback vesting account (%s) is restricted for delegation", delegatorAddr)
 	}
 

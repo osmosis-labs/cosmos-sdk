@@ -21,7 +21,7 @@ var (
 	_ vestexported.VestingAccount = (*ContinuousVestingAccount)(nil)
 	_ vestexported.VestingAccount = (*PeriodicVestingAccount)(nil)
 	_ vestexported.VestingAccount = (*DelayedVestingAccount)(nil)
-	_ vestexported.VestingAccount = (*DelayedVestingAccount)(nil)
+	_ vestexported.VestingAccount = (*ClawbackVestingAccount)(nil)
 )
 
 // Base Vesting Account
@@ -631,11 +631,11 @@ func NewClawbackVestingAccount(
 	vestingPeriods Periods,
 ) *ClawbackVestingAccount {
 	// copy and align schedules to avoid mutating inputs
-	lp := make(Periods, len(lockupPeriods))
-	copy(lp, lockupPeriods)
+	lockupPeriod := make(Periods, len(lockupPeriods))
+	copy(lockupPeriod, lockupPeriods)
 	vp := make(Periods, len(vestingPeriods))
 	copy(vp, vestingPeriods)
-	_, endTime := AlignSchedules(startTime, startTime, lp, vp)
+	_, endTime := AlignSchedules(startTime, startTime, lockupPeriod, vp)
 	baseVestingAcc := &BaseVestingAccount{
 		BaseAccount:     baseAcc,
 		OriginalVesting: originalVesting,
@@ -646,7 +646,7 @@ func NewClawbackVestingAccount(
 		BaseVestingAccount: baseVestingAcc,
 		FunderAddress:      funder.String(),
 		StartTime:          startTime,
-		LockupPeriods:      lp,
+		LockupPeriods:      lockupPeriod,
 		VestingPeriods:     vp,
 	}
 }
@@ -754,7 +754,8 @@ func NewClawbackGrantAction(
 	funderAddress string,
 	grantStartTime int64,
 	grantLockupPeriods, grantVestingPeriods []Period,
-	grantCoins sdk.Coins) exported.AddGrantAction {
+	grantCoins sdk.Coins,
+) exported.AddGrantAction {
 	return clawbackGrantAction{
 		funderAddress:       funderAddress,
 		grantStartTime:      grantStartTime,
@@ -770,11 +771,15 @@ func (cga clawbackGrantAction) AddToAccount(ctx sdk.Context, rawAccount exported
 		return fmt.Errorf("expected *ClawbackVestingAccount, got %T", rawAccount)
 	}
 	if cga.funderAddress != cva.FunderAddress {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "account %s can only accept grants from account %s",
-			rawAccount.GetAddress(), cva.FunderAddress)
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"account %s can only accept grants from account %s",
+			rawAccount.GetAddress(), cva.FunderAddress,
+		)
 	}
 	cva.addGrant(ctx, cga.grantStartTime, cga.grantLockupPeriods, cga.grantVestingPeriods, cga.grantCoins)
 	return nil
+
 }
 
 func (va *ClawbackVestingAccount) AddGrant(ctx sdk.Context, action exported.AddGrantAction) error {
@@ -811,8 +816,8 @@ func (va ClawbackVestingAccount) GetVestedOnly(blockTime time.Time) sdk.Coins {
 // the lockup schedule will also have to be capped to keep the total sums the same.
 // (But future unlocking events might be preserved if they unlock currently vested coins.)
 // If the amount returned is zero, then the returned account should be unchanged.
+// Note that this method althers the struct itself
 // Does not adjust DelegatedVesting
-// TODO: Rename this function, its doing more than computing a clawback, its altering the struct.
 func (va *ClawbackVestingAccount) computeClawback(clawbackTime int64) sdk.Coins {
 	// Compute the truncated vesting schedule and amounts.
 	// Work with the schedule as the primary data and recompute derived fields, e.g. OriginalVesting.

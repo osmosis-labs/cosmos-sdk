@@ -210,8 +210,8 @@ with a start time and an array of coins strings and durations relative to the st
 	}
 
 	cmd.Flags().Bool(FlagMerge, false, "Merge new amount and schedule with existing ClawbackVestingAccount, if any")
-	cmd.Flags().String(FlagLockup, "", "path to file containing unlocking periods")
-	cmd.Flags().String(FlagVesting, "", "path to file containing vesting periods")
+	cmd.Flags().String(FlagLockup, "", "Path to file containing unlocking periods")
+	cmd.Flags().String(FlagVesting, "", "Path to file containing vesting periods")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
@@ -225,7 +225,8 @@ func NewMsgClawbackCmd() *cobra.Command {
 		Long: `Must be requested by the original funder address (--from).
 		May provide a destination address (--dest), otherwise the coins return to the funder.
 		Delegated or undelegating staking tokens will be transferred in the delegated (undelegating) state.
-		The recipient is vulnerable to slashing, and must act to unbond the tokens if desired.`,
+		The recipient is vulnerable to slashing, and must act to unbond the tokens if desired.
+		`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -243,7 +244,7 @@ func NewMsgClawbackCmd() *cobra.Command {
 			if destString != "" {
 				dest, err = sdk.AccAddressFromBech32(destString)
 				if err != nil {
-					return fmt.Errorf("bad dest address: %w", err)
+					return fmt.Errorf("invalid destination address: %w", err)
 				}
 			}
 
@@ -256,7 +257,7 @@ func NewMsgClawbackCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(FlagDest, "", "address of destination (defaults to funder)")
+	cmd.Flags().String(FlagDest, "", "Address of destination (defaults to funder)")
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

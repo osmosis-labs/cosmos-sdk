@@ -5,8 +5,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-// AccountKeeper defines the expected interface contract the vesting module
-// requires for storing accounts.
+// AccountKeeper defines the expected interface contract that is required by the
+// vesting module for storing accounts.
 type AccountKeeper interface {
 	GetAccount(sdk.Context, sdk.AccAddress) authtypes.AccountI
 	SetAccount(sdk.Context, authtypes.AccountI)
