@@ -18,7 +18,7 @@ jobs:
       - name: install tparse
         run: |
           export GO111MODULE="on" && go get github.com/mfridman/tparse@v0.8.3
-      - uses: actions/cache@v3.0.1
+      - uses: actions/cache@v3.0.2
         with:
           path: ~/go/bin
           key: ${{ runner.os }}-go-tparse-binary
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.16
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         id: git_diff
         with:
           PATTERNS: |
@@ -52,7 +52,7 @@ jobs:
           go-version: 1.16
       - name: Display go version
         run: go version
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         id: git_diff
         with:
           PREFIX_FILTER: |
@@ -103,13 +103,13 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.16
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             **/**.go
             go.mod
             go.sum
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: "${{ github.sha }}-${{ matrix.part }}"
         if: env.GIT_DIFF
@@ -127,25 +127,25 @@ jobs:
     needs: tests
     steps:
       - uses: actions/checkout@v3
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             **/**.go
             go.mod
             go.sum
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: "${{ github.sha }}-00-coverage"
         if: env.GIT_DIFF
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: "${{ github.sha }}-01-coverage"
         if: env.GIT_DIFF
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: "${{ github.sha }}-02-coverage"
         if: env.GIT_DIFF
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: "${{ github.sha }}-03-coverage"
         if: env.GIT_DIFF
@@ -164,7 +164,7 @@ jobs:
             sed -i.bak "/$(echo $filename | sed 's/\//\\\//g')/d" coverage.txt
           done
         if: env.GIT_DIFF
-      - uses: codecov/codecov-action@v1.5.2
+      - uses: codecov/codecov-action@v3
         with:
           file: ./coverage.txt
         if: env.GIT_DIFF
@@ -181,13 +181,13 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.16
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             **/**.go
             go.mod
             go.sum
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: "${{ github.sha }}-${{ matrix.part }}"
         if: env.GIT_DIFF
@@ -205,7 +205,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         id: git_diff
         with:
           PATTERNS: |
@@ -225,7 +225,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.16
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         id: git_diff
         with:
           PATTERNS: |

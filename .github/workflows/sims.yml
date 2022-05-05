@@ -31,7 +31,7 @@ jobs:
         run: go version
       - name: Install runsim
         run: export GO111MODULE="on" && go get github.com/cosmos/tools/cmd/runsim@v1.0.0
-      - uses: actions/cache@v3.0.1
+      - uses: actions/cache@v3.0.2
         with:
           path: ~/go/bin
           key: ${{ runner.os }}-go-runsim-binary
@@ -46,13 +46,13 @@ jobs:
           go-version: 1.16
       - name: Display go version
         run: go version
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             **/**.go
             go.mod
             go.sum
-      - uses: actions/cache@v3.0.1
+      - uses: actions/cache@v3.0.2
         with:
           path: ~/go/bin
           key: ${{ runner.os }}-go-runsim-binary
@@ -72,7 +72,7 @@ jobs:
           go-version: 1.16
       - name: Display go version
         run: go version
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           SUFFIX_FILTER: |
             **/**.go
@@ -80,7 +80,7 @@ jobs:
             go.sum
           SET_ENV_NAME_INSERTIONS: 1
           SET_ENV_NAME_LINES: 1
-      - uses: actions/cache@v3.0.1
+      - uses: actions/cache@v3.0.2
         with:
           path: ~/go/bin
           key: ${{ runner.os }}-go-runsim-binary
@@ -100,7 +100,7 @@ jobs:
           go-version: 1.16
       - name: Display go version
         run: go version
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           SUFFIX_FILTER: |
             **/**.go
@@ -108,7 +108,7 @@ jobs:
             go.sum
           SET_ENV_NAME_INSERTIONS: 1
           SET_ENV_NAME_LINES: 1
-      - uses: actions/cache@v3.0.1
+      - uses: actions/cache@v3.0.2
         with:
           path: ~/go/bin
           key: ${{ runner.os }}-go-runsim-binary
@@ -128,7 +128,7 @@ jobs:
           go-version: 1.16
       - name: Display go version
         run: go version
-      - uses: technote-space/get-diff-action@v4
+      - uses: technote-space/get-diff-action@v6
         with:
           SUFFIX_FILTER: |
             **/**.go
@@ -136,7 +136,7 @@ jobs:
             go.sum
           SET_ENV_NAME_INSERTIONS: 1
           SET_ENV_NAME_LINES: 1
-      - uses: actions/cache@v3.0.1
+      - uses: actions/cache@v3.0.2
         with:
           path: ~/go/bin
           key: ${{ runner.os }}-go-runsim-binary
