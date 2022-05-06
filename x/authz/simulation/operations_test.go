@@ -43,7 +43,7 @@ func (suite *SimTestSuite) TestWeightedOperations() {
 	// setup 3 accounts
 	s := rand.NewSource(1)
 	r := rand.New(s)
-	accs := suite.getTestingAccounts(r, 3)
+	accs := suite.getTestingAccounts(r, 2)
 
 	expected := []struct {
 		weight     int
@@ -51,8 +51,8 @@ func (suite *SimTestSuite) TestWeightedOperations() {
 		opMsgName  string
 	}{
 		{simulation.WeightGrant, authz.ModuleName, simulation.TypeMsgGrant},
-		{simulation.WeightRevoke, authz.ModuleName, simulation.TypeMsgRevoke},
 		{simulation.WeightExec, authz.ModuleName, simulation.TypeMsgExec},
+		{simulation.WeightRevoke, authz.ModuleName, simulation.TypeMsgRevoke},
 	}
 
 	for i, w := range weightedOps {
