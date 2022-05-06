@@ -30,6 +30,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -157,10 +158,10 @@ which accepts a path for the resulting pprof file.
 	cmd.Flags().Uint64(FlagMinRetainBlocks, 0, "Minimum block height offset during ABCI commit to prune Tendermint blocks")
 
 	cmd.Flags().Bool(flagGRPCEnable, true, "Define if the gRPC server should be enabled")
-	cmd.Flags().String(flagGRPCAddress, config.DefaultGRPCAddress, "the gRPC server address to listen on")
+	cmd.Flags().String(flagGRPCAddress, serverconfig.DefaultGRPCAddress, "the gRPC server address to listen on")
 
 	cmd.Flags().Bool(flagGRPCWebEnable, true, "Define if the gRPC-Web server should be enabled. (Note: gRPC must also be enabled.)")
-	cmd.Flags().String(flagGRPCWebAddress, config.DefaultGRPCWebAddress, "The gRPC-Web server address to listen on")
+	cmd.Flags().String(flagGRPCWebAddress, serverconfig.DefaultGRPCWebAddress, "The gRPC-Web server address to listen on")
 
 	cmd.Flags().Uint64(FlagStateSyncSnapshotInterval, 0, "State sync snapshot interval")
 	cmd.Flags().Uint32(FlagStateSyncSnapshotKeepRecent, 2, "State sync snapshot to keep")
@@ -301,6 +302,44 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 			WithHomeDir(home).
 			WithChainID(genDoc.ChainID)
 
+<<<<<<< HEAD
+=======
+		if config.GRPC.Enable {
+			_, port, err := net.SplitHostPort(config.GRPC.Address)
+			if err != nil {
+				return err
+			}
+
+			maxSendMsgSize := config.GRPC.MaxSendMsgSize
+			if maxSendMsgSize == 0 {
+				maxSendMsgSize = serverconfig.DefaultGRPCMaxSendMsgSize
+			}
+
+			maxRecvMsgSize := config.GRPC.MaxRecvMsgSize
+			if maxRecvMsgSize == 0 {
+				maxRecvMsgSize = serverconfig.DefaultGRPCMaxRecvMsgSize
+			}
+
+			grpcAddress := fmt.Sprintf("127.0.0.1:%s", port)
+
+			// If grpc is enabled, configure grpc client for grpc gateway.
+			grpcClient, err := grpc.Dial(
+				grpcAddress,
+				grpc.WithInsecure(),
+				grpc.WithDefaultCallOptions(
+					grpc.ForceCodec(encoding.GetCodec(proto.Name)),
+					grpc.MaxCallRecvMsgSize(maxRecvMsgSize),
+					grpc.MaxCallSendMsgSize(maxSendMsgSize),
+				),
+			)
+			if err != nil {
+				return err
+			}
+			clientCtx = clientCtx.WithGRPCClient(grpcClient)
+			ctx.Logger.Debug("grpc client assigned to client context", "target", grpcAddress)
+		}
+
+>>>>>>> 4ede62ce5 (chore: safe guard gRPC size limits #220)
 		apiSrv = api.New(clientCtx, ctx.Logger.With("module", "api-server"))
 		app.RegisterAPIRoutes(apiSrv, config.API)
 		errCh := make(chan error)

@@ -15,8 +15,26 @@ import (
 )
 
 // StartGRPCServer starts a gRPC server on the given address.
+<<<<<<< HEAD
 func StartGRPCServer(clientCtx client.Context, app types.Application, address string) (*grpc.Server, error) {
 	grpcSrv := grpc.NewServer()
+=======
+func StartGRPCServer(clientCtx client.Context, app types.Application, cfg config.GRPCConfig) (*grpc.Server, error) {
+	maxSendMsgSize := cfg.MaxSendMsgSize
+	if maxSendMsgSize == 0 {
+		maxSendMsgSize = config.DefaultGRPCMaxSendMsgSize
+	}
+
+	maxRecvMsgSize := cfg.MaxRecvMsgSize
+	if maxRecvMsgSize == 0 {
+		maxRecvMsgSize = config.DefaultGRPCMaxRecvMsgSize
+	}
+
+	grpcSrv := grpc.NewServer(
+		grpc.MaxSendMsgSize(maxSendMsgSize),
+		grpc.MaxRecvMsgSize(maxRecvMsgSize),
+	)
+>>>>>>> 4ede62ce5 (chore: safe guard gRPC size limits #220)
 	app.RegisterGRPCServer(grpcSrv)
 	// reflection allows consumers to build dynamic clients that can write
 	// to any cosmos-sdk application without relying on application packages at compile time
