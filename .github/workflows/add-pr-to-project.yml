@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened]
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
   ORGANIZATION: osmosis-labs
   REPOSITORY: cosmos-sdk
   PROJECT_NUMBER: 1
@@ -54,7 +54,7 @@ jobs:
 
           echo 'PULL_REQUEST_NODE_ID='$(jq '.data.repository.pullRequest.id' pull_request_node_id.json) >> $GITHUB_ENV
                     
-      - name: Add issue to project
+      - name: Add pull request to project
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         run: |
