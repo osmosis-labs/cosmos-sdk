@@ -680,8 +680,8 @@ func (app *BaseApp) GetBlockRetentionHeight(commitHeight int64) int64 {
 		retentionHeight = commitHeight - cp.Evidence.MaxAgeNumBlocks
 	}
 
-	snapshotInterval := int64(app.snapshotManager.GetInterval())
-	if app.snapshotManager != nil && snapshotInterval > 0 {
+	if app.snapshotManager != nil {
+		snapshotInterval := int64(app.snapshotManager.GetInterval())
 		// Define the state pruning offset, i.e. the block offset at which the
 		// underlying logical database is persisted to disk.
 		if snapshotInterval > 0 {
@@ -695,11 +695,10 @@ func (app *BaseApp) GetBlockRetentionHeight(commitHeight int64) int64 {
 				// any state committed to disk.
 				return 0
 			}
-		}
-
-		snapshotRetentionHeights := app.snapshotManager.GetSnapshotBlockRetentionHeights()
-		if snapshotRetentionHeights > 0 {
-			retentionHeight = minNonZero(retentionHeight, commitHeight-snapshotRetentionHeights)
+			snapshotRetentionHeights := app.snapshotManager.GetSnapshotBlockRetentionHeights()
+			if snapshotRetentionHeights > 0 {
+				retentionHeight = minNonZero(retentionHeight, commitHeight-snapshotRetentionHeights)
+			}
 		}
 	}
 
