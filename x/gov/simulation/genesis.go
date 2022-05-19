@@ -96,7 +96,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	proposalVotingPeriods := []types.ProposalVotingPeriod{
 		{
-			ProposalType: "cosmos.params.v1beta1.ParameterChangeProposal",
+			ProposalType: "/cosmos.params.v1beta1.ParameterChangeProposal",
 		},
 	}
 	for _, pvp := range proposalVotingPeriods {
