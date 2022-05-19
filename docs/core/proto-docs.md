@@ -5036,6 +5036,7 @@ Proposal defines the core field members of a governance proposal.
 | `total_deposit` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
 | `voting_start_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
 | `voting_end_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 
 
 
