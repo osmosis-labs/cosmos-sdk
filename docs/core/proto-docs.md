@@ -5123,6 +5123,7 @@ VotingParams defines the params for voting on governance proposals.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  | Length of the voting period. |
+| `expedited_voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  | Length of the expedited voting period. |
 
 
 
