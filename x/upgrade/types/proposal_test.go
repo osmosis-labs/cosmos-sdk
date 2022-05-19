@@ -18,29 +18,32 @@ type ProposalWrapper struct {
 
 func TestContentAccessors(t *testing.T) {
 	cases := map[string]struct {
-		p     gov.Content
-		title string
-		desc  string
-		typ   string
-		str   string
+		p           gov.Content
+		title       string
+		desc        string
+		isExpedited bool
+		typ         string
+		str         string
 	}{
 		"upgrade": {
-			p: types.NewSoftwareUpgradeProposal("Title", "desc", types.Plan{
+			p: types.NewSoftwareUpgradeProposal("Title", "desc", true, types.Plan{
 				Name:   "due_height",
 				Info:   "https://foo.bar",
 				Height: 99999999999,
 			}),
-			title: "Title",
-			desc:  "desc",
-			typ:   "SoftwareUpgrade",
-			str:   "Software Upgrade Proposal:\n  Title:       Title\n  Description: desc\n",
+			title:       "Title",
+			desc:        "desc",
+			isExpedited: true,
+			typ:         "SoftwareUpgrade",
+			str:         "Software Upgrade Proposal:\n  Title:       Title\n  Description: desc\n",
 		},
 		"cancel": {
-			p:     types.NewCancelSoftwareUpgradeProposal("Cancel", "bad idea"),
-			title: "Cancel",
-			desc:  "bad idea",
-			typ:   "CancelSoftwareUpgrade",
-			str:   "Cancel Software Upgrade Proposal:\n  Title:       Cancel\n  Description: bad idea\n",
+			p:           types.NewCancelSoftwareUpgradeProposal("Cancel", "bad idea", false),
+			title:       "Cancel",
+			desc:        "bad idea",
+			isExpedited: false,
+			typ:         "CancelSoftwareUpgrade",
+			str:         "Cancel Software Upgrade Proposal:\n  Title:       Cancel\n  Description: bad idea\n",
 		},
 	}
 
@@ -53,6 +56,7 @@ func TestContentAccessors(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, tc.title, tc.p.GetTitle())
 			assert.Equal(t, tc.desc, tc.p.GetDescription())
+			assert.Equal(t, tc.isExpedited, tc.p.GetIsExpedited())
 			assert.Equal(t, tc.typ, tc.p.ProposalType())
 			assert.Equal(t, "upgrade", tc.p.ProposalRoute())
 			assert.Equal(t, tc.str, tc.p.String())
@@ -84,7 +88,7 @@ func TestMarshalSoftwareUpdateProposal(t *testing.T) {
 		Name:   "upgrade",
 		Height: 1000,
 	}
-	content := types.NewSoftwareUpgradeProposal("title", "description", plan)
+	content := types.NewSoftwareUpgradeProposal("title", "description", false, plan)
 	sup, ok := content.(*types.SoftwareUpgradeProposal)
 	require.True(t, ok)
 

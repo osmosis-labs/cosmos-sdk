@@ -110,8 +110,9 @@ message CommunityPoolSpendProposal {
 
   string   title                           = 1;
   string   description                     = 2;
-  string   recipient                       = 3;
-  repeated cosmos.base.v1beta1.Coin amount = 4
+  bool     is_expedited                    = 3;
+  string   recipient                       = 4;
+  repeated cosmos.base.v1beta1.Coin amount = 5
       [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"];
 }
 
@@ -149,9 +150,10 @@ message CommunityPoolSpendProposalWithDeposit {
   option (gogoproto.goproto_getters)  = false;
   option (gogoproto.goproto_stringer) = true;
 
-  string title       = 1 [(gogoproto.moretags) = "yaml:\"title\""];
-  string description = 2 [(gogoproto.moretags) = "yaml:\"description\""];
-  string recipient   = 3 [(gogoproto.moretags) = "yaml:\"recipient\""];
-  string amount      = 4 [(gogoproto.moretags) = "yaml:\"amount\""];
-  string deposit     = 5 [(gogoproto.moretags) = "yaml:\"deposit\""];
+  string title        = 1 [(gogoproto.moretags) = "yaml:\"title\""];
+  string description  = 2 [(gogoproto.moretags) = "yaml:\"description\""];
+  bool   is_expedited = 3 [(gogoproto.moretags) = "yaml:\"is_expedited\""];
+  string recipient    = 4 [(gogoproto.moretags) = "yaml:\"recipient\""];
+  string amount       = 5 [(gogoproto.moretags) = "yaml:\"amount\""];
+  string deposit      = 6 [(gogoproto.moretags) = "yaml:\"deposit\""];
 }

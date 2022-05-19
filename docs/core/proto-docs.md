@@ -3613,6 +3613,7 @@ recipient account.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 | `recipient` | [string](#string) |  |  |
 | `amount` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
 
@@ -3632,6 +3633,7 @@ with a deposit
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 | `recipient` | [string](#string) |  |  |
 | `amount` | [string](#string) |  |  |
 | `deposit` | [string](#string) |  |  |
@@ -5089,6 +5091,7 @@ manually updated in case of approval.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 
 
 
@@ -5885,6 +5888,7 @@ ParameterChangeProposal defines a proposal to change one or more parameters.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 | `changes` | [ParamChange](#cosmos.params.v1beta1.ParamChange) | repeated |  |
 
 
@@ -7979,6 +7983,7 @@ upgrade.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 
 
 
@@ -8033,6 +8038,7 @@ upgrade.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 | `plan` | [Plan](#cosmos.upgrade.v1beta1.Plan) |  |  |
 
 

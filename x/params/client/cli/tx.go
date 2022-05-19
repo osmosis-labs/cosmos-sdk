@@ -68,7 +68,7 @@ Where proposal.json contains:
 
 			from := clientCtx.GetFromAddress()
 			content := paramproposal.NewParameterChangeProposal(
-				proposal.Title, proposal.Description, proposal.Changes.ToParamChanges(),
+				proposal.Title, proposal.Description, proposal.IsExpedited, proposal.Changes.ToParamChanges(),
 			)
 
 			deposit, err := sdk.ParseCoinsNormalized(proposal.Deposit)

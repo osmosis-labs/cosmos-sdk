@@ -187,8 +187,8 @@ const (
 var _ Content = &TextProposal{}
 
 // NewTextProposal creates a text proposal Content
-func NewTextProposal(title, description string) Content {
-	return &TextProposal{title, description}
+func NewTextProposal(title, description string, isExpedited bool) Content {
+	return &TextProposal{title, description, isExpedited}
 }
 
 // GetTitle returns the proposal title
@@ -196,6 +196,9 @@ func (tp *TextProposal) GetTitle() string { return tp.Title }
 
 // GetDescription returns the proposal description
 func (tp *TextProposal) GetDescription() string { return tp.Description }
+
+// GetIsExpedited returns true if proposal is expedited.
+func (tp *TextProposal) GetIsExpedited() bool { return tp.IsExpedited }
 
 // ProposalRoute returns the proposal router key
 func (tp *TextProposal) ProposalRoute() string { return RouterKey }
@@ -227,10 +230,10 @@ func RegisterProposalType(ty string) {
 }
 
 // ContentFromProposalType returns a Content object based on the proposal type.
-func ContentFromProposalType(title, desc, ty string) Content {
+func ContentFromProposalType(title, desc, ty string, isExpedited bool) Content {
 	switch ty {
 	case ProposalTypeText:
-		return NewTextProposal(title, desc)
+		return NewTextProposal(title, desc, isExpedited)
 
 	default:
 		return nil

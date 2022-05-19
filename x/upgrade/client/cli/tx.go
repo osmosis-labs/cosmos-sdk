@@ -109,7 +109,12 @@ func NewCmdSubmitCancelUpgradeProposal() *cobra.Command {
 				return err
 			}
 
-			content := types.NewCancelSoftwareUpgradeProposal(title, description)
+			isExpedited, err := cmd.Flags().GetBool(cli.FlagIsExpedited)
+			if err != nil {
+				return err
+			}
+
+			content := types.NewCancelSoftwareUpgradeProposal(title, description, isExpedited)
 
 			msg, err := gov.NewMsgSubmitProposal(content, deposit, from)
 			if err != nil {
@@ -140,6 +145,11 @@ func parseArgsToContent(cmd *cobra.Command, name string) (gov.Content, error) {
 		return nil, err
 	}
 
+	isExpedited, err := cmd.Flags().GetBool(cli.FlagIsExpedited)
+	if err != nil {
+		return nil, err
+	}
+
 	height, err := cmd.Flags().GetInt64(FlagUpgradeHeight)
 	if err != nil {
 		return nil, err
@@ -151,6 +161,6 @@ func parseArgsToContent(cmd *cobra.Command, name string) (gov.Content, error) {
 	}
 
 	plan := types.Plan{Name: name, Height: height, Info: info}
-	content := types.NewSoftwareUpgradeProposal(title, description, plan)
+	content := types.NewSoftwareUpgradeProposal(title, description, isExpedited, plan)
 	return content, nil
 }

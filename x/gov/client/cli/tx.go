@@ -20,6 +20,7 @@ import (
 const (
 	FlagTitle        = "title"
 	FlagDescription  = "description"
+	FlagIsExpedited  = "is_expedited"
 	FlagProposalType = "type"
 	FlagDeposit      = "deposit"
 	flagVoter        = "voter"
@@ -31,6 +32,7 @@ const (
 type proposal struct {
 	Title       string
 	Description string
+	IsExpedited bool
 	Type        string
 	Deposit     string
 }
@@ -119,7 +121,7 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 				return err
 			}
 
-			content := types.ContentFromProposalType(proposal.Title, proposal.Description, proposal.Type)
+			content := types.ContentFromProposalType(proposal.Title, proposal.Description, proposal.Type, proposal.IsExpedited)
 
 			msg, err := types.NewMsgSubmitProposal(content, amount, clientCtx.GetFromAddress())
 			if err != nil {
@@ -132,6 +134,7 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 
 	cmd.Flags().String(FlagTitle, "", "The proposal title")
 	cmd.Flags().String(FlagDescription, "", "The proposal description")
+	cmd.Flags().Bool(FlagDescription, false, "The flag indicating whether a proposal is expedited")
 	cmd.Flags().String(FlagProposalType, "", "The proposal Type")
 	cmd.Flags().String(FlagDeposit, "", "The proposal deposit")
 	cmd.Flags().String(FlagProposal, "", "Proposal file path (if this path is given, other proposal flags are ignored)")
