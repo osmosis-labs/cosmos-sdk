@@ -1,6 +1,7 @@
 package types
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -196,6 +197,15 @@ func validateVotingParams(i interface{}) error {
 
 	if v.VotingPeriod <= 0 {
 		return fmt.Errorf("voting period must be positive: %s", v.VotingPeriod)
+	}
+
+	for _, pvp := range v.ProposalVotingPeriods {
+		if pvp.ProposalType == "" {
+			return errors.New("empty proposal type for proposal voting period")
+		}
+		if pvp.VotingPeriod <= 0 {
+			return fmt.Errorf("voting period must be positive for proposal voting period: %s", pvp.VotingPeriod)
+		}
 	}
 
 	return nil
