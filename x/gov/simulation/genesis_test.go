@@ -41,14 +41,14 @@ func TestRandomizedGenState(t *testing.T) {
 	simState.Cdc.MustUnmarshalJSON(simState.GenState[types.ModuleName], &govGenesis)
 
 	dec1, _ := sdk.NewDecFromStr("0.400000000000000000")
-	dec2, _ := sdk.NewDecFromStr("0.539000000000000000")
-	dec3, _ := sdk.NewDecFromStr("0.478000000000000000")
+	dec2, _ := sdk.NewDecFromStr("0.458000000000000000")
+	dec3, _ := sdk.NewDecFromStr("0.528000000000000000")
 	dec4, _ := sdk.NewDecFromStr("0.324000000000000000")
 
 	require.Equal(t, "905stake", govGenesis.DepositParams.MinDeposit.String())
 	require.Equal(t, "77h26m10s", govGenesis.DepositParams.MaxDepositPeriod.String())
-	require.Equal(t, float64(148296), govGenesis.VotingParams.VotingPeriod.Seconds())
-	require.Equal(t, float64(275567), govGenesis.VotingParams.ExpeditedVotingPeriod.Seconds())
+	require.Equal(t, float64(317894), govGenesis.VotingParams.VotingPeriod.Seconds())
+	require.Equal(t, float64(107823), govGenesis.VotingParams.ExpeditedVotingPeriod.Seconds())
 	require.Equal(t, dec1, govGenesis.TallyParams.Quorum)
 	require.Equal(t, dec2, govGenesis.TallyParams.Threshold)
 	require.Equal(t, dec3, govGenesis.TallyParams.ExpeditedThreshold)
