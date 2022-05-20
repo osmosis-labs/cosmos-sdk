@@ -100,10 +100,12 @@ deposit_params:
   - amount: "10000000"
     denom: stake
 tally_params:
+  expedited_threshold: "0.667000000000000000"
   quorum: "0.334000000000000000"
   threshold: "0.500000000000000000"
   veto_threshold: "0.334000000000000000"
 voting_params:
+  expedited_voting_period: "86400000000000"
   voting_period: "172800000000000"
 	`,
 		},
