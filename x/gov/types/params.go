@@ -188,6 +188,14 @@ func validateVotingParams(i interface{}) error {
 		return fmt.Errorf("voting period must be positive: %s", v.VotingPeriod)
 	}
 
+	if v.ExpeditedVotingPeriod <= 0 {
+		return fmt.Errorf("expedited voting period must be positive: %s", v.ExpeditedVotingPeriod)
+	}
+
+	if v.ExpeditedVotingPeriod >= v.VotingPeriod {
+		return fmt.Errorf("expedited voting period %s must be strictly less that the regular voting period %s", v.ExpeditedVotingPeriod, v.VotingPeriod)
+	}
+
 	return nil
 }
 
