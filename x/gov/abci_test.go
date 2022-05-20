@@ -219,6 +219,8 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			testProposal := tc.proposal
+
 			app := simapp.Setup(false)
 			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 			addrs := simapp.AddTestAddrs(app, ctx, 10, valTokens)
@@ -238,7 +240,7 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 			activeQueue.Close()
 
 			proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 5))}
-			newProposalMsg, err := types.NewMsgSubmitProposal(tc.proposal, proposalCoins, addrs[0])
+			newProposalMsg, err := types.NewMsgSubmitProposal(testProposal, proposalCoins, addrs[0])
 			require.NoError(t, err)
 
 			res, err := govHandler(ctx, newProposalMsg)
@@ -312,54 +314,74 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 }
 
 func TestProposalPassedEndblocker(t *testing.T) {
-	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-	addrs := simapp.AddTestAddrs(app, ctx, 10, valTokens)
+	testcases := []struct {
+		name     string
+		proposal types.Content
+	}{
+		{
+			name:     "regular text",
+			proposal: TestProposal,
+		},
+		{
+			name:     "text expedited",
+			proposal: TestExpeditedProposal,
+		},
+	}
 
-	SortAddresses(addrs)
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			testProposal := tc.proposal
 
-	handler := gov.NewHandler(app.GovKeeper)
-	stakingHandler := staking.NewHandler(app.StakingKeeper)
+			app := simapp.Setup(false)
+			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+			addrs := simapp.AddTestAddrs(app, ctx, 10, valTokens)
 
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+			SortAddresses(addrs)
 
-	valAddr := sdk.ValAddress(addrs[0])
+			handler := gov.NewHandler(app.GovKeeper)
+			stakingHandler := staking.NewHandler(app.StakingKeeper)
 
-	createValidators(t, stakingHandler, ctx, []sdk.ValAddress{valAddr}, []int64{10})
-	staking.EndBlocker(ctx, app.StakingKeeper)
+			header := tmproto.Header{Height: app.LastBlockHeight() + 1}
+			app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
-	macc := app.GovKeeper.GetGovernanceAccount(ctx)
-	require.NotNil(t, macc)
-	initialModuleAccCoins := app.BankKeeper.GetAllBalances(ctx, macc.GetAddress())
+			valAddr := sdk.ValAddress(addrs[0])
 
-	proposal, err := app.GovKeeper.SubmitProposal(ctx, TestProposal)
-	require.NoError(t, err)
+			createValidators(t, stakingHandler, ctx, []sdk.ValAddress{valAddr}, []int64{10})
+			staking.EndBlocker(ctx, app.StakingKeeper)
 
-	proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 10))}
-	newDepositMsg := types.NewMsgDeposit(addrs[0], proposal.ProposalId, proposalCoins)
+			macc := app.GovKeeper.GetGovernanceAccount(ctx)
+			require.NotNil(t, macc)
+			initialModuleAccCoins := app.BankKeeper.GetAllBalances(ctx, macc.GetAddress())
 
-	handleAndCheck(t, handler, ctx, newDepositMsg)
+			proposal, err := app.GovKeeper.SubmitProposal(ctx, testProposal)
+			require.NoError(t, err)
 
-	macc = app.GovKeeper.GetGovernanceAccount(ctx)
-	require.NotNil(t, macc)
-	moduleAccCoins := app.BankKeeper.GetAllBalances(ctx, macc.GetAddress())
+			proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 10))}
+			newDepositMsg := types.NewMsgDeposit(addrs[0], proposal.ProposalId, proposalCoins)
 
-	deposits := initialModuleAccCoins.Add(proposal.TotalDeposit...).Add(proposalCoins...)
-	require.True(t, moduleAccCoins.IsEqual(deposits))
+			handleAndCheck(t, handler, ctx, newDepositMsg)
 
-	err = app.GovKeeper.AddVote(ctx, proposal.ProposalId, addrs[0], types.NewNonSplitVoteOption(types.OptionYes))
-	require.NoError(t, err)
+			macc = app.GovKeeper.GetGovernanceAccount(ctx)
+			require.NotNil(t, macc)
+			moduleAccCoins := app.BankKeeper.GetAllBalances(ctx, macc.GetAddress())
 
-	newHeader := ctx.BlockHeader()
-	newHeader.Time = ctx.BlockHeader().Time.Add(app.GovKeeper.GetDepositParams(ctx).MaxDepositPeriod).Add(app.GovKeeper.GetVotingParams(ctx).VotingPeriod)
-	ctx = ctx.WithBlockHeader(newHeader)
+			deposits := initialModuleAccCoins.Add(proposal.TotalDeposit...).Add(proposalCoins...)
+			require.True(t, moduleAccCoins.IsEqual(deposits))
 
-	gov.EndBlocker(ctx, app.GovKeeper)
+			err = app.GovKeeper.AddVote(ctx, proposal.ProposalId, addrs[0], types.NewNonSplitVoteOption(types.OptionYes))
+			require.NoError(t, err)
 
-	macc = app.GovKeeper.GetGovernanceAccount(ctx)
-	require.NotNil(t, macc)
-	require.True(t, app.BankKeeper.GetAllBalances(ctx, macc.GetAddress()).IsEqual(initialModuleAccCoins))
+			newHeader := ctx.BlockHeader()
+			newHeader.Time = ctx.BlockHeader().Time.Add(app.GovKeeper.GetDepositParams(ctx).MaxDepositPeriod).Add(app.GovKeeper.GetVotingParams(ctx).VotingPeriod)
+			ctx = ctx.WithBlockHeader(newHeader)
+
+			gov.EndBlocker(ctx, app.GovKeeper)
+
+			macc = app.GovKeeper.GetGovernanceAccount(ctx)
+			require.NotNil(t, macc)
+			require.True(t, app.BankKeeper.GetAllBalances(ctx, macc.GetAddress()).IsEqual(initialModuleAccCoins))
+		})
+	}
 }
 
 func TestEndBlockerProposalHandlerFailed(t *testing.T) {
