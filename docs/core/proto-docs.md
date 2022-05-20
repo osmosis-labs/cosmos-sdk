@@ -5052,7 +5052,7 @@ proposal type.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `proposal_type` | [string](#string) |  | e.g. "/cosmos.params.v1beta1.ParameterChangeProposal" |
+| `proposal_type` | [string](#string) |  | e.g. "cosmos.params.v1beta1.ParameterChangeProposal" |
 | `voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  |  |
 
 
