@@ -92,9 +92,9 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
 		} else {
 			if proposal.GetContent().GetIsExpedited() {
 				// When expedited proposal fails, it is converted
-				// to a regular proposal. As a result, the voting period is extended and
-				// the tally is repeated according to the regular proposal rules,
-				//  once regular voting period expires again.
+				// to a regular proposal. As a result, the voting period is extended, and,
+				// once the regular voting period expires again, the tally is repeated
+				// according to the regular proposal rules.
 				if err := proposal.SetIsExpedited(false); err != nil {
 					panic(err)
 				}
