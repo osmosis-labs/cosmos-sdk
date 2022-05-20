@@ -109,7 +109,7 @@ func (tp TallyParams) GetThreshold(isExpedited bool) sdk.Dec {
 
 // Equal checks equality of TallyParams
 func (tp TallyParams) Equal(other TallyParams) bool {
-	return tp.Quorum.Equal(other.Quorum) && tp.Threshold.Equal(other.Threshold) && tp.VetoThreshold.Equal(other.VetoThreshold)
+	return tp.Quorum.Equal(other.Quorum) && tp.Threshold.Equal(other.Threshold) && tp.ExpeditedThreshold.Equal(other.ExpeditedThreshold) && tp.VetoThreshold.Equal(other.VetoThreshold)
 }
 
 // String implements stringer insterface
@@ -137,7 +137,7 @@ func validateTallyParams(i interface{}) error {
 		return fmt.Errorf("vote threshold too large: %s", v.Threshold)
 	}
 	if !v.ExpeditedThreshold.IsPositive() {
-		return fmt.Errorf("expedited ote threshold must be positive: %s", v.Threshold)
+		return fmt.Errorf("expedited ote threshold must be positive: %s", v.ExpeditedThreshold)
 	}
 	if v.ExpeditedThreshold.GT(sdk.OneDec()) {
 		return fmt.Errorf("expedited vote threshold too large: %s", v.ExpeditedThreshold)
