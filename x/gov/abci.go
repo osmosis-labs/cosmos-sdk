@@ -49,10 +49,16 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
 
 		passes, burnDeposits, tallyResults := keeper.Tally(ctx, proposal)
 
-		if burnDeposits {
-			keeper.DeleteDeposits(ctx, proposal.ProposalId)
-		} else {
-			keeper.RefundDeposits(ctx, proposal.ProposalId)
+		// If an expedited proposal fails, we do not want to update
+		// the deposit at this point since the proposal is converted to regulat.
+		// As a result, the deposits are either deleted or refunded in all casses
+		// BUT when an expedited proposal fails.
+		if !(proposal.GetContent().GetIsExpedited() && !passes) {
+			if burnDeposits {
+				keeper.DeleteDeposits(ctx, proposal.ProposalId)
+			} else {
+				keeper.RefundDeposits(ctx, proposal.ProposalId)
+			}
 		}
 
 		keeper.RemoveFromActiveProposalQueue(ctx, proposal.ProposalId, proposal.VotingEndTime)
