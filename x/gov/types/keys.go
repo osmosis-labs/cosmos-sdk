@@ -68,17 +68,6 @@ func ProposalKey(proposalID uint64) []byte {
 	return append(ProposalsKeyPrefix, GetProposalIDBytes(proposalID)...)
 }
 
-// ExpeditedProposalKey returns a store prefix for an expedited proposal with proposalId.
-func ExpeditedProposalKey(proposalID uint64) []byte {
-	return append(ExpeditedProposalsKeyPrefix, GetProposalIDBytes(proposalID)...)
-}
-
-// GetProposalIdFromKey returns the proposalId given a prefixed byte key for expedited proposla.
-func GetProposalIdFromExpeditedKey(fullKey []byte) uint64 {
-	proposalIdBytes := fullKey[len(ExpeditedProposalsKeyPrefix):]
-	return GetProposalIDFromBytes(proposalIdBytes)
-}
-
 // ActiveProposalByTimeKey gets the active proposal queue key by endTime
 func ActiveProposalByTimeKey(endTime time.Time) []byte {
 	return append(ActiveProposalQueuePrefix, sdk.FormatTimeBytes(endTime)...)
