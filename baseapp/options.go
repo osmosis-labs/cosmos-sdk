@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -103,13 +104,30 @@ func (app *BaseApp) SetVersion(v string) {
 }
 
 // SetProtocolVersion sets the application's protocol version
-func (app *BaseApp) SetProtocolVersion(v uint64) {
+func (app *BaseApp) SetProtocolVersion(v uint64) error {
+	if app.paramStore == nil {
+		return errors.New("paramStore was nil")
+	}
+
 	av := &tmproto.VersionParams{AppVersion: v}
 	app.paramStore.Set(app.deliverState.ctx, ParamStoreKeyVersionParams, av)
+	return nil
 }
 
 // GetProtocolVersion gets the application's protocol version
 func (app *BaseApp) GetProtocolVersion() uint64 {
+	if app.paramStore == nil {
+		return 0
+	}
+
+	if app.deliverState == nil {
+		return 0
+	}
+
+	if !app.paramStore.Has(app.deliverState.ctx, ParamStoreKeyVersionParams) {
+		return 0
+	}
+
 	av := &tmproto.VersionParams{}
 	app.paramStore.Get(app.deliverState.ctx, ParamStoreKeyVersionParams, av)
 

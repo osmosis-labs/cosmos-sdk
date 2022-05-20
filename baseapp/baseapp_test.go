@@ -497,6 +497,7 @@ func TestTxDecoder(t *testing.T) {
 // Test that Info returns the latest committed state.
 func TestInfo(t *testing.T) {
 	app := newBaseApp(t.Name())
+	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
 
 	// ----- test an empty response -------
 	reqInfo := abci.RequestInfo{}
