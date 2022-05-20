@@ -42,6 +42,7 @@ var (
 	ActiveProposalQueuePrefix   = []byte{0x01}
 	InactiveProposalQueuePrefix = []byte{0x02}
 	ProposalIDKey               = []byte{0x03}
+	ExpeditedProposalsKeyPrefix = []byte{0x04}
 
 	DepositsKeyPrefix = []byte{0x10}
 
@@ -62,9 +63,20 @@ func GetProposalIDFromBytes(bz []byte) (proposalID uint64) {
 	return binary.BigEndian.Uint64(bz)
 }
 
-// ProposalKey gets a specific proposal from the store
+// ProposalKey returns a store prefix for a proposal with proposalId.
 func ProposalKey(proposalID uint64) []byte {
 	return append(ProposalsKeyPrefix, GetProposalIDBytes(proposalID)...)
+}
+
+// ExpeditedProposalKey returns a store prefix for an expedited proposal with proposalId.
+func ExpeditedProposalKey(proposalID uint64) []byte {
+	return append(ExpeditedProposalsKeyPrefix, GetProposalIDBytes(proposalID)...)
+}
+
+// GetProposalIdFromKey returns the proposalId given a prefixed byte key for expedited proposla.
+func GetProposalIdFromExpeditedKey(fullKey []byte) uint64 {
+	proposalIdBytes := fullKey[len(ExpeditedProposalsKeyPrefix):]
+	return GetProposalIDFromBytes(proposalIdBytes)
 }
 
 // ActiveProposalByTimeKey gets the active proposal queue key by endTime

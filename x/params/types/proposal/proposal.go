@@ -35,6 +35,11 @@ func (pcp *ParameterChangeProposal) GetDescription() string { return pcp.Descrip
 // GetDescription returns the flag indicating whether this is an expedited proposal.
 func (pcp *ParameterChangeProposal) GetIsExpedited() bool { return pcp.IsExpedited }
 
+// SetIsExpedited makes proposal expesdited if isExedited is true, otherwise makes it non-expedited.
+func (pcp *ParameterChangeProposal) SetIsExpedited(isExpedited bool) {
+	pcp.IsExpedited = isExpedited
+}
+
 // ProposalRoute returns the routing key of a parameter change proposal.
 func (pcp *ParameterChangeProposal) ProposalRoute() string { return RouterKey }
 

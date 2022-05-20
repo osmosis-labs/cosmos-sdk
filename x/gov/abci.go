@@ -55,6 +55,8 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
 			keeper.RefundDeposits(ctx, proposal.ProposalId)
 		}
 
+		keeper.RemoveFromActiveProposalQueue(ctx, proposal.ProposalId, proposal.VotingEndTime)
+
 		if passes {
 			handler := keeper.Router().GetRoute(proposal.ProposalRoute())
 			cacheCtx, writeCache := ctx.CacheContext()
@@ -82,15 +84,32 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
 				logMsg = fmt.Sprintf("passed, but failed on execution: %s", err)
 			}
 		} else {
-			proposal.Status = types.StatusRejected
-			tagValue = types.AttributeValueProposalRejected
-			logMsg = "rejected"
+			if proposal.GetContent().GetIsExpedited() {
+				// When expedited proposal fails, it is converted
+				// to a regular proposal. As a result, the voting period is extended and
+				// the tally is repeated according to the regular proposal rules,
+				//  once regular voting period expires again.
+				if err := proposal.SetIsExpedited(false); err != nil {
+					panic(err)
+				}
+				votingParams := keeper.GetVotingParams(ctx)
+				proposal.VotingEndTime = proposal.VotingStartTime.Add(votingParams.VotingPeriod)
+
+				keeper.InsertActiveProposalQueue(ctx, proposal.ProposalId, proposal.VotingEndTime)
+
+				tagValue = types.AttributeValueProposalRejected
+				logMsg = "expedited proposal converted to regular"
+			} else {
+				// When regular proposal fails, it is rejected and
+				// the proposal with that id is done forever.
+				proposal.Status = types.StatusRejected
+				tagValue = types.AttributeValueProposalRejected
+				logMsg = "rejected"
+			}
 		}
 
 		proposal.FinalTallyResult = tallyResults
-
 		keeper.SetProposal(ctx, proposal)
-		keeper.RemoveFromActiveProposalQueue(ctx, proposal.ProposalId, proposal.VotingEndTime)
 
 		// when proposal become active
 		keeper.AfterProposalVotingPeriodEnded(ctx, proposal.ProposalId)

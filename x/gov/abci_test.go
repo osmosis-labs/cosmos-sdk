@@ -203,71 +203,112 @@ func TestTickPassedDepositPeriod(t *testing.T) {
 }
 
 func TestTickPassedVotingPeriod(t *testing.T) {
-	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-	addrs := simapp.AddTestAddrs(app, ctx, 10, valTokens)
+	testcases := []struct {
+		name     string
+		proposal types.Content
+	}{
+		{
+			name:     "regular text - deleted",
+			proposal: TestProposal,
+		},
+		{
+			name:     "text expedited - converted to regular",
+			proposal: TestExpeditedProposal,
+		},
+	}
 
-	SortAddresses(addrs)
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			app := simapp.Setup(false)
+			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+			addrs := simapp.AddTestAddrs(app, ctx, 10, valTokens)
 
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+			SortAddresses(addrs)
 
-	govHandler := gov.NewHandler(app.GovKeeper)
+			header := tmproto.Header{Height: app.LastBlockHeight() + 1}
+			app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
-	inactiveQueue := app.GovKeeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
-	require.False(t, inactiveQueue.Valid())
-	inactiveQueue.Close()
-	activeQueue := app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
-	require.False(t, activeQueue.Valid())
-	activeQueue.Close()
+			govHandler := gov.NewHandler(app.GovKeeper)
 
-	proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 5))}
-	newProposalMsg, err := types.NewMsgSubmitProposal(TestProposal, proposalCoins, addrs[0])
-	require.NoError(t, err)
+			inactiveQueue := app.GovKeeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+			require.False(t, inactiveQueue.Valid())
+			inactiveQueue.Close()
+			activeQueue := app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+			require.False(t, activeQueue.Valid())
+			activeQueue.Close()
 
-	res, err := govHandler(ctx, newProposalMsg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+			proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 5))}
+			newProposalMsg, err := types.NewMsgSubmitProposal(tc.proposal, proposalCoins, addrs[0])
+			require.NoError(t, err)
 
-	var proposalData types.MsgSubmitProposalResponse
-	err = proto.Unmarshal(res.Data, &proposalData)
-	require.NoError(t, err)
+			res, err := govHandler(ctx, newProposalMsg)
+			require.NoError(t, err)
+			require.NotNil(t, res)
 
-	proposalID := proposalData.ProposalId
+			var proposalData types.MsgSubmitProposalResponse
+			err = proto.Unmarshal(res.Data, &proposalData)
+			require.NoError(t, err)
 
-	newHeader := ctx.BlockHeader()
-	newHeader.Time = ctx.BlockHeader().Time.Add(time.Duration(1) * time.Second)
-	ctx = ctx.WithBlockHeader(newHeader)
+			proposalID := proposalData.ProposalId
 
-	newDepositMsg := types.NewMsgDeposit(addrs[1], proposalID, proposalCoins)
+			newHeader := ctx.BlockHeader()
+			newHeader.Time = ctx.BlockHeader().Time.Add(time.Duration(1) * time.Second)
+			ctx = ctx.WithBlockHeader(newHeader)
 
-	res, err = govHandler(ctx, newDepositMsg)
-	require.NoError(t, err)
-	require.NotNil(t, res)
+			newDepositMsg := types.NewMsgDeposit(addrs[1], proposalID, proposalCoins)
 
-	newHeader = ctx.BlockHeader()
-	newHeader.Time = ctx.BlockHeader().Time.Add(app.GovKeeper.GetDepositParams(ctx).MaxDepositPeriod).Add(app.GovKeeper.GetVotingParams(ctx).VotingPeriod)
-	ctx = ctx.WithBlockHeader(newHeader)
+			res, err = govHandler(ctx, newDepositMsg)
+			require.NoError(t, err)
+			require.NotNil(t, res)
 
-	inactiveQueue = app.GovKeeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
-	require.False(t, inactiveQueue.Valid())
-	inactiveQueue.Close()
+			votingParams := app.GovKeeper.GetVotingParams(ctx)
+			newHeader = ctx.BlockHeader()
+			originalVotingPeriod := votingParams.VotingPeriod
+			if tc.proposal.GetIsExpedited() {
+				originalVotingPeriod = votingParams.ExpeditedVotingPeriod
+			}
 
-	activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
-	require.True(t, activeQueue.Valid())
+			newHeader.Time = ctx.BlockHeader().Time.Add(app.GovKeeper.GetDepositParams(ctx).MaxDepositPeriod).Add(originalVotingPeriod)
+			ctx = ctx.WithBlockHeader(newHeader)
 
-	activeProposalID := types.GetProposalIDFromBytes(activeQueue.Value())
-	proposal, ok := app.GovKeeper.GetProposal(ctx, activeProposalID)
-	require.True(t, ok)
-	require.Equal(t, types.StatusVotingPeriod, proposal.Status)
+			inactiveQueue = app.GovKeeper.InactiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+			require.False(t, inactiveQueue.Valid())
+			inactiveQueue.Close()
 
-	activeQueue.Close()
+			activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+			require.True(t, activeQueue.Valid())
 
-	gov.EndBlocker(ctx, app.GovKeeper)
+			activeProposalID := types.GetProposalIDFromBytes(activeQueue.Value())
+			proposal, ok := app.GovKeeper.GetProposal(ctx, activeProposalID)
+			require.True(t, ok)
+			require.Equal(t, types.StatusVotingPeriod, proposal.Status)
 
-	activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
-	require.False(t, activeQueue.Valid())
-	activeQueue.Close()
+			activeQueue.Close()
+
+			gov.EndBlocker(ctx, app.GovKeeper)
+
+			activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+
+			if !tc.proposal.GetIsExpedited() {
+				require.False(t, activeQueue.Valid())
+				activeQueue.Close()
+				return
+			}
+
+			// If expedited, it should be converted to a regular proposal instead.
+			require.True(t, activeQueue.Valid())
+
+			activeProposalID = types.GetProposalIDFromBytes(activeQueue.Value())
+			proposal, ok = app.GovKeeper.GetProposal(ctx, activeProposalID)
+			require.True(t, ok)
+			require.Equal(t, types.StatusVotingPeriod, proposal.Status)
+			require.False(t, proposal.GetContent().GetIsExpedited())
+
+			require.Equal(t, proposal.VotingStartTime.Add(votingParams.VotingPeriod), proposal.VotingEndTime)
+
+			activeQueue.Close()
+		})
+	}
 }
 
 func TestProposalPassedEndblocker(t *testing.T) {

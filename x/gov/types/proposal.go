@@ -13,14 +13,18 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// DefaultStartingProposalID is 1
-const DefaultStartingProposalID uint64 = 1
+const (
+	// DefaultStartingProposalID is 1
+	DefaultStartingProposalID uint64 = 1
+
+	errMsgFmtNotProtoMessage = "%T does not implement proto.Message"
+)
 
 // NewProposal creates a new Proposal instance
 func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Time) (Proposal, error) {
 	msg, ok := content.(proto.Message)
 	if !ok {
-		return Proposal{}, fmt.Errorf("%T does not implement proto.Message", content)
+		return Proposal{}, fmt.Errorf(errMsgFmtNotProtoMessage, content)
 	}
 
 	any, err := types.NewAnyWithValue(msg)
@@ -54,6 +58,30 @@ func (p Proposal) GetContent() Content {
 		return nil
 	}
 	return content
+}
+
+// SetIsExpedited sets proposals to expedited according to the value of isExpedited.
+// Returns nil on success, error otherwise.
+func (p *Proposal) SetIsExpedited(isExpedited bool) error {
+	content, ok := p.Content.GetCachedValue().(Content)
+	if !ok {
+		return nil
+	}
+	content.SetIsExpedited(isExpedited)
+
+	// We must recreate any for changes to take effect.
+	msg, ok := content.(proto.Message)
+	if !ok {
+		return fmt.Errorf(errMsgFmtNotProtoMessage, content)
+	}
+
+	any, err := types.NewAnyWithValue(msg)
+	if err != nil {
+		return err
+	}
+
+	p.Content = any
+	return nil
 }
 
 func (p Proposal) ProposalType() string {
@@ -199,6 +227,11 @@ func (tp *TextProposal) GetDescription() string { return tp.Description }
 
 // GetIsExpedited returns true if proposal is expedited.
 func (tp *TextProposal) GetIsExpedited() bool { return tp.IsExpedited }
+
+// SetIsExpedited makes proposal expesdited if isExedited is true, otherwise makes it non-expedited.
+func (tp *TextProposal) SetIsExpedited(isExpedited bool) {
+	tp.IsExpedited = isExpedited
+}
 
 // ProposalRoute returns the proposal router key
 func (tp *TextProposal) ProposalRoute() string { return RouterKey }

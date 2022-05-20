@@ -28,8 +28,11 @@ func init() {
 func (sup *SoftwareUpgradeProposal) GetTitle() string       { return sup.Title }
 func (sup *SoftwareUpgradeProposal) GetDescription() string { return sup.Description }
 func (sup *SoftwareUpgradeProposal) GetIsExpedited() bool   { return sup.IsExpedited }
-func (sup *SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
-func (sup *SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
+func (sup *SoftwareUpgradeProposal) SetIsExpedited(isExpedited bool) {
+	sup.IsExpedited = isExpedited
+}
+func (sup *SoftwareUpgradeProposal) ProposalRoute() string { return RouterKey }
+func (sup *SoftwareUpgradeProposal) ProposalType() string  { return ProposalTypeSoftwareUpgrade }
 func (sup *SoftwareUpgradeProposal) ValidateBasic() error {
 	if err := sup.Plan.ValidateBasic(); err != nil {
 		return err
@@ -54,7 +57,10 @@ var _ gov.Content = &CancelSoftwareUpgradeProposal{}
 func (csup *CancelSoftwareUpgradeProposal) GetTitle() string       { return csup.Title }
 func (csup *CancelSoftwareUpgradeProposal) GetDescription() string { return csup.Description }
 func (csup *CancelSoftwareUpgradeProposal) GetIsExpedited() bool   { return csup.IsExpedited }
-func (csup *CancelSoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
+func (csup *CancelSoftwareUpgradeProposal) SetIsExpedited(isExpedited bool) {
+	csup.IsExpedited = isExpedited
+}
+func (csup *CancelSoftwareUpgradeProposal) ProposalRoute() string { return RouterKey }
 func (csup *CancelSoftwareUpgradeProposal) ProposalType() string {
 	return ProposalTypeCancelSoftwareUpgrade
 }

@@ -33,8 +33,13 @@ func (csp *CommunityPoolSpendProposal) GetTitle() string { return csp.Title }
 // GetDescription returns the description of a community pool spend proposal.
 func (csp *CommunityPoolSpendProposal) GetDescription() string { return csp.Description }
 
-// GetDescription returns the description of a community pool spend proposal.
+// GetIsExpedited returns the description of a community pool spend proposal.
 func (csp *CommunityPoolSpendProposal) GetIsExpedited() bool { return csp.IsExpedited }
+
+// SetIsExpedited makes proposal expesdited if isExedited is true, otherwise makes it non-expedited.
+func (csp *CommunityPoolSpendProposal) SetIsExpedited(isExpedited bool) {
+	csp.IsExpedited = isExpedited
+}
 
 // GetDescription returns the routing key of a community pool spend proposal.
 func (csp *CommunityPoolSpendProposal) ProposalRoute() string { return RouterKey }
