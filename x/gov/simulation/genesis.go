@@ -80,7 +80,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	var expeditedVotingPeriod time.Duration
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc, ExpeditedVotingParamsVotingPeriod, &votingPeriod, simState.Rand,
+		simState.Cdc, ExpeditedVotingParamsVotingPeriod, &expeditedVotingPeriod, simState.Rand,
 		func(r *rand.Rand) { expeditedVotingPeriod = GenVotingParamsVotingPeriod(r) },
 	)
 
@@ -99,7 +99,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 	var expeditedThreshold sdk.Dec
 	simState.AppParams.GetOrGenerate(
 		simState.Cdc, TallyParamsExpeditedThreshold, &expeditedThreshold, simState.Rand,
-		func(r *rand.Rand) { threshold = GenTallyParamsThreshold(r) },
+		func(r *rand.Rand) { expeditedThreshold = GenTallyParamsThreshold(r) },
 	)
 
 	var veto sdk.Dec
