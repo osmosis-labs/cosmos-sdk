@@ -61,7 +61,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryProposal() {
 		{
 			"valid request - expedited",
 			func() {
-				req = &types.QueryProposalRequest{ProposalId: 1}
+				req = &types.QueryProposalRequest{ProposalId: 2}
 				testProposal := types.NewTextProposal("Proposal", "testing proposal", true)
 				submittedProposal, err := app.GovKeeper.SubmitProposal(ctx, testProposal)
 				suite.Require().NoError(err)
