@@ -105,6 +105,7 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.gov.v1beta1.TextProposal",
 				"description": "bar_text",
+				"is_expedited": false,
 				"title": "foo_text"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",
@@ -131,6 +132,7 @@ func TestMigrate(t *testing.T) {
 					}
 				],
 				"description": "bar_community",
+				"is_expedited": false,
 				"recipient": "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh",
 				"title": "foo_community"
 			},
@@ -152,6 +154,7 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal",
 				"description": "bar_cancel_upgrade",
+				"is_expedited": false,
 				"title": "foo_cancel_upgrade"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",
@@ -172,6 +175,7 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal",
 				"description": "bar_software_upgrade",
+				"is_expedited": false,
 				"plan": {
 					"height": "123",
 					"info": "foo_upgrade_info",
@@ -206,6 +210,7 @@ func TestMigrate(t *testing.T) {
 					}
 				],
 				"description": "bar_param_change",
+				"is_expedited": false,
 				"title": "foo_param_change"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",
@@ -225,12 +230,14 @@ func TestMigrate(t *testing.T) {
 	],
 	"starting_proposal_id": "0",
 	"tally_params": {
+		"expedited_threshold": "0",
 		"quorum": "0",
 		"threshold": "0",
 		"veto_threshold": "0"
 	},
 	"votes": [],
 	"voting_params": {
+		"expedited_voting_period": "0s",
 		"voting_period": "0s"
 	}
 }`
