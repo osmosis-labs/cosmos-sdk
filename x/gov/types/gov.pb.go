@@ -414,7 +414,8 @@ var xxx_messageInfo_DepositParams proto.InternalMessageInfo
 // VotingParams defines the params for voting on governance proposals.
 type VotingParams struct {
 	// voting_period defines the length of the voting period.
-	VotingPeriod          time.Duration          `protobuf:"bytes,1,opt,name=voting_period,json=votingPeriod,proto3,stdduration" json:"voting_period,omitempty" yaml:"voting_period"`
+	VotingPeriod time.Duration `protobuf:"bytes,1,opt,name=voting_period,json=votingPeriod,proto3,stdduration" json:"voting_period,omitempty" yaml:"voting_period"`
+	// proposal_voting_periods defines custom voting periods for proposal types.
 	ProposalVotingPeriods []ProposalVotingPeriod `protobuf:"bytes,2,rep,name=proposal_voting_periods,json=proposalVotingPeriods,proto3" json:"proposal_voting_periods"`
 }
 

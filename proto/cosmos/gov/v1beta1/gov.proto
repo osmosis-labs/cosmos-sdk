@@ -171,6 +171,7 @@ message VotingParams {
     (gogoproto.moretags)    = "yaml:\"voting_period\""
   ];
 
+  // proposal_voting_periods defines custom voting periods for proposal types.
   repeated ProposalVotingPeriod proposal_voting_periods = 2 [(gogoproto.nullable) = false];
 }
 

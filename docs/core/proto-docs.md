@@ -5140,7 +5140,7 @@ VotingParams defines the params for voting on governance proposals.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  | voting_period defines the length of the voting period. |
-| `proposal_voting_periods` | [ProposalVotingPeriod](#cosmos.gov.v1beta1.ProposalVotingPeriod) | repeated |  |
+| `proposal_voting_periods` | [ProposalVotingPeriod](#cosmos.gov.v1beta1.ProposalVotingPeriod) | repeated | proposal_voting_periods defines custom voting periods for proposal types. |
 
 
 
