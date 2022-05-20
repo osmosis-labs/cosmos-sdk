@@ -384,18 +384,26 @@ func TestProposalPassedEndblocker(t *testing.T) {
 	}
 }
 
-func TestExpeditedToRegularConversion(t *testing.T) {
+func TestExpeditedProposal_PassAndConversionToRegular(t *testing.T) {
 	testcases := []struct {
 		name string
+		// flag indicating whether the expedited proposal passes.
+		isExpeditedPasses bool
 		// flag indicating whether the converted regular proposal is expected to eventually pass
 		isRegularEventuallyPassing bool
 	}{
 		{
-			name:                       "expedited to regular - regular eventually passes",
+			name:              "expedited passes and not converted to regular",
+			isExpeditedPasses: true,
+		},
+		{
+			name:                       "expedited fails, converted to regular - regular eventually passes",
+			isExpeditedPasses:          false,
 			isRegularEventuallyPassing: true,
 		},
 		{
-			name:                       "expedited to regular - regular eventually fails",
+			name:                       "expedited fails, converted to regular - regular eventually fails",
+			isExpeditedPasses:          false,
 			isRegularEventuallyPassing: false,
 		},
 	}
@@ -480,10 +488,38 @@ func TestExpeditedToRegularConversion(t *testing.T) {
 
 			activeQueue.Close()
 
+			if tc.isExpeditedPasses {
+				// Validator votes YES, letting the expedited proposal pass.
+				err = app.GovKeeper.AddVote(ctx, proposal.ProposalId, addrs[0], types.NewNonSplitVoteOption(types.OptionYes))
+				require.NoError(t, err)
+			}
+
 			// Here the expedited proposal is converted to regular after expiry.
 			gov.EndBlocker(ctx, app.GovKeeper)
 
 			activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
+
+			if tc.isExpeditedPasses {
+				require.False(t, activeQueue.Valid())
+
+				proposal, ok = app.GovKeeper.GetProposal(ctx, activeProposalID)
+				require.True(t, ok)
+
+				require.Equal(t, types.StatusPassed, proposal.Status)
+
+				submitterEventualBalance := app.BankKeeper.GetAllBalances(ctx, addrs[0])
+				depositorEventualBalance := app.BankKeeper.GetAllBalances(ctx, addrs[1])
+
+				eventualModuleAccCoins := app.BankKeeper.GetAllBalances(ctx, macc.GetAddress())
+
+				// Module account has refunded the deposit
+				require.Equal(t, initialModuleAccCoins, eventualModuleAccCoins)
+
+				require.Equal(t, submitterInitialBalance, submitterEventualBalance)
+				require.Equal(t, depositorInitialBalance, depositorEventualBalance)
+				return
+			}
+
 			// Expedited proposal should be converted to a regular proposal instead.
 			require.True(t, activeQueue.Valid())
 
@@ -518,6 +554,7 @@ func TestExpeditedToRegularConversion(t *testing.T) {
 			require.True(t, activeQueue.Valid())
 
 			if tc.isRegularEventuallyPassing {
+				// Validator votes YES, letting the converted regular proposal pass.
 				err = app.GovKeeper.AddVote(ctx, proposal.ProposalId, addrs[0], types.NewNonSplitVoteOption(types.OptionYes))
 				require.NoError(t, err)
 			}
@@ -532,24 +569,28 @@ func TestExpeditedToRegularConversion(t *testing.T) {
 			submitterEventualBalance := app.BankKeeper.GetAllBalances(ctx, addrs[0])
 			depositorEventualBalance := app.BankKeeper.GetAllBalances(ctx, addrs[1])
 
-			// Module account has refunded the deposit
-			require.Equal(t, initialModuleAccCoins, eventualModuleAccCoins)
-
-			require.Equal(t, submitterInitialBalance, submitterEventualBalance)
-			require.Equal(t, depositorInitialBalance, depositorEventualBalance)
-
 			activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
 			require.False(t, activeQueue.Valid())
 
 			proposal, ok = app.GovKeeper.GetProposal(ctx, activeProposalID)
 			require.True(t, ok)
 
-			if !tc.isRegularEventuallyPassing {
-				require.Equal(t, types.StatusRejected, proposal.Status)
+			if tc.isRegularEventuallyPassing {
+				// Module account has refunded the deposit
+				require.Equal(t, initialModuleAccCoins, eventualModuleAccCoins)
+				require.Equal(t, submitterInitialBalance, submitterEventualBalance)
+				require.Equal(t, depositorInitialBalance, depositorEventualBalance)
+
+				require.Equal(t, types.StatusPassed, proposal.Status)
 				return
 			}
 
-			require.Equal(t, types.StatusPassed, proposal.Status)
+			// Not enough votes - module account has burned the deposit
+			require.Equal(t, initialModuleAccCoins, eventualModuleAccCoins)
+			require.Equal(t, submitterInitialBalance.Sub(proposalCoins), submitterEventualBalance)
+			require.Equal(t, depositorInitialBalance.Sub(proposalCoins), depositorEventualBalance)
+
+			require.Equal(t, types.StatusRejected, proposal.Status)
 		})
 	}
 }
