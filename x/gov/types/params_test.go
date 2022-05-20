@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -70,13 +71,13 @@ func TestVotingParamsGetVotingTime(t *testing.T) {
 		},
 		{
 			name:          "custom expedited",
-			votingParams:  types.NewVotingParams(types.DefaultPeriod, time.Hour),
+			votingParams:  types.NewVotingParams(types.DefaultPeriod, time.Hour, types.DefaultProposalVotingPeriods),
 			expectedValue: time.Hour,
 			isExpedited:   true,
 		},
 		{
 			name:          "default not expedited",
-			votingParams:  types.NewVotingParams(time.Hour, types.DefaultExpeditedPeriod),
+			votingParams:  types.NewVotingParams(time.Hour, types.DefaultExpeditedPeriod, types.DefaultProposalVotingPeriods),
 			expectedValue: time.Hour,
 			isExpedited:   false,
 		},
@@ -85,6 +86,89 @@ func TestVotingParamsGetVotingTime(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			require.Equal(t, tc.expectedValue, tc.votingParams.GetVotingPeriod(tc.isExpedited), tc.name)
+		})
+	}
+}
+
+func TestProposalVotingPeriod_String(t *testing.T) {
+	pvp := types.ProposalVotingPeriod{
+		ProposalType: "cosmos.params.v1beta1.ParameterChangeProposal",
+		VotingPeriod: time.Hour * 24 * 2,
+	}
+	expected := `proposaltype: cosmos.params.v1beta1.ParameterChangeProposal
+voting_period: 48h0m0s
+`
+	require.Equal(t, expected, pvp.String())
+}
+
+func TestProposalVotingPeriods_Equal(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    types.ProposalVotingPeriods
+		other    types.ProposalVotingPeriods
+		expectEq bool
+	}{
+		{
+			name: "equal",
+			input: []types.ProposalVotingPeriod{
+				{
+					ProposalType: "cosmos.params.v1beta1.ParameterChangeProposal",
+					VotingPeriod: time.Hour * 24 * 2,
+				},
+				{
+					ProposalType: "cosmos.upgrade.v1beta1.SoftwareUpgradeProposal",
+					VotingPeriod: time.Hour * 24,
+				},
+			},
+			other: []types.ProposalVotingPeriod{
+				{
+					ProposalType: "cosmos.upgrade.v1beta1.SoftwareUpgradeProposal",
+					VotingPeriod: time.Hour * 24,
+				},
+				{
+					ProposalType: "cosmos.params.v1beta1.ParameterChangeProposal",
+					VotingPeriod: time.Hour * 24 * 2,
+				},
+			},
+			expectEq: true,
+		},
+		{
+			name:     "empty equal",
+			input:    []types.ProposalVotingPeriod{},
+			other:    []types.ProposalVotingPeriod{},
+			expectEq: true,
+		},
+		{
+			name: "not equal",
+			input: []types.ProposalVotingPeriod{
+				{
+					ProposalType: "cosmos.params.v1beta1.ParameterChangeProposal",
+					VotingPeriod: time.Hour,
+				},
+				{
+					ProposalType: "cosmos.upgrade.v1beta1.SoftwareUpgradeProposal",
+					VotingPeriod: time.Hour,
+				},
+			},
+			other: []types.ProposalVotingPeriod{
+				{
+					ProposalType: "cosmos.params.v1beta1.ParameterChangeProposal",
+					VotingPeriod: time.Hour * 24 * 2,
+				},
+				{
+					ProposalType: "cosmos.upgrade.v1beta1.SoftwareUpgradeProposal",
+					VotingPeriod: time.Hour * 24,
+				},
+			},
+			expectEq: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.expectEq, tc.input.Equal(tc.other))
 		})
 	}
 }
