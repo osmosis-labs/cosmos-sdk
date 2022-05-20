@@ -31,7 +31,7 @@ type Keeper struct {
 	storeKey           sdk.StoreKey                    // key to access x/upgrade store
 	cdc                codec.BinaryCodec               // App-wide binary codec
 	upgradeHandlers    map[string]types.UpgradeHandler // map of plan name to upgrade handler
-	baseapp            xp.ProtocolVersionSetter        // implements setting the protocol version field on BaseApp
+	versionSetter      xp.ProtocolVersionSetter        // implements setting the protocol version field on BaseApp
 }
 
 // NewKeeper constructs an upgrade Keeper which requires the following arguments:
@@ -47,7 +47,7 @@ func NewKeeper(skipUpgradeHeights map[int64]bool, storeKey sdk.StoreKey, cdc cod
 		storeKey:           storeKey,
 		cdc:                cdc,
 		upgradeHandlers:    map[string]types.UpgradeHandler{},
-		baseapp:            vs,
+		versionSetter:      vs,
 	}
 }
 
@@ -308,9 +308,9 @@ func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
 	// increment the protocol version and set it in state and baseapp
 	nextProtocolVersion := k.getProtocolVersion(ctx) + 1
 	k.setProtocolVersion(ctx, nextProtocolVersion)
-	if k.baseapp != nil {
+	if k.versionSetter != nil {
 		// set protocol version on BaseApp
-		k.baseapp.SetProtocolVersion(nextProtocolVersion)
+		k.versionSetter.SetProtocolVersion(nextProtocolVersion)
 	}
 
 	// Must clear IBC state after upgrade is applied as it is stored separately from the upgrade plan.
