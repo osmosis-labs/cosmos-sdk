@@ -107,7 +107,11 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
-	appVersion := app.GetProtocolVersion()
+	appVersion, err := app.GetProtocolVersion(app.deliverState.ctx)
+	if err != nil {
+		app.logger.Error("failed to get propocol version, the returned 0 is invalid", err)
+	}
+
 	return abci.ResponseInfo{
 		Data:             app.name,
 		Version:          app.version,

@@ -498,6 +498,7 @@ func TestTxDecoder(t *testing.T) {
 func TestInfo(t *testing.T) {
 	app := newBaseApp(t.Name())
 	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
+	app.InitChain(abci.RequestInitChain{})
 
 	// ----- test an empty response -------
 	reqInfo := abci.RequestInfo{}
@@ -508,9 +509,11 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, t.Name(), res.GetData())
 	assert.Equal(t, int64(0), res.LastBlockHeight)
 	require.Equal(t, []uint8(nil), res.LastBlockAppHash)
-	require.Equal(t, app.GetProtocolVersion(), res.AppVersion)
-	// ----- test a proper response -------
-	// TODO
+
+	protocolVersion, err := app.GetProtocolVersion(app.deliverState.ctx)
+	require.NoError(t, err)
+
+	assert.Equal(t, protocolVersion, res.AppVersion)
 }
 
 func TestBaseAppOptionSeal(t *testing.T) {
@@ -2242,7 +2245,7 @@ func TestBaseApp_EndBlock(t *testing.T) {
 	require.Equal(t, cp.Block.MaxGas, res.ConsensusParamUpdates.Block.MaxGas)
 }
 
-func TestBaseApp_Init(t *testing.T) {
+func TestBaseApp_Init_PruningAndSnapshot(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
 	logger := defaultLogger()
@@ -2423,5 +2426,51 @@ func TestBaseApp_Init(t *testing.T) {
 
 		require.Equal(t, tc.expectedSnapshot.Interval, tc.bapp.snapshotManager.GetInterval())
 		require.Equal(t, tc.expectedSnapshot.KeepRecent, tc.bapp.snapshotManager.GetKeepRecent())
+	}
+}
+
+func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
+	const versionNotSet = -1
+
+	testcases := []struct {
+		name            string
+		protocolVersion int64
+	}{
+		{
+			name:            "no protocol version was set - set to 0",
+			protocolVersion: versionNotSet,
+		},
+		{
+			name:            "protocol version was set to 10 - 10 kept",
+			protocolVersion: 10,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			app := newBaseApp(t.Name())
+			db := dbm.NewMemDB()
+
+			app.SetParamStore(&paramStore{db})
+
+			var expectedProtocolVersion uint64
+			if tc.protocolVersion != versionNotSet {
+				// Set version on another app with the same param store (db),
+				// pretending that the protocol version was set on the app in advance.
+				oldApp := newBaseApp(t.Name())
+				oldApp.SetParamStore(&paramStore{db})
+				require.NoError(t, oldApp.init())
+
+				expectedProtocolVersion = uint64(tc.protocolVersion)
+				require.NoError(t, oldApp.SetProtocolVersion(oldApp.checkState.ctx, expectedProtocolVersion))
+			}
+
+			require.NoError(t, app.init())
+
+			actualProtocolVersion, err := app.GetProtocolVersion(app.checkState.ctx)
+			require.NoError(t, err)
+
+			require.Equal(t, expectedProtocolVersion, actualProtocolVersion)
+		})
 	}
 }

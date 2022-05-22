@@ -19,6 +19,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
+	upgrade "github.com/cosmos/cosmos-sdk/x/upgrade/exported"
 )
 
 const (
@@ -127,6 +128,8 @@ type BaseApp struct { // nolint: maligned
 	// which informs Tendermint what to index. If empty, all events will be indexed.
 	indexEvents map[string]struct{}
 }
+
+var _ upgrade.ProtocolVersionManager = (*BaseApp)(nil)
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
 // variadic number of option functions, which act on the BaseApp to set
@@ -305,6 +308,17 @@ func (app *BaseApp) init() error {
 
 	// needed for the export command which inits from store but never calls initchain
 	app.setCheckState(tmproto.Header{})
+
+	// If there is no protocol version set in the store, we should set it to 0.
+	// Panic on any other error.
+	protocolVersion, err := app.GetProtocolVersion(app.checkState.ctx)
+	if err != nil && err.Error() != errMsgNoProtocolVersionSet {
+		return err
+	}
+
+	if err := app.SetProtocolVersion(app.checkState.ctx, protocolVersion); err != nil {
+		return err
+	}
 	app.Seal()
 
 	rms, ok := app.cms.(*rootmulti.Store)
