@@ -3,7 +3,6 @@ package baseapp
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -27,6 +26,7 @@ import (
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	snaphotstestutil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -39,49 +39,12 @@ var (
 	capKey2 = sdk.NewKVStoreKey("key2")
 )
 
-type paramStore struct {
-	db *dbm.MemDB
-}
-
 type setupConfig struct {
 	blocks            uint64
 	blockTxs          int
 	snapshotInterval  uint64
 	snapshotKeepEvery uint32
 	pruningOpts       pruningtypes.PruningOptions
-}
-
-func (ps *paramStore) Set(_ sdk.Context, key []byte, value interface{}) {
-	bz, err := json.Marshal(value)
-	if err != nil {
-		panic(err)
-	}
-
-	ps.db.Set(key, bz)
-}
-
-func (ps *paramStore) Has(_ sdk.Context, key []byte) bool {
-	ok, err := ps.db.Has(key)
-	if err != nil {
-		panic(err)
-	}
-
-	return ok
-}
-
-func (ps *paramStore) Get(_ sdk.Context, key []byte, ptr interface{}) {
-	bz, err := ps.db.Get(key)
-	if err != nil {
-		panic(err)
-	}
-
-	if len(bz) == 0 {
-		return
-	}
-
-	if err := json.Unmarshal(bz, ptr); err != nil {
-		panic(err)
-	}
 }
 
 func defaultLogger() log.Logger {
@@ -122,7 +85,7 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) (*BaseApp, error) {
 	require.Equal(t, t.Name(), app.Name())
 
 	app.MountStores(capKey1, capKey2)
-	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
 	// stores are mounted
 	err := app.LoadLatestVersion()
@@ -497,7 +460,7 @@ func TestTxDecoder(t *testing.T) {
 // Test that Info returns the latest committed state.
 func TestInfo(t *testing.T) {
 	app := newBaseApp(t.Name())
-	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 	app.InitChain(abci.RequestInitChain{})
 
 	// ----- test an empty response -------
@@ -2225,7 +2188,7 @@ func TestBaseApp_EndBlock(t *testing.T) {
 	}
 
 	app := NewBaseApp(name, logger, db, nil)
-	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 	app.InitChain(abci.RequestInitChain{
 		ConsensusParams: cp,
 	})
@@ -2451,14 +2414,14 @@ func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
 			app := newBaseApp(t.Name())
 			db := dbm.NewMemDB()
 
-			app.SetParamStore(&paramStore{db})
+			app.SetParamStore(&mock.ParamStore{db})
 
 			var expectedProtocolVersion uint64
 			if tc.protocolVersion != versionNotSet {
 				// Set version on another app with the same param store (db),
 				// pretending that the protocol version was set on the app in advance.
 				oldApp := newBaseApp(t.Name())
-				oldApp.SetParamStore(&paramStore{db})
+				oldApp.SetParamStore(&mock.ParamStore{db})
 				require.NoError(t, oldApp.init())
 
 				expectedProtocolVersion = uint64(tc.protocolVersion)
