@@ -618,6 +618,24 @@ func TestInitChainer(t *testing.T) {
 	require.Equal(t, value, res.Value)
 }
 
+func TestInitChain_ProtocolVersionSetToZero(t *testing.T) {
+	name := t.Name()
+	db := dbm.NewMemDB()
+	logger := defaultLogger()
+	app := NewBaseApp(name, logger, db, nil)
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
+
+	app.InitChain(
+		abci.RequestInitChain{
+			InitialHeight: 3,
+		},
+	)
+
+	protocolVersion, err := app.GetProtocolVersion(app.deliverState.ctx)
+	require.NoError(t, err)
+	require.Equal(t, uint64(0), protocolVersion)
+}
+
 func TestInitChain_WithInitialHeight(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
