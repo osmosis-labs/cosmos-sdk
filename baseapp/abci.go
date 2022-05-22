@@ -45,6 +45,10 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	app.setDeliverState(initHeader)
 	app.setCheckState(initHeader)
 
+	if err := app.SetProtocolVersion(app.deliverState.ctx, 0); err != nil {
+		panic(err)
+	}
+
 	// Store the consensus params in the BaseApp's paramstore. Note, this must be
 	// done after the deliver state and context have been set as it's persisted
 	// to state.
