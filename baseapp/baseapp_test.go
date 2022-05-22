@@ -2372,6 +2372,8 @@ func TestBaseApp_Init_PruningAndSnapshot(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tc.bapp.SetParamStore(&mock.ParamStore{db})
+
 		// Init and validate
 		require.Equal(t, tc.expectedErr, tc.bapp.init())
 		if tc.expectedErr != nil {
