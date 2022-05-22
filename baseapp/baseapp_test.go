@@ -181,6 +181,7 @@ func TestLoadVersion(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 
 	// make a cap key and mount the store
 	err := app.LoadLatestVersion() // needed to make stores non-nil
@@ -208,6 +209,7 @@ func TestLoadVersion(t *testing.T) {
 
 	// reload with LoadLatestVersion
 	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 	app.MountStores()
 	err = app.LoadLatestVersion()
 	require.Nil(t, err)
@@ -216,6 +218,7 @@ func TestLoadVersion(t *testing.T) {
 	// reload with LoadVersion, see if you can commit the same block and get
 	// the same result
 	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 	err = app.LoadVersion(1)
 	require.Nil(t, err)
 	testLoadVersionHelper(t, app, int64(1), commitID1)
@@ -295,6 +298,7 @@ func TestSetLoader(t *testing.T) {
 				opts = append(opts, tc.setLoader)
 			}
 			app := NewBaseApp(t.Name(), defaultLogger(), db, nil, opts...)
+			app.SetParamStore(&mock.ParamStore{Db: db})
 			app.MountStores(sdk.NewKVStoreKey(tc.loadStoreKey))
 			err := app.LoadLatestVersion()
 			require.Nil(t, err)
@@ -337,6 +341,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil, pruningOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 
 	err := app.LoadLatestVersion()
 	require.Nil(t, err)
@@ -352,6 +357,7 @@ func TestLoadVersionInvalid(t *testing.T) {
 
 	// create a new app with the stores mounted under the same cap key
 	app = NewBaseApp(name, logger, db, nil, pruningOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 
 	// require we can load the latest version
 	err = app.LoadVersion(1)
@@ -375,6 +381,7 @@ func TestLoadVersionPruning(t *testing.T) {
 	snapshotOpt := SetSnapshot(snapshotStore, snapshottypes.NewSnapshotOptions(3, 1))
 
 	app := NewBaseApp(name, logger, db, nil, pruningOpt, snapshotOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 
 	// make a cap key and mount the store
 	capKey := sdk.NewKVStoreKey("key1")
@@ -413,6 +420,7 @@ func TestLoadVersionPruning(t *testing.T) {
 
 	// reload with LoadLatestVersion, check it loads last version
 	app = NewBaseApp(name, logger, db, nil, pruningOpt, snapshotOpt)
+	app.SetParamStore(&mock.ParamStore{Db: db})
 	app.MountStores(capKey)
 
 	err = app.LoadLatestVersion()
@@ -615,6 +623,7 @@ func TestInitChain_WithInitialHeight(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := defaultLogger()
 	app := NewBaseApp(name, logger, db, nil)
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
 	app.InitChain(
 		abci.RequestInitChain{
@@ -631,6 +640,7 @@ func TestBeginBlock_WithInitialHeight(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := defaultLogger()
 	app := NewBaseApp(name, logger, db, nil)
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
 	app.InitChain(
 		abci.RequestInitChain{
