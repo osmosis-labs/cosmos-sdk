@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -312,7 +313,7 @@ func (app *BaseApp) init() error {
 	// If there is no protocol version set in the store, we should set it to 0.
 	// Panic on any other error.
 	protocolVersion, err := app.GetProtocolVersion(app.checkState.ctx)
-	if err != nil && err.Error() != errMsgNoProtocolVersionSet {
+	if err != nil && !errors.Is(err, errMsgNoProtocolVersionSet) {
 		return err
 	}
 

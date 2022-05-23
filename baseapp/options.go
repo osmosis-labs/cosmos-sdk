@@ -16,9 +16,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const (
-	errMsgNilParamStore        = "paramStore was nil"
-	errMsgNoProtocolVersionSet = "param store did not have the protocol version set"
+var (
+	errMsgNilParamStore        = errors.New("paramStore was nil")
+	errMsgNoProtocolVersionSet = errors.New("param store did not have the protocol version set")
 )
 
 // File for storing in-package BaseApp optional functions,
@@ -109,7 +109,7 @@ func (app *BaseApp) SetVersion(v string) {
 // SetProtocolVersion sets the application's protocol version
 func (app *BaseApp) SetProtocolVersion(ctx sdk.Context, v uint64) error {
 	if app.paramStore == nil {
-		return errors.New(errMsgNilParamStore)
+		return errMsgNilParamStore
 	}
 
 	av := &tmproto.VersionParams{AppVersion: v}
@@ -121,11 +121,11 @@ func (app *BaseApp) SetProtocolVersion(ctx sdk.Context, v uint64) error {
 // an error, if any.
 func (app *BaseApp) GetProtocolVersion(ctx sdk.Context) (uint64, error) {
 	if app.paramStore == nil {
-		return 0, errors.New(errMsgNilParamStore)
+		return 0, errMsgNilParamStore
 	}
 
 	if !app.paramStore.Has(ctx, ParamStoreKeyVersionParams) {
-		return 0, errors.New(errMsgNoProtocolVersionSet)
+		return 0, errMsgNoProtocolVersionSet
 	}
 
 	av := &tmproto.VersionParams{}
