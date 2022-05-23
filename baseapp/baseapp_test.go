@@ -2432,11 +2432,11 @@ func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
 		protocolVersion int64
 	}{
 		{
-			name:            "no protocol version was set - set to 0",
+			name:            "no app version was set - set to 0",
 			protocolVersion: versionNotSet,
 		},
 		{
-			name:            "protocol version was set to 10 - 10 kept",
+			name:            "app version was set to 10 - 10 kept",
 			protocolVersion: 10,
 		},
 	}
@@ -2451,13 +2451,13 @@ func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
 			var expectedProtocolVersion uint64
 			if tc.protocolVersion != versionNotSet {
 				// Set version on another app with the same param store (db),
-				// pretending that the protocol version was set on the app in advance.
+				// pretending that the app version was set on the app in advance.
 				oldApp := newBaseApp(t.Name())
 				oldApp.SetParamStore(&mock.ParamStore{db})
 				require.NoError(t, oldApp.init())
 
 				expectedProtocolVersion = uint64(tc.protocolVersion)
-				require.NoError(t, oldApp.SetProtocolVersion(oldApp.checkState.ctx, expectedProtocolVersion))
+				require.NoError(t, oldApp.SetAppVersion(oldApp.checkState.ctx, expectedProtocolVersion))
 			}
 
 			require.NoError(t, app.init())

@@ -45,7 +45,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	app.setDeliverState(initHeader)
 	app.setCheckState(initHeader)
 
-	if err := app.SetProtocolVersion(app.deliverState.ctx, 0); err != nil {
+	if err := app.SetAppVersion(app.deliverState.ctx, 0); err != nil {
 		panic(err)
 	}
 
@@ -113,7 +113,7 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 
 	appVersion, err := app.GetAppVersion(app.checkState.ctx)
 	if err != nil {
-		app.logger.Error("failed to get protocol version", err)
+		app.logger.Error("failed to get app version", err)
 	}
 
 	return abci.ResponseInfo{

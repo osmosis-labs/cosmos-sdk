@@ -289,7 +289,7 @@ func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
 		if err != nil {
 			panic(err)
 		}
-		if err := k.versionManager.SetProtocolVersion(ctx, appVersion+1); err != nil {
+		if err := k.versionManager.SetAppVersion(ctx, appVersion+1); err != nil {
 			panic(err)
 		}
 	}
