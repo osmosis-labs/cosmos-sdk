@@ -113,7 +113,7 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 
 	appVersion, err := app.GetProtocolVersion(app.checkState.ctx)
 	if err != nil {
-		app.logger.Error("failed to get propocol version, the returned 0 is invalid", err)
+		app.logger.Error("failed to get protocol version", err)
 	}
 
 	return abci.ResponseInfo{
