@@ -481,10 +481,10 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, int64(0), res.LastBlockHeight)
 	require.Equal(t, []uint8(nil), res.LastBlockAppHash)
 
-	protocolVersion, err := app.GetProtocolVersion(app.deliverState.ctx)
+	appVersion, err := app.GetAppVersion(app.deliverState.ctx)
 	require.NoError(t, err)
 
-	assert.Equal(t, protocolVersion, res.AppVersion)
+	assert.Equal(t, appVersion, res.AppVersion)
 }
 
 func TestBaseAppOptionSeal(t *testing.T) {
@@ -631,7 +631,7 @@ func TestInitChain_ProtocolVersionSetToZero(t *testing.T) {
 		},
 	)
 
-	protocolVersion, err := app.GetProtocolVersion(app.deliverState.ctx)
+	protocolVersion, err := app.GetAppVersion(app.deliverState.ctx)
 	require.NoError(t, err)
 	require.Equal(t, uint64(0), protocolVersion)
 }
@@ -2462,7 +2462,7 @@ func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
 
 			require.NoError(t, app.init())
 
-			actualProtocolVersion, err := app.GetProtocolVersion(app.checkState.ctx)
+			actualProtocolVersion, err := app.GetAppVersion(app.checkState.ctx)
 			require.NoError(t, err)
 
 			require.Equal(t, expectedProtocolVersion, actualProtocolVersion)

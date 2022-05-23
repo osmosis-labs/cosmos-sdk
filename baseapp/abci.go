@@ -111,7 +111,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
-	appVersion, err := app.GetProtocolVersion(app.checkState.ctx)
+	appVersion, err := app.GetAppVersion(app.checkState.ctx)
 	if err != nil {
 		app.logger.Error("failed to get protocol version", err)
 	}

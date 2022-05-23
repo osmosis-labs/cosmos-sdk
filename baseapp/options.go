@@ -119,7 +119,7 @@ func (app *BaseApp) SetProtocolVersion(ctx sdk.Context, v uint64) error {
 
 // GetProtocolVersion gets the application's protocol version
 // an error, if any.
-func (app *BaseApp) GetProtocolVersion(ctx sdk.Context) (uint64, error) {
+func (app *BaseApp) GetAppVersion(ctx sdk.Context) (uint64, error) {
 	if app.paramStore == nil {
 		return 0, errMsgNilParamStore
 	}

@@ -285,11 +285,11 @@ func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
 
 	if k.versionManager != nil {
 		// increment the protocol version and set it in state and baseapp
-		protocolVersion, err := k.versionManager.GetProtocolVersion(ctx)
+		appVersion, err := k.versionManager.GetAppVersion(ctx)
 		if err != nil {
 			panic(err)
 		}
-		if err := k.versionManager.SetProtocolVersion(ctx, protocolVersion+1); err != nil {
+		if err := k.versionManager.SetProtocolVersion(ctx, appVersion+1); err != nil {
 			panic(err)
 		}
 	}

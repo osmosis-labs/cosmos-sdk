@@ -312,12 +312,12 @@ func (app *BaseApp) init() error {
 
 	// If there is no protocol version set in the store, we should set it to 0.
 	// Panic on any other error.
-	protocolVersion, err := app.GetProtocolVersion(app.checkState.ctx)
+	appVersion, err := app.GetAppVersion(app.checkState.ctx)
 	if err != nil && !errors.Is(err, errMsgNoProtocolVersionSet) {
 		return err
 	}
 
-	if err := app.SetProtocolVersion(app.checkState.ctx, protocolVersion); err != nil {
+	if err := app.SetProtocolVersion(app.checkState.ctx, appVersion); err != nil {
 		return err
 	}
 	app.Seal()
