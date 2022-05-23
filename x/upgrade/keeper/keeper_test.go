@@ -194,7 +194,7 @@ func (s *KeeperTestSuite) TestSetUpgradedClient() {
 
 }
 
-// Test that the protocol version successfully increments after an
+// Test that the app version successfully increments after an
 // upgrade and is successfully set on BaseApp's appVersion.
 func (s *KeeperTestSuite) TestIncrementAppVersion() {
 	oldAppVersion, err := s.app.BaseApp.GetAppVersion(s.ctx)

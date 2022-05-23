@@ -31,7 +31,7 @@ type Keeper struct {
 	storeKey           sdk.StoreKey                    // key to access x/upgrade store
 	cdc                codec.BinaryCodec               // App-wide binary codec
 	upgradeHandlers    map[string]types.UpgradeHandler // map of plan name to upgrade handler
-	versionManager     xp.ProtocolVersionManager       // implements setting the protocol version field on BaseApp
+	versionManager     xp.ProtocolVersionManager       // implements setting the app version field on BaseApp
 }
 
 // NewKeeper constructs an upgrade Keeper which requires the following arguments:
@@ -39,7 +39,7 @@ type Keeper struct {
 // storeKey - a store key with which to access upgrade's store
 // cdc - the app-wide binary codec
 // homePath - root directory of the application's config
-// vs - the interface implemented by baseapp which allows setting baseapp's protocol version field
+// vs - the interface implemented by baseapp which allows setting baseapp's app version field
 func NewKeeper(skipUpgradeHeights map[int64]bool, storeKey sdk.StoreKey, cdc codec.BinaryCodec, homePath string, vs xp.ProtocolVersionManager) Keeper {
 	return Keeper{
 		homePath:           homePath,
@@ -284,7 +284,7 @@ func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
 	k.SetModuleVersionMap(ctx, updatedVM)
 
 	if k.versionManager != nil {
-		// increment the protocol version and set it in state and baseapp
+		// increment the app version and set it in state and baseapp
 		appVersion, err := k.versionManager.GetAppVersion(ctx)
 		if err != nil {
 			panic(err)
