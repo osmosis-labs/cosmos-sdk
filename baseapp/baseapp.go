@@ -115,7 +115,7 @@ type BaseApp struct { // nolint: maligned
 	// ResponseCommit.RetainHeight.
 	minRetainBlocks uint64
 
-	// version represents the application software semantic version.
+	// version represents the application software semantic version
 	version string
 
 	// recovery handler for app.runTx method
