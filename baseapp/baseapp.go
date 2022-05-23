@@ -312,6 +312,7 @@ func (app *BaseApp) init() error {
 
 	// If there is no app version set in the store, we should set it to 0.
 	// Panic on any other error.
+	// If errMsgNoProtocolVersionSet, we assume that appVersion is assigned to be 0.
 	appVersion, err := app.GetAppVersion(app.checkState.ctx)
 	if err != nil && !errors.Is(err, errMsgNoProtocolVersionSet) {
 		return err
