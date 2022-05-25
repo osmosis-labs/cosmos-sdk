@@ -80,7 +80,7 @@ $ %s query gov proposal 1
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.Proposal)
+			return clientCtx.PrintProto(res.Proposal)
 		},
 	}
 
@@ -535,7 +535,7 @@ $ %s query gov tally 1
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.Tally)
+			return clientCtx.PrintProto(res.Tally)
 		},
 	}
 
