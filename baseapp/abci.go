@@ -2,6 +2,7 @@ package baseapp
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -755,6 +756,24 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) abci.Res
 				Codespace: sdkerrors.RootCodespace,
 				Height:    req.Height,
 				Value:     []byte(app.version),
+			}
+
+		case "snapshots":
+
+			response := app.ListSnapshots(abci.RequestListSnapshots{})
+
+			var responseValue []byte
+
+			responseValue, err := json.Marshal(response)
+
+			if err != nil {
+				responseValue = []byte(err.Error())
+			}
+
+			return abci.ResponseQuery{
+				Codespace: sdkerrors.RootCodespace,
+				Height:    req.Height,
+				Value:     responseValue,
 			}
 
 		default:
