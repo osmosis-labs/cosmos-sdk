@@ -70,8 +70,7 @@ func StatusCommand() *cobra.Command {
 				return err
 			}
 
-			cmd.Println(string(output))
-			return nil
+			return clientCtx.PrintBytes(output)
 		},
 	}
 
