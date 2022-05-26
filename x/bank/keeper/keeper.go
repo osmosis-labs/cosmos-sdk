@@ -328,10 +328,17 @@ func (k BaseKeeper) IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metad
 	}
 }
 
-// SetDenomMetaData sets denomination metadata. Note, it is the caller's
-// responsibility to ensure they are not overwriting denomination metadata for
-// assets with the same base denom, or rather to ensure that metadata cannot
-// exist for more than one base denom.
+// SetDenomMetaData sets denomination metadata. It also stores a reverse lookup
+// key from each of the denom's base units to the base denom itself, allowing a
+// caller to be able to query for the base denom without knowing it ahead of time,
+// only requiring knowledge of any given denom unit. E.g. a caller could fetch
+// the base denom of an ATOM IBC asset using the denom unit of 'uatom'.
+//
+// Note, it is the caller's responsibility to ensure they are not overwriting
+// denomination metadata for assets with the same base denom, or rather to
+// ensure that metadata cannot exist for more than one base denom. The same
+// applies for base units. In other words, the caller must ensure base denoms
+// and their denom units are globally unique.
 func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetadata types.Metadata) {
 	store := ctx.KVStore(k.storeKey)
 	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataKey(denomMetadata.Base))
