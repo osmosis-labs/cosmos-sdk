@@ -35,11 +35,11 @@ type Keeper interface {
 	GetSupplyWithOffset(ctx sdk.Context, denom string) sdk.Coin
 	GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
 	IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(sdk.Coin) bool)
+	GetBaseDenom(ctx sdk.Context, denom string) (string, bool)
 
 	GetDenomMetaData(ctx sdk.Context, denom string) (types.Metadata, bool)
 	SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata)
 	IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool)
-	GetBaseDenomFromMetadata(ctx sdk.Context, denom string) (string, bool)
 
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToManyAccounts(
@@ -356,17 +356,23 @@ func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetadata types.Metada
 	}
 }
 
-// GetBaseDenomFromMetadata queries for a base denom, via metadata, given a denom
-// that can either be the base denom itself, or a denom unit that maps to the
-// base denom. If the denom is not found via either the primary metadata key
-// or via the reverse denom unit key, ("", false) is returned, otherwise, we
-// return (<baseDenom>, true).
-func (k BaseKeeper) GetBaseDenomFromMetadata(ctx sdk.Context, denom string) (string, bool) {
+// GetBaseDenom queries for a base denom, given a denom that can either be the
+// base denom itself, or a metadata denom unit, that maps to the base denom. There
+// are three cases where we can find the base denom:
+//
+// 1. The denom provided is already the base denom, which means we'll have
+// supply for it.
+// 2. The denom provided is already the base denom, which we can get from
+// metadata, but that does not necessarily need to exist.
+// 3. The denom provided is a metadata denom unit that maps to the base denom.
+//
+// We can skip case (2) as case (1) should handle that for us. If the base denom
+// exists, we return (<baseDenom>, true), otherwise, we return ("", false).
+func (k BaseKeeper) GetBaseDenom(ctx sdk.Context, denom string) (string, bool) {
 	store := ctx.KVStore(k.storeKey)
 
 	// first, check if the provided denom is already the base denom
-	prefixStore := prefix.NewStore(store, types.DenomMetadataKey(denom))
-	if prefixStore.Has([]byte(denom)) {
+	if k.HasSupply(ctx, denom) {
 		return denom, true
 	}
 

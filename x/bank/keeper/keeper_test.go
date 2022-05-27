@@ -1074,12 +1074,12 @@ func (suite *IntegrationTestSuite) TestSetDenomMetaData() {
 	// require reverse indexes are stored correctly
 	expBaseDenom := expMetadata[0].Base
 	for _, denomUnit := range expMetadata[0].DenomUnits {
-		gotBaseDenom, ok := bk.GetBaseDenomFromMetadata(ctx, denomUnit.Denom)
+		gotBaseDenom, ok := bk.GetBaseDenom(ctx, denomUnit.Denom)
 		suite.Require().True(ok)
 		suite.Require().Equal(expBaseDenom, gotBaseDenom)
 	}
 
-	gotBaseDenom, ok := bk.GetBaseDenomFromMetadata(ctx, "NON_EXISTENT_DENOM_UNIT")
+	gotBaseDenom, ok := bk.GetBaseDenom(ctx, "NON_EXISTENT_DENOM_UNIT")
 	suite.Require().False(ok)
 	suite.Require().Empty(gotBaseDenom)
 }
