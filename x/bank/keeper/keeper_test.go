@@ -1055,21 +1055,33 @@ func (suite *IntegrationTestSuite) TestUndelegateCoins_Invalid() {
 
 func (suite *IntegrationTestSuite) TestSetDenomMetaData() {
 	app, ctx := suite.app, suite.ctx
-
-	metadata := suite.getTestMetadata()
+	bk := app.BankKeeper
+	expMetadata := suite.getTestMetadata()
 
 	for i := range []int{1, 2} {
-		app.BankKeeper.SetDenomMetaData(ctx, metadata[i])
+		bk.SetDenomMetaData(ctx, expMetadata[i])
 	}
 
-	actualMetadata, found := app.BankKeeper.GetDenomMetaData(ctx, metadata[1].Base)
+	gotMetadata, found := bk.GetDenomMetaData(ctx, expMetadata[1].Base)
 	suite.Require().True(found)
-	suite.Require().Equal(metadata[1].GetBase(), actualMetadata.GetBase())
-	suite.Require().Equal(metadata[1].GetDisplay(), actualMetadata.GetDisplay())
-	suite.Require().Equal(metadata[1].GetDescription(), actualMetadata.GetDescription())
-	suite.Require().Equal(metadata[1].GetDenomUnits()[1].GetDenom(), actualMetadata.GetDenomUnits()[1].GetDenom())
-	suite.Require().Equal(metadata[1].GetDenomUnits()[1].GetExponent(), actualMetadata.GetDenomUnits()[1].GetExponent())
-	suite.Require().Equal(metadata[1].GetDenomUnits()[1].GetAliases(), actualMetadata.GetDenomUnits()[1].GetAliases())
+	suite.Require().Equal(expMetadata[1].GetBase(), gotMetadata.GetBase())
+	suite.Require().Equal(expMetadata[1].GetDisplay(), gotMetadata.GetDisplay())
+	suite.Require().Equal(expMetadata[1].GetDescription(), gotMetadata.GetDescription())
+	suite.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetDenom(), gotMetadata.GetDenomUnits()[1].GetDenom())
+	suite.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetExponent(), gotMetadata.GetDenomUnits()[1].GetExponent())
+	suite.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetAliases(), gotMetadata.GetDenomUnits()[1].GetAliases())
+
+	// require reverse indexes are stored correctly
+	expBaseDenom := expMetadata[0].Base
+	for _, denomUnit := range expMetadata[0].DenomUnits {
+		gotBaseDenom, ok := bk.GetBaseDenomFromMetadata(ctx, denomUnit.Denom)
+		suite.Require().True(ok)
+		suite.Require().Equal(expBaseDenom, gotBaseDenom)
+	}
+
+	gotBaseDenom, ok := bk.GetBaseDenomFromMetadata(ctx, "NON_EXISTENT_DENOM_UNIT")
+	suite.Require().False(ok)
+	suite.Require().Empty(gotBaseDenom)
 }
 
 func (suite *IntegrationTestSuite) TestIterateAllDenomMetaData() {
@@ -1196,26 +1208,27 @@ func (suite *IntegrationTestSuite) TestBalanceTrackingEvents() {
 }
 
 func (suite *IntegrationTestSuite) getTestMetadata() []types.Metadata {
-	return []types.Metadata{{
-		Name:        "Cosmos Hub Atom",
-		Symbol:      "ATOM",
-		Description: "The native staking token of the Cosmos Hub.",
-		DenomUnits: []*types.DenomUnit{
-			{"uatom", uint32(0), []string{"microatom"}},
-			{"matom", uint32(3), []string{"milliatom"}},
-			{"atom", uint32(6), nil},
+	return []types.Metadata{
+		{
+			Name:        "Cosmos Hub Atom",
+			Symbol:      "ATOM",
+			Description: "The native staking token of the Cosmos Hub.",
+			DenomUnits: []*types.DenomUnit{
+				{Denom: "uatom", Exponent: uint32(0), Aliases: []string{"microatom"}},
+				{Denom: "matom", Exponent: uint32(3), Aliases: []string{"milliatom"}},
+				{Denom: "atom", Exponent: uint32(6), Aliases: nil},
+			},
+			Base:    "uatom",
+			Display: "atom",
 		},
-		Base:    "uatom",
-		Display: "atom",
-	},
 		{
 			Name:        "Token",
 			Symbol:      "TOKEN",
 			Description: "The native staking token of the Token Hub.",
 			DenomUnits: []*types.DenomUnit{
-				{"1token", uint32(5), []string{"decitoken"}},
-				{"2token", uint32(4), []string{"centitoken"}},
-				{"3token", uint32(7), []string{"dekatoken"}},
+				{Denom: "1token", Exponent: uint32(5), Aliases: []string{"decitoken"}},
+				{Denom: "2token", Exponent: uint32(4), Aliases: []string{"centitoken"}},
+				{Denom: "3token", Exponent: uint32(7), Aliases: []string{"dekatoken"}},
 			},
 			Base:    "utoken",
 			Display: "token",

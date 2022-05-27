@@ -35,9 +35,11 @@ type Keeper interface {
 	GetSupplyWithOffset(ctx sdk.Context, denom string) sdk.Coin
 	GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
 	IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(sdk.Coin) bool)
+
 	GetDenomMetaData(ctx sdk.Context, denom string) (types.Metadata, bool)
 	SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata)
 	IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool)
+	GetBaseDenomFromMetadata(ctx sdk.Context, denom string) (string, bool)
 
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToManyAccounts(
