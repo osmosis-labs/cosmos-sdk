@@ -346,12 +346,36 @@ func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetadata types.Metada
 	m := k.cdc.MustMarshal(&denomMetadata)
 	denomMetaDataStore.Set([]byte(denomMetadata.Base), m)
 
-	// Store denom units under a separate store that act as a reverse lookup to
-	// the base denom and the corresponding metadata.
+	// Store denom units under a separate store that acts as a reverse lookup index
+	// to the base denom and the corresponding metadata.
 	denomMetadataReverseStore := prefix.NewStore(store, types.DenomMetadataReversePrefix)
 	for _, unit := range denomMetadata.DenomUnits {
 		denomMetadataReverseStore.Set([]byte(unit.Denom), []byte(denomMetadata.Base))
 	}
+}
+
+// GetBaseDenomFromMetadata queries for a base denom, via metadata, given a denom
+// that can either be the base denom itself, or a denom unit that maps to the
+// base denom. If the denom is not found via either the primary metadata key
+// or via the reverse denom unit key, ("", false) is returned, otherwise, we
+// return (<baseDenom>, true).
+func (k BaseKeeper) GetBaseDenomFromMetadata(ctx sdk.Context, denom string) (string, bool) {
+	store := ctx.KVStore(k.storeKey)
+
+	// first, check if the provided denom is already the base denom
+	prefixStore := prefix.NewStore(store, types.DenomMetadataKey(denom))
+	if prefixStore.Has([]byte(denom)) {
+		return denom, true
+	}
+
+	// otherwise, check for a denom unit and return the corresponding base denom
+	reversePrefixStore := prefix.NewStore(store, types.DenomMetadataReversePrefix)
+	if bz := reversePrefixStore.Get([]byte(denom)); len(bz) > 0 {
+		// the value is the base denom
+		return string(bz), true
+	}
+
+	return "", false
 }
 
 // SendCoinsFromModuleToAccount transfers coins from a ModuleAccount to an AccAddress.
