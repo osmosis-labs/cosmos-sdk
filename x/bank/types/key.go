@@ -36,13 +36,6 @@ func DenomMetadataKey(denom string) []byte {
 	return append(DenomMetadataPrefix, d...)
 }
 
-// // DenomMetadataUnitKey returns prefix key for storing a reverse lookup of a
-// // denom unit to a denom metadata.
-// func DenomMetadataReverseKey(denom string) []byte {
-// 	d := []byte(denom)
-// 	return append(DenomMetadataReversePrefix, d...)
-// }
-
 // AddressFromBalancesStore returns an account address from a balances prefix
 // store. The key must not contain the prefix BalancesPrefix as the prefix store
 // iterator discards the actual prefix.
