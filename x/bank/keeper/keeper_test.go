@@ -1053,35 +1053,35 @@ func (suite *IntegrationTestSuite) TestUndelegateCoins_Invalid() {
 	suite.Require().Error(app.BankKeeper.UndelegateCoins(ctx, addrModule, addr1, delCoins))
 }
 
-func (suite *IntegrationTestSuite) TestSetDenomMetaData() {
-	app, ctx := suite.app, suite.ctx
-	bk := app.BankKeeper
-	expMetadata := suite.getTestMetadata()
+func (s *IntegrationTestSuite) TestSetDenomMetaData() {
+	app, ctx := s.app, s.ctx
 
-	for i := range []int{1, 2} {
-		bk.SetDenomMetaData(ctx, expMetadata[i])
+	bk := app.BankKeeper
+	expMetadata := s.getTestMetadata()
+	for _, md := range expMetadata {
+		s.app.BankKeeper.SetDenomMetaData(s.ctx, md)
 	}
 
 	gotMetadata, found := bk.GetDenomMetaData(ctx, expMetadata[1].Base)
-	suite.Require().True(found)
-	suite.Require().Equal(expMetadata[1].GetBase(), gotMetadata.GetBase())
-	suite.Require().Equal(expMetadata[1].GetDisplay(), gotMetadata.GetDisplay())
-	suite.Require().Equal(expMetadata[1].GetDescription(), gotMetadata.GetDescription())
-	suite.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetDenom(), gotMetadata.GetDenomUnits()[1].GetDenom())
-	suite.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetExponent(), gotMetadata.GetDenomUnits()[1].GetExponent())
-	suite.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetAliases(), gotMetadata.GetDenomUnits()[1].GetAliases())
+	s.Require().True(found)
+	s.Require().Equal(expMetadata[1].GetBase(), gotMetadata.GetBase())
+	s.Require().Equal(expMetadata[1].GetDisplay(), gotMetadata.GetDisplay())
+	s.Require().Equal(expMetadata[1].GetDescription(), gotMetadata.GetDescription())
+	s.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetDenom(), gotMetadata.GetDenomUnits()[1].GetDenom())
+	s.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetExponent(), gotMetadata.GetDenomUnits()[1].GetExponent())
+	s.Require().Equal(expMetadata[1].GetDenomUnits()[1].GetAliases(), gotMetadata.GetDenomUnits()[1].GetAliases())
 
 	// require reverse indexes are stored correctly
 	expBaseDenom := expMetadata[0].Base
 	for _, denomUnit := range expMetadata[0].DenomUnits {
 		gotBaseDenom, ok := bk.GetBaseDenom(ctx, denomUnit.Denom)
-		suite.Require().True(ok)
-		suite.Require().Equal(expBaseDenom, gotBaseDenom)
+		s.Require().True(ok)
+		s.Require().Equal(expBaseDenom, gotBaseDenom)
 	}
 
 	gotBaseDenom, ok := bk.GetBaseDenom(ctx, "NON_EXISTENT_DENOM_UNIT")
-	suite.Require().False(ok)
-	suite.Require().Empty(gotBaseDenom)
+	s.Require().False(ok)
+	s.Require().Empty(gotBaseDenom)
 }
 
 func (suite *IntegrationTestSuite) TestIterateAllDenomMetaData() {
