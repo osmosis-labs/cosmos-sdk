@@ -336,3 +336,7 @@ func (suite *IntegrationTestSuite) QueryDenomMetadataRequest() {
 		})
 	}
 }
+
+func (s *IntegrationTestSuite) TestBaseDenom() {
+
+}

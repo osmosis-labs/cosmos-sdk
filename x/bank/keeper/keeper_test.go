@@ -103,7 +103,7 @@ func (suite *IntegrationTestSuite) SetupTest() {
 	app.BankKeeper.SetParams(ctx, types.DefaultParams())
 
 	queryHelper := baseapp.NewQueryServerTestHelper(ctx, app.InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, app.BankKeeper)
+	types.RegisterQueryServer(queryHelper, keeper.Querier{BaseKeeper: app.BankKeeper.(keeper.BaseKeeper)})
 	queryClient := types.NewQueryClient(queryHelper)
 
 	suite.app = app

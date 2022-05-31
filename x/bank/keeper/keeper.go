@@ -54,8 +54,6 @@ type Keeper interface {
 
 	DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr sdk.AccAddress, amt sdk.Coins) error
 	UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAddr sdk.AccAddress, amt sdk.Coins) error
-
-	types.QueryServer
 }
 
 // BaseKeeper manages transfers between accounts. It implements the Keeper interface.
