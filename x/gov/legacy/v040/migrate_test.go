@@ -105,7 +105,6 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.gov.v1beta1.TextProposal",
 				"description": "bar_text",
-				"is_expedited": false,
 				"title": "foo_text"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",
@@ -115,6 +114,7 @@ func TestMigrate(t *testing.T) {
 				"no_with_veto": "0",
 				"yes": "0"
 			},
+			"is_expedited": false,
 			"proposal_id": "0",
 			"status": "PROPOSAL_STATUS_UNSPECIFIED",
 			"submit_time": "0001-01-01T00:00:00Z",
@@ -143,6 +143,7 @@ func TestMigrate(t *testing.T) {
 				"no_with_veto": "0",
 				"yes": "0"
 			},
+			"is_expedited": false,
 			"proposal_id": "0",
 			"status": "PROPOSAL_STATUS_UNSPECIFIED",
 			"submit_time": "0001-01-01T00:00:00Z",
@@ -154,7 +155,6 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal",
 				"description": "bar_cancel_upgrade",
-				"is_expedited": false,
 				"title": "foo_cancel_upgrade"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",
@@ -164,6 +164,7 @@ func TestMigrate(t *testing.T) {
 				"no_with_veto": "0",
 				"yes": "0"
 			},
+			"is_expedited": false,
 			"proposal_id": "0",
 			"status": "PROPOSAL_STATUS_UNSPECIFIED",
 			"submit_time": "0001-01-01T00:00:00Z",
@@ -175,7 +176,6 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal",
 				"description": "bar_software_upgrade",
-				"is_expedited": false,
 				"plan": {
 					"height": "123",
 					"info": "foo_upgrade_info",
@@ -192,6 +192,7 @@ func TestMigrate(t *testing.T) {
 				"no_with_veto": "0",
 				"yes": "0"
 			},
+			"is_expedited": false,
 			"proposal_id": "0",
 			"status": "PROPOSAL_STATUS_UNSPECIFIED",
 			"submit_time": "0001-01-01T00:00:00Z",
@@ -210,7 +211,6 @@ func TestMigrate(t *testing.T) {
 					}
 				],
 				"description": "bar_param_change",
-				"is_expedited": false,
 				"title": "foo_param_change"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",
@@ -220,6 +220,7 @@ func TestMigrate(t *testing.T) {
 				"no_with_veto": "0",
 				"yes": "0"
 			},
+			"is_expedited": false,
 			"proposal_id": "0",
 			"status": "PROPOSAL_STATUS_UNSPECIFIED",
 			"submit_time": "0001-01-01T00:00:00Z",

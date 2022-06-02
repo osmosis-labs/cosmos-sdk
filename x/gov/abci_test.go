@@ -209,7 +209,6 @@ func TestTickPassedDepositPeriod(t *testing.T) {
 func TestTickPassedVotingPeriod(t *testing.T) {
 	testcases := []struct {
 		name        string
-		proposal    types.Content
 		isExpedited bool
 	}{
 		{
@@ -223,7 +222,7 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			testProposal := tc.proposal
+			testProposal := TestProposal
 
 			app := simapp.Setup(false)
 			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
