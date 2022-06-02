@@ -23,8 +23,8 @@ func init() {
 
 // NewCommunityPoolSpendProposal creates a new community pool spned proposal.
 //nolint:interfacer
-func NewCommunityPoolSpendProposal(title, description string, isExpedited bool, recipient sdk.AccAddress, amount sdk.Coins) *CommunityPoolSpendProposal {
-	return &CommunityPoolSpendProposal{title, description, isExpedited, recipient.String(), amount}
+func NewCommunityPoolSpendProposal(title, description string, recipient sdk.AccAddress, amount sdk.Coins) *CommunityPoolSpendProposal {
+	return &CommunityPoolSpendProposal{title, description, recipient.String(), amount}
 }
 
 // GetTitle returns the title of a community pool spend proposal.
@@ -32,14 +32,6 @@ func (csp *CommunityPoolSpendProposal) GetTitle() string { return csp.Title }
 
 // GetDescription returns the description of a community pool spend proposal.
 func (csp *CommunityPoolSpendProposal) GetDescription() string { return csp.Description }
-
-// GetIsExpedited returns the description of a community pool spend proposal.
-func (csp *CommunityPoolSpendProposal) GetIsExpedited() bool { return csp.IsExpedited }
-
-// SetIsExpedited makes proposal expesdited if isExedited is true, otherwise makes it non-expedited.
-func (csp *CommunityPoolSpendProposal) SetIsExpedited(isExpedited bool) {
-	csp.IsExpedited = isExpedited
-}
 
 // GetDescription returns the routing key of a community pool spend proposal.
 func (csp *CommunityPoolSpendProposal) ProposalRoute() string { return RouterKey }

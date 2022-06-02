@@ -44,7 +44,6 @@ func SimulateCommunityPoolSpendProposalContent(k keeper.Keeper) simtypes.Content
 		return types.NewCommunityPoolSpendProposal(
 			simtypes.RandStringOfLength(r, 10),
 			simtypes.RandStringOfLength(r, 100),
-			r.Intn(2) == 0,
 			simAccount.Address,
 			sdk.NewCoins(sdk.NewCoin(balance[denomIndex].Denom, amount)),
 		)

@@ -21,7 +21,7 @@ var (
 )
 
 func testProposal(recipient sdk.AccAddress, amount sdk.Coins) *types.CommunityPoolSpendProposal {
-	return types.NewCommunityPoolSpendProposal("Test", "description", false, recipient, amount)
+	return types.NewCommunityPoolSpendProposal("Test", "description", recipient, amount)
 }
 
 func TestProposalHandlerPassed(t *testing.T) {
