@@ -132,7 +132,6 @@ func TestMigrate(t *testing.T) {
 					}
 				],
 				"description": "bar_community",
-				"is_expedited": false,
 				"recipient": "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh",
 				"title": "foo_community"
 			},
