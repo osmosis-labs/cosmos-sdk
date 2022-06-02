@@ -27,14 +27,12 @@ func TestProposalStatus_Format(t *testing.T) {
 
 func TestProposalSetIsExpedited(t *testing.T) {
 	const startIsExpedited = false
+	testProposal := types.NewTextProposal("test", "description")
 
-	proposal, err := types.NewProposal(types.NewTextProposal("test", "description", startIsExpedited), 1, time.Now(), time.Now())
+	proposal, err := types.NewProposal(testProposal, 1, time.Now(), time.Now(), startIsExpedited)
 	require.NoError(t, err)
-	require.Equal(t, startIsExpedited, proposal.GetContent().GetIsExpedited())
+	require.Equal(t, startIsExpedited, proposal.IsExpedited)
 
-	require.NoError(t, proposal.SetIsExpedited(!startIsExpedited))
-	require.Equal(t, !startIsExpedited, proposal.GetContent().GetIsExpedited())
-
-	require.NoError(t, proposal.SetIsExpedited(startIsExpedited))
-	require.Equal(t, startIsExpedited, proposal.GetContent().GetIsExpedited())
+	proposal, err = types.NewProposal(testProposal, 1, time.Now(), time.Now(), !startIsExpedited)
+	require.Equal(t, !startIsExpedited, proposal.IsExpedited)
 }

@@ -22,8 +22,6 @@ const (
 type Content interface {
 	GetTitle() string
 	GetDescription() string
-	GetIsExpedited() bool
-	SetIsExpedited(isExpedited bool)
 	ProposalRoute() string
 	ProposalType() string
 	ValidateBasic() error

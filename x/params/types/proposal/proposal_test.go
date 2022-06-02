@@ -15,7 +15,6 @@ func TestParameterChangeProposal(t *testing.T) {
 
 	require.Equal(t, "test title", pcp.GetTitle())
 	require.Equal(t, "test description", pcp.GetDescription())
-	require.Equal(t, isExpedited, pcp.GetIsExpedited())
 	require.Equal(t, RouterKey, pcp.ProposalRoute())
 	require.Equal(t, ProposalTypeChange, pcp.ProposalType())
 	require.Nil(t, pcp.ValidateBasic())

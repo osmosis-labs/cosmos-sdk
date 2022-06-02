@@ -34,6 +34,7 @@ func TestTickExpiredDepositPeriod(t *testing.T) {
 		types.ContentFromProposalType("test", "test", types.ProposalTypeText, false),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
+		false,
 	)
 	require.NoError(t, err)
 
@@ -86,6 +87,7 @@ func TestTickMultipleExpiredDepositPeriod(t *testing.T) {
 		types.ContentFromProposalType("test", "test", types.ProposalTypeText, false),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
+		false,
 	)
 	require.NoError(t, err)
 
@@ -109,6 +111,7 @@ func TestTickMultipleExpiredDepositPeriod(t *testing.T) {
 		types.ContentFromProposalType("test2", "test2", types.ProposalTypeText, false),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
+		false,
 	)
 	require.NoError(t, err)
 
@@ -166,6 +169,7 @@ func TestTickPassedDepositPeriod(t *testing.T) {
 		types.ContentFromProposalType("test2", "test2", types.ProposalTypeText, false),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
+		false,
 	)
 	require.NoError(t, err)
 
@@ -204,16 +208,16 @@ func TestTickPassedDepositPeriod(t *testing.T) {
 
 func TestTickPassedVotingPeriod(t *testing.T) {
 	testcases := []struct {
-		name     string
-		proposal types.Content
+		name        string
+		proposal    types.Content
+		isExpedited bool
 	}{
 		{
-			name:     "regular text - deleted",
-			proposal: TestProposal,
+			name: "regular text - deleted",
 		},
 		{
-			name:     "text expedited - converted to regular",
-			proposal: TestExpeditedProposal,
+			name:        "text expedited - converted to regular",
+			isExpedited: true,
 		},
 	}
 
@@ -240,7 +244,7 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 			activeQueue.Close()
 
 			proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 5))}
-			newProposalMsg, err := types.NewMsgSubmitProposal(testProposal, proposalCoins, addrs[0])
+			newProposalMsg, err := types.NewMsgSubmitProposal(testProposal, proposalCoins, addrs[0], tc.isExpedited)
 			require.NoError(t, err)
 
 			res, err := govHandler(ctx, newProposalMsg)
@@ -266,7 +270,7 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 			votingParams := app.GovKeeper.GetVotingParams(ctx)
 			newHeader = ctx.BlockHeader()
 			originalVotingPeriod := votingParams.VotingPeriod
-			if tc.proposal.GetIsExpedited() {
+			if tc.isExpedited {
 				originalVotingPeriod = votingParams.ExpeditedVotingPeriod
 			}
 
@@ -291,7 +295,7 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 
 			activeQueue = app.GovKeeper.ActiveProposalQueueIterator(ctx, ctx.BlockHeader().Time)
 
-			if !tc.proposal.GetIsExpedited() {
+			if !tc.isExpedited {
 				require.False(t, activeQueue.Valid())
 				activeQueue.Close()
 				return
@@ -304,7 +308,7 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 			proposal, ok = app.GovKeeper.GetProposal(ctx, activeProposalID)
 			require.True(t, ok)
 			require.Equal(t, types.StatusVotingPeriod, proposal.Status)
-			require.False(t, proposal.GetContent().GetIsExpedited())
+			require.False(t, proposal.IsExpedited)
 
 			require.Equal(t, proposal.VotingStartTime.Add(votingParams.VotingPeriod), proposal.VotingEndTime)
 
@@ -315,22 +319,22 @@ func TestTickPassedVotingPeriod(t *testing.T) {
 
 func TestProposalPassedEndblocker(t *testing.T) {
 	testcases := []struct {
-		name     string
-		proposal types.Content
+		name        string
+		IsExpedited bool
 	}{
 		{
-			name:     "regular text",
-			proposal: TestProposal,
+			name:        "regular text",
+			IsExpedited: false,
 		},
 		{
-			name:     "text expedited",
-			proposal: TestExpeditedProposal,
+			name:        "text expedited",
+			IsExpedited: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			testProposal := tc.proposal
+			testProposal := TestProposal
 
 			app := simapp.Setup(false)
 			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -353,7 +357,7 @@ func TestProposalPassedEndblocker(t *testing.T) {
 			require.NotNil(t, macc)
 			initialModuleAccCoins := app.BankKeeper.GetAllBalances(ctx, macc.GetAddress())
 
-			proposal, err := app.GovKeeper.SubmitProposal(ctx, testProposal)
+			proposal, err := app.GovKeeper.SubmitProposal(ctx, testProposal, tc.IsExpedited)
 			require.NoError(t, err)
 
 			proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 10))}
@@ -410,7 +414,7 @@ func TestExpeditedProposal_PassAndConversionToRegular(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			testProposal := TestExpeditedProposal
+			testProposal := TestProposal
 
 			app := simapp.Setup(false)
 			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -445,7 +449,7 @@ func TestExpeditedProposal_PassAndConversionToRegular(t *testing.T) {
 			depositorInitialBalance := app.BankKeeper.GetAllBalances(ctx, addrs[1])
 
 			proposalCoins := sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 5))}
-			newProposalMsg, err := types.NewMsgSubmitProposal(testProposal, proposalCoins, addrs[0])
+			newProposalMsg, err := types.NewMsgSubmitProposal(testProposal, proposalCoins, addrs[0], true)
 			require.NoError(t, err)
 
 			res, err := govHandler(ctx, newProposalMsg)
@@ -529,7 +533,7 @@ func TestExpeditedProposal_PassAndConversionToRegular(t *testing.T) {
 			proposal, ok = app.GovKeeper.GetProposal(ctx, activeProposalID)
 			require.True(t, ok)
 			require.Equal(t, types.StatusVotingPeriod, proposal.Status)
-			require.False(t, proposal.GetContent().GetIsExpedited())
+			require.False(t, proposal.IsExpedited)
 			require.Equal(t, proposal.VotingStartTime.Add(votingParams.VotingPeriod), proposal.VotingEndTime)
 
 			// We also want to make sure that the deposit is not refunded yet and is still present in the module account
@@ -614,7 +618,7 @@ func TestEndBlockerProposalHandlerFailed(t *testing.T) {
 	// Create a proposal where the handler will pass for the test proposal
 	// because the value of contextKeyBadProposal is true.
 	ctx = ctx.WithValue(contextKeyBadProposal, true)
-	proposal, err := app.GovKeeper.SubmitProposal(ctx, TestProposal)
+	proposal, err := app.GovKeeper.SubmitProposal(ctx, TestProposal, false)
 	require.NoError(t, err)
 
 	proposalCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, app.StakingKeeper.TokensFromConsensusPower(ctx, 10)))

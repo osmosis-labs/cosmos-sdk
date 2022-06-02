@@ -11,8 +11,8 @@ const (
 	ProposalTypeCancelSoftwareUpgrade string = "CancelSoftwareUpgrade"
 )
 
-func NewSoftwareUpgradeProposal(title, description string, isExpedited bool, plan Plan) gov.Content {
-	return &SoftwareUpgradeProposal{title, description, isExpedited, plan}
+func NewSoftwareUpgradeProposal(title, description string, plan Plan) gov.Content {
+	return &SoftwareUpgradeProposal{title, description, plan}
 }
 
 // Implements Proposal Interface
@@ -27,12 +27,8 @@ func init() {
 
 func (sup *SoftwareUpgradeProposal) GetTitle() string       { return sup.Title }
 func (sup *SoftwareUpgradeProposal) GetDescription() string { return sup.Description }
-func (sup *SoftwareUpgradeProposal) GetIsExpedited() bool   { return sup.IsExpedited }
-func (sup *SoftwareUpgradeProposal) SetIsExpedited(isExpedited bool) {
-	sup.IsExpedited = isExpedited
-}
-func (sup *SoftwareUpgradeProposal) ProposalRoute() string { return RouterKey }
-func (sup *SoftwareUpgradeProposal) ProposalType() string  { return ProposalTypeSoftwareUpgrade }
+func (sup *SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
+func (sup *SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
 func (sup *SoftwareUpgradeProposal) ValidateBasic() error {
 	if err := sup.Plan.ValidateBasic(); err != nil {
 		return err
@@ -47,8 +43,8 @@ func (sup SoftwareUpgradeProposal) String() string {
 `, sup.Title, sup.Description)
 }
 
-func NewCancelSoftwareUpgradeProposal(title, description string, isExpedited bool) gov.Content {
-	return &CancelSoftwareUpgradeProposal{title, description, isExpedited}
+func NewCancelSoftwareUpgradeProposal(title, description string) gov.Content {
+	return &CancelSoftwareUpgradeProposal{title, description}
 }
 
 // Implements Proposal Interface
@@ -56,11 +52,7 @@ var _ gov.Content = &CancelSoftwareUpgradeProposal{}
 
 func (csup *CancelSoftwareUpgradeProposal) GetTitle() string       { return csup.Title }
 func (csup *CancelSoftwareUpgradeProposal) GetDescription() string { return csup.Description }
-func (csup *CancelSoftwareUpgradeProposal) GetIsExpedited() bool   { return csup.IsExpedited }
-func (csup *CancelSoftwareUpgradeProposal) SetIsExpedited(isExpedited bool) {
-	csup.IsExpedited = isExpedited
-}
-func (csup *CancelSoftwareUpgradeProposal) ProposalRoute() string { return RouterKey }
+func (csup *CancelSoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
 func (csup *CancelSoftwareUpgradeProposal) ProposalType() string {
 	return ProposalTypeCancelSoftwareUpgrade
 }

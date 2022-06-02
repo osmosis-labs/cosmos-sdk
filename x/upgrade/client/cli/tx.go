@@ -57,7 +57,12 @@ func NewCmdSubmitUpgradeProposal() *cobra.Command {
 				return err
 			}
 
-			msg, err := gov.NewMsgSubmitProposal(content, deposit, from)
+			isExpedited, err := cmd.Flags().GetBool(cli.FlagIsExpedited)
+			if err != nil {
+				return err
+			}
+
+			msg, err := gov.NewMsgSubmitProposal(content, deposit, from, isExpedited)
 			if err != nil {
 				return err
 			}
@@ -69,6 +74,7 @@ func NewCmdSubmitUpgradeProposal() *cobra.Command {
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
 	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
+	cmd.Flags().Bool(cli.FlagIsExpedited, false, "flag indicating whether a proposal is expedited")
 	cmd.Flags().Int64(FlagUpgradeHeight, 0, "The height at which the upgrade must happen")
 	cmd.Flags().String(FlagUpgradeInfo, "", "Optional info for the planned upgrade such as commit hash, etc.")
 
@@ -114,9 +120,9 @@ func NewCmdSubmitCancelUpgradeProposal() *cobra.Command {
 				return err
 			}
 
-			content := types.NewCancelSoftwareUpgradeProposal(title, description, isExpedited)
+			content := types.NewCancelSoftwareUpgradeProposal(title, description)
 
-			msg, err := gov.NewMsgSubmitProposal(content, deposit, from)
+			msg, err := gov.NewMsgSubmitProposal(content, deposit, from, isExpedited)
 			if err != nil {
 				return err
 			}
@@ -128,6 +134,7 @@ func NewCmdSubmitCancelUpgradeProposal() *cobra.Command {
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
 	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
+	cmd.Flags().Bool(cli.FlagIsExpedited, false, "flag indicating whether a proposal is expedited")
 	cmd.MarkFlagRequired(cli.FlagTitle)
 	cmd.MarkFlagRequired(cli.FlagDescription)
 
@@ -145,11 +152,6 @@ func parseArgsToContent(cmd *cobra.Command, name string) (gov.Content, error) {
 		return nil, err
 	}
 
-	isExpedited, err := cmd.Flags().GetBool(cli.FlagIsExpedited)
-	if err != nil {
-		return nil, err
-	}
-
 	height, err := cmd.Flags().GetInt64(FlagUpgradeHeight)
 	if err != nil {
 		return nil, err
@@ -161,6 +163,6 @@ func parseArgsToContent(cmd *cobra.Command, name string) (gov.Content, error) {
 	}
 
 	plan := types.Plan{Name: name, Height: height, Info: info}
-	content := types.NewSoftwareUpgradeProposal(title, description, isExpedited, plan)
+	content := types.NewSoftwareUpgradeProposal(title, description, plan)
 	return content, nil
 }

@@ -16,11 +16,10 @@ import (
 )
 
 var (
-	valTokens             = sdk.TokensFromConsensusPower(42, sdk.DefaultPowerReduction)
-	TestProposal          = types.NewTextProposal("Test", "description", false)
-	TestExpeditedProposal = types.NewTextProposal("Test", "description", true)
-	TestDescription       = stakingtypes.NewDescription("T", "E", "S", "T", "Z")
-	TestCommissionRates   = stakingtypes.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
+	valTokens           = sdk.TokensFromConsensusPower(42, sdk.DefaultPowerReduction)
+	TestProposal        = types.NewTextProposal("Test", "description")
+	TestDescription     = stakingtypes.NewDescription("T", "E", "S", "T", "Z")
+	TestCommissionRates = stakingtypes.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec())
 )
 
 // SortAddresses - Sorts Addresses

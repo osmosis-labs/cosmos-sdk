@@ -77,8 +77,8 @@ func newPostPlanHandler(clientCtx client.Context) http.HandlerFunc {
 		}
 
 		plan := types.Plan{Name: req.UpgradeName, Height: req.UpgradeHeight, Info: req.UpgradeInfo}
-		content := types.NewSoftwareUpgradeProposal(req.Title, req.Description, req.IsExpedited, plan)
-		msg, err := govtypes.NewMsgSubmitProposal(content, req.Deposit, fromAddr)
+		content := types.NewSoftwareUpgradeProposal(req.Title, req.Description, plan)
+		msg, err := govtypes.NewMsgSubmitProposal(content, req.Deposit, fromAddr, req.IsExpedited)
 		if rest.CheckBadRequestError(w, err) {
 			return
 		}
@@ -108,9 +108,9 @@ func newCancelPlanHandler(clientCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		content := types.NewCancelSoftwareUpgradeProposal(req.Title, req.Description, req.IsExpedited)
+		content := types.NewCancelSoftwareUpgradeProposal(req.Title, req.Description)
 
-		msg, err := govtypes.NewMsgSubmitProposal(content, req.Deposit, fromAddr)
+		msg, err := govtypes.NewMsgSubmitProposal(content, req.Deposit, fromAddr, req.IsExpedited)
 		if rest.CheckBadRequestError(w, err) {
 			return
 		}

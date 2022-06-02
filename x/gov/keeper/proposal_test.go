@@ -18,19 +18,18 @@ import (
 func (suite *KeeperTestSuite) TestGetSetProposal() {
 
 	testcases := map[string]struct {
-		proposal types.Content
+		proposal    types.Content
+		isExpedited bool
 	}{
-		"regular proposal": {
-			proposal: TestProposal,
-		},
+		"regular proposal": {},
 		"expedited proposal": {
-			proposal: TestExpeditedProposal,
+			isExpedited: true,
 		},
 	}
 
 	for _, tc := range testcases {
-		tp := tc.proposal
-		proposal, err := suite.app.GovKeeper.SubmitProposal(suite.ctx, tp)
+		tp := TestProposal
+		proposal, err := suite.app.GovKeeper.SubmitProposal(suite.ctx, tp, tc.isExpedited)
 		suite.Require().NoError(err)
 		proposalID := proposal.ProposalId
 		suite.app.GovKeeper.SetProposal(suite.ctx, proposal)
@@ -43,23 +42,23 @@ func (suite *KeeperTestSuite) TestGetSetProposal() {
 
 func (suite *KeeperTestSuite) TestActivateVotingPeriod() {
 	testcases := []struct {
-		name     string
-		proposal types.Content
+		name        string
+		proposal    types.Content
+		isExpedited bool
 	}{
 		{
-			name:     "expedited",
-			proposal: TestExpeditedProposal,
+			name:        "expedited",
+			isExpedited: true,
 		},
 		{
-			name:     "not expedited",
-			proposal: TestProposal,
+			name: "not expedited",
 		},
 	}
 
 	for _, tc := range testcases {
 		suite.T().Run(tc.name, func(t *testing.T) {
-			tp := tc.proposal
-			proposal, err := suite.app.GovKeeper.SubmitProposal(suite.ctx, tp)
+			tp := TestProposal
+			proposal, err := suite.app.GovKeeper.SubmitProposal(suite.ctx, tp, tc.isExpedited)
 			suite.Require().NoError(err)
 
 			suite.Require().True(proposal.VotingStartTime.Equal(time.Time{}))
@@ -80,7 +79,7 @@ func (suite *KeeperTestSuite) TestActivateVotingPeriod() {
 
 			votingParams := suite.app.GovKeeper.GetVotingParams(suite.ctx)
 
-			if tc.proposal.GetIsExpedited() {
+			if tc.isExpedited {
 				require.Equal(t, proposal.VotingEndTime, proposal.VotingStartTime.Add(votingParams.ExpeditedVotingPeriod))
 			} else {
 				require.Equal(t, proposal.VotingEndTime, proposal.VotingStartTime.Add(votingParams.VotingPeriod))
@@ -100,20 +99,21 @@ func (invalidProposalRoute) ProposalRoute() string { return "nonexistingroute" }
 func (suite *KeeperTestSuite) TestSubmitProposal() {
 	testCases := []struct {
 		content     types.Content
+		isExpedited bool
 		expectedErr error
 	}{
-		{&types.TextProposal{Title: "title", Description: "description", IsExpedited: true}, nil},
+		{&types.TextProposal{Title: "title", Description: "description"}, true, nil},
 		// Keeper does not check the validity of title and description, no error
-		{&types.TextProposal{Title: "", Description: "description", IsExpedited: true}, nil},
-		{&types.TextProposal{Title: strings.Repeat("1234567890", 100), Description: "description", IsExpedited: true}, nil},
-		{&types.TextProposal{Title: "title", Description: "", IsExpedited: true}, nil},
-		{&types.TextProposal{Title: "title", Description: strings.Repeat("1234567890", 1000), IsExpedited: true}, nil},
+		{&types.TextProposal{Title: "", Description: "description"}, true, nil},
+		{&types.TextProposal{Title: strings.Repeat("1234567890", 100), Description: "description"}, true, nil},
+		{&types.TextProposal{Title: "title", Description: ""}, true, nil},
+		{&types.TextProposal{Title: "title", Description: strings.Repeat("1234567890", 1000)}, true, nil},
 		// error only when invalid route
-		{&invalidProposalRoute{}, types.ErrNoProposalHandlerExists},
+		{&invalidProposalRoute{}, true, types.ErrNoProposalHandlerExists},
 	}
 
 	for i, tc := range testCases {
-		_, err := suite.app.GovKeeper.SubmitProposal(suite.ctx, tc.content)
+		_, err := suite.app.GovKeeper.SubmitProposal(suite.ctx, tc.content, tc.isExpedited)
 		suite.Require().True(errors.Is(tc.expectedErr, err), "tc #%d; got: %v, expected: %v", i, err, tc.expectedErr)
 	}
 }
@@ -126,7 +126,7 @@ func (suite *KeeperTestSuite) TestGetProposalsFiltered() {
 
 	for _, s := range status {
 		for i := 0; i < 50; i++ {
-			p, err := types.NewProposal(TestProposal, proposalID, time.Now(), time.Now())
+			p, err := types.NewProposal(TestProposal, proposalID, time.Now(), time.Now(), false)
 			suite.Require().NoError(err)
 
 			p.Status = s

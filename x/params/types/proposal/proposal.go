@@ -23,7 +23,7 @@ func init() {
 }
 
 func NewParameterChangeProposal(title, description string, isExpedited bool, changes []ParamChange) *ParameterChangeProposal {
-	return &ParameterChangeProposal{title, description, isExpedited, changes}
+	return &ParameterChangeProposal{title, description, changes}
 }
 
 // GetTitle returns the title of a parameter change proposal.
@@ -31,14 +31,6 @@ func (pcp *ParameterChangeProposal) GetTitle() string { return pcp.Title }
 
 // GetDescription returns the description of a parameter change proposal.
 func (pcp *ParameterChangeProposal) GetDescription() string { return pcp.Description }
-
-// GetDescription returns the flag indicating whether this is an expedited proposal.
-func (pcp *ParameterChangeProposal) GetIsExpedited() bool { return pcp.IsExpedited }
-
-// SetIsExpedited makes proposal expesdited if isExedited is true, otherwise makes it non-expedited.
-func (pcp *ParameterChangeProposal) SetIsExpedited(isExpedited bool) {
-	pcp.IsExpedited = isExpedited
-}
 
 // ProposalRoute returns the routing key of a parameter change proposal.
 func (pcp *ParameterChangeProposal) ProposalRoute() string { return RouterKey }

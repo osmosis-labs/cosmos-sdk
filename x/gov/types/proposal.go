@@ -21,7 +21,7 @@ const (
 )
 
 // NewProposal creates a new Proposal instance
-func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Time) (Proposal, error) {
+func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Time, isExpedited bool) (Proposal, error) {
 	msg, ok := content.(proto.Message)
 	if !ok {
 		return Proposal{}, fmt.Errorf(errMsgFmtNotProtoMessage, content)
@@ -40,6 +40,7 @@ func NewProposal(content Content, id uint64, submitTime, depositEndTime time.Tim
 		TotalDeposit:     sdk.NewCoins(),
 		SubmitTime:       submitTime,
 		DepositEndTime:   depositEndTime,
+		IsExpedited:      isExpedited,
 	}
 
 	return p, nil
@@ -58,30 +59,6 @@ func (p Proposal) GetContent() Content {
 		return nil
 	}
 	return content
-}
-
-// SetIsExpedited sets proposals to expedited according to the value of isExpedited.
-// Returns nil on success, error otherwise.
-func (p *Proposal) SetIsExpedited(isExpedited bool) error {
-	content, ok := p.Content.GetCachedValue().(Content)
-	if !ok {
-		return nil
-	}
-	content.SetIsExpedited(isExpedited)
-
-	// We must recreate any for changes to take effect.
-	msg, ok := content.(proto.Message)
-	if !ok {
-		return fmt.Errorf(errMsgFmtNotProtoMessage, content)
-	}
-
-	any, err := types.NewAnyWithValue(msg)
-	if err != nil {
-		return err
-	}
-
-	p.Content = any
-	return nil
 }
 
 func (p Proposal) ProposalType() string {
@@ -215,8 +192,8 @@ const (
 var _ Content = &TextProposal{}
 
 // NewTextProposal creates a text proposal Content
-func NewTextProposal(title, description string, isExpedited bool) Content {
-	return &TextProposal{title, description, isExpedited}
+func NewTextProposal(title, description string) Content {
+	return &TextProposal{title, description}
 }
 
 // GetTitle returns the proposal title
@@ -224,14 +201,6 @@ func (tp *TextProposal) GetTitle() string { return tp.Title }
 
 // GetDescription returns the proposal description
 func (tp *TextProposal) GetDescription() string { return tp.Description }
-
-// GetIsExpedited returns true if proposal is expedited.
-func (tp *TextProposal) GetIsExpedited() bool { return tp.IsExpedited }
-
-// SetIsExpedited makes proposal expesdited if isExedited is true, otherwise makes it non-expedited.
-func (tp *TextProposal) SetIsExpedited(isExpedited bool) {
-	tp.IsExpedited = isExpedited
-}
 
 // ProposalRoute returns the proposal router key
 func (tp *TextProposal) ProposalRoute() string { return RouterKey }
@@ -266,7 +235,7 @@ func RegisterProposalType(ty string) {
 func ContentFromProposalType(title, desc, ty string, isExpedited bool) Content {
 	switch ty {
 	case ProposalTypeText:
-		return NewTextProposal(title, desc, isExpedited)
+		return NewTextProposal(title, desc)
 
 	default:
 		return nil

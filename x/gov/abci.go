@@ -53,7 +53,7 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
 		// the deposit at this point since the proposal is converted to regular.
 		// As a result, the deposits are either deleted or refunded in all casses
 		// BUT when an expedited proposal fails.
-		if !(proposal.GetContent().GetIsExpedited() && !passes) {
+		if !(proposal.IsExpedited && !passes) {
 			if burnDeposits {
 				keeper.DeleteDeposits(ctx, proposal.ProposalId)
 			} else {
@@ -90,14 +90,12 @@ func EndBlocker(ctx sdk.Context, keeper keeper.Keeper) {
 				logMsg = fmt.Sprintf("passed, but failed on execution: %s", err)
 			}
 		} else {
-			if proposal.GetContent().GetIsExpedited() {
+			if proposal.IsExpedited {
 				// When expedited proposal fails, it is converted
 				// to a regular proposal. As a result, the voting period is extended, and,
 				// once the regular voting period expires again, the tally is repeated
 				// according to the regular proposal rules.
-				if err := proposal.SetIsExpedited(false); err != nil {
-					panic(err)
-				}
+				proposal.IsExpedited = false
 				votingParams := keeper.GetVotingParams(ctx)
 				proposal.VotingEndTime = proposal.VotingStartTime.Add(votingParams.VotingPeriod)
 

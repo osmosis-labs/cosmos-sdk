@@ -5039,6 +5039,7 @@ Proposal defines the core field members of a governance proposal.
 | `total_deposit` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
 | `voting_start_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
 | `voting_end_time` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 
 
 
@@ -5109,7 +5110,6 @@ manually updated in case of approval.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
-| `is_expedited` | [bool](#bool) |  |  |
 
 
 
@@ -5579,6 +5579,7 @@ proposal Content.
 | `content` | [google.protobuf.Any](#google.protobuf.Any) |  |  |
 | `initial_deposit` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
 | `proposer` | [string](#string) |  |  |
+| `is_expedited` | [bool](#bool) |  |  |
 
 
 
@@ -5907,7 +5908,6 @@ ParameterChangeProposal defines a proposal to change one or more parameters.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
-| `is_expedited` | [bool](#bool) |  |  |
 | `changes` | [ParamChange](#cosmos.params.v1beta1.ParamChange) | repeated |  |
 
 
@@ -8002,7 +8002,6 @@ upgrade.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
-| `is_expedited` | [bool](#bool) |  |  |
 
 
 
@@ -8057,7 +8056,6 @@ upgrade.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
-| `is_expedited` | [bool](#bool) |  |  |
 | `plan` | [Plan](#cosmos.upgrade.v1beta1.Plan) |  |  |
 
 

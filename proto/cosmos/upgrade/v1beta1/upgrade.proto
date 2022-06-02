@@ -48,10 +48,9 @@ message SoftwareUpgradeProposal {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_stringer) = false;
 
-  string title        = 1;
-  string description  = 2;
-  bool   is_expedited = 3;
-  Plan   plan         = 4 [(gogoproto.nullable) = false];
+  string title       = 1;
+  string description = 2;
+  Plan   plan        = 4 [(gogoproto.nullable) = false];
 }
 
 // CancelSoftwareUpgradeProposal is a gov Content type for cancelling a software
@@ -60,9 +59,8 @@ message CancelSoftwareUpgradeProposal {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_stringer) = false;
 
-  string title        = 1;
-  string description  = 2;
-  bool   is_expedited = 3;
+  string title       = 1;
+  string description = 2;
 }
 
 // ModuleVersion specifies a module and its consensus version.
