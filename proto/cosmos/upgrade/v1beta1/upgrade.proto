@@ -50,7 +50,7 @@ message SoftwareUpgradeProposal {
 
   string title       = 1;
   string description = 2;
-  Plan   plan        = 4 [(gogoproto.nullable) = false];
+  Plan   plan        = 3 [(gogoproto.nullable) = false];
 }
 
 // CancelSoftwareUpgradeProposal is a gov Content type for cancelling a software

@@ -5099,8 +5099,8 @@ TallyParams defines the params for tallying votes on governance proposals.
 | ----- | ---- | ----- | ----------- |
 | `quorum` | [bytes](#bytes) |  | Minimum percentage of total stake needed to vote for a result to be considered valid. |
 | `threshold` | [bytes](#bytes) |  | Minimum proportion of Yes votes for proposal to pass. Default value: 0.5. |
-| `expedited_threshold` | [bytes](#bytes) |  | Minimum proportion of Yes votes for an expedited proposal to pass. Default value: 0.67. |
 | `veto_threshold` | [bytes](#bytes) |  | Minimum value of Veto votes to Total votes ratio for proposal to be vetoed. Default value: 1/3. |
+| `expedited_threshold` | [bytes](#bytes) |  | Minimum proportion of Yes votes for an expedited proposal to pass. Default value: 0.67. |
 
 
 
@@ -5170,8 +5170,8 @@ VotingParams defines the params for voting on governance proposals.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  | voting_period defines the length of the voting period. |
-| `expedited_voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  | Length of the expedited voting period. |
 | `proposal_voting_periods` | [ProposalVotingPeriod](#cosmos.gov.v1beta1.ProposalVotingPeriod) | repeated | proposal_voting_periods defines custom voting periods for proposal types. |
+| `expedited_voting_period` | [google.protobuf.Duration](#google.protobuf.Duration) |  | Length of the expedited voting period. |
 
 
 
