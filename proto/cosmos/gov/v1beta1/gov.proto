@@ -174,7 +174,7 @@ message VotingParams {
   // proposal_voting_periods defines custom voting periods for proposal types.
   repeated ProposalVotingPeriod proposal_voting_periods = 2 [(gogoproto.nullable) = false];
 
-  //  Length of the expedited voting period.
+  // Length of the expedited voting period.
   google.protobuf.Duration expedited_voting_period = 3 [
     (gogoproto.nullable)    = false,
     (gogoproto.stdduration) = true,
