@@ -56,8 +56,8 @@ func ValidateGenesis(data *GenesisState) error {
 			expeditedThreshold)
 	}
 
-	if expeditedThreshold.LT(threshold) {
-		return fmt.Errorf("expedited governance vote threshold %s should be greater than or equal to regular threshold %s",
+	if expeditedThreshold.LTE(threshold) {
+		return fmt.Errorf("expedited governance vote threshold %s should be greater than the regular threshold %s",
 			expeditedThreshold,
 			threshold)
 	}

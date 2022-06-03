@@ -173,8 +173,8 @@ func validateTallyParams(i interface{}) error {
 	if v.ExpeditedThreshold.GT(sdk.OneDec()) {
 		return fmt.Errorf("expedited vote threshold too large: %s", v.ExpeditedThreshold)
 	}
-	if v.ExpeditedThreshold.LT(v.Threshold) {
-		return fmt.Errorf("expedited vote threshold %s, must be greater than or equal to the regular threshold %s", v.ExpeditedThreshold, v.Threshold)
+	if v.ExpeditedThreshold.LTE(v.Threshold) {
+		return fmt.Errorf("expedited vote threshold %s, must be greater than the regular threshold %s", v.ExpeditedThreshold, v.Threshold)
 	}
 	if !v.VetoThreshold.IsPositive() {
 		return fmt.Errorf("veto threshold must be positive: %s", v.Threshold)
