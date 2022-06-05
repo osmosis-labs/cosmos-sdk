@@ -250,6 +250,7 @@ func DefaultConfig() *Config {
 			Address:        DefaultGRPCAddress,
 			MaxRecvMsgSize: DefaultGRPCMaxRecvMsgSize,
 			MaxSendMsgSize: DefaultGRPCMaxSendMsgSize,
+			Concurrency:    false,
 		},
 		Rosetta: RosettaConfig{
 			Enable:     false,
