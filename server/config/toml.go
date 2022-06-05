@@ -187,7 +187,7 @@ max-send-msg-size = "{{ .GRPC.MaxSendMsgSize }}"
 # Concurrency defines if node queries should be done in parallel.
 # This is experimental and has led to node failures, so enable with caution.
 # The default value is false.
-concurrency = "{{ .GRPC.Concurrency }}"
+concurrency = {{ .GRPC.Concurrency }}
 
 ###############################################################################
 ###                        gRPC Web Configuration                           ###
