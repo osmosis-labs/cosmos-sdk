@@ -150,6 +150,11 @@ type GRPCConfig struct {
 	// MaxSendMsgSize defines the max message size in bytes the server can send.
 	// The default value is math.MaxInt32.
 	MaxSendMsgSize int `mapstructure:"max-send-msg-size"`
+
+	// Concurrency defines if node queries should be done in parallel.
+	// This is experimental and has led to node failures, so enable with caution.
+	// The default value is false.
+	Concurrency bool `mapstructure:"concurrency"`
 }
 
 // GRPCWebConfig defines configuration for the gRPC-web server.
@@ -321,6 +326,7 @@ func GetConfig(v *viper.Viper) Config {
 			Address:        v.GetString("grpc.address"),
 			MaxRecvMsgSize: v.GetInt("grpc.max-recv-msg-size"),
 			MaxSendMsgSize: v.GetInt("grpc.max-send-msg-size"),
+			Concurrency:    v.GetBool("grpc.concurrency"),
 		},
 		GRPCWeb: GRPCWebConfig{
 			Enable:           v.GetBool("grpc-web.enable"),

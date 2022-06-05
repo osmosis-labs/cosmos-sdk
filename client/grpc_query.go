@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/server/config"
 	gogogrpc "github.com/gogo/protobuf/grpc"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"google.golang.org/grpc"
@@ -56,8 +57,10 @@ func (ctx Context) Invoke(grpcCtx gocontext.Context, method string, req, reply i
 	// As a result, we direct them to the ABCI flow where they get syncronized.
 	_, isSimulationRequest := req.(*tx.SimulateRequest)
 	isTendermintQuery := strings.Contains(method, "tendermint")
+	config := config.GetConfig(ctx.Viper)
+	isConcurrencyAllowed := config.GRPC.Concurrency
 
-	isGRPCAllowed := !isTendermintQuery && !isSimulationRequest
+	isGRPCAllowed := !isTendermintQuery && !isSimulationRequest && !isConcurrencyAllowed
 
 	requestedHeight, err := selectHeight(ctx, grpcCtx)
 	if err != nil {

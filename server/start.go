@@ -60,10 +60,11 @@ const (
 
 // GRPC-related flags.
 const (
-	flagGRPCEnable     = "grpc.enable"
-	flagGRPCAddress    = "grpc.address"
-	flagGRPCWebEnable  = "grpc-web.enable"
-	flagGRPCWebAddress = "grpc-web.address"
+	flagGRPCEnable      = "grpc.enable"
+	flagGRPCConcurrency = "grpc.concurrency"
+	flagGRPCAddress     = "grpc.address"
+	flagGRPCWebEnable   = "grpc-web.enable"
+	flagGRPCWebAddress  = "grpc-web.address"
 )
 
 // State sync-related flags.

@@ -206,6 +206,7 @@ func New(t *testing.T, cfg Config) *Network {
 		appCfg.API.Enable = true
 		appCfg.API.Swagger = false
 		appCfg.Telemetry.Enabled = false
+		appCfg.GRPC.Concurrency = false
 
 		ctx := server.NewDefaultContext()
 		tmCfg := ctx.Config
