@@ -138,6 +138,7 @@ Quorum is defined as the minimum percentage of voting power that needs to be
 casted on a proposal for the result to be valid.
 
 ### Expedited Proposals
+
 A proposal can be expedited, making the proposal use shorter voting duration and a higher tally threshold by its default. If an expedited proposal fails to meet the threshold within the scope of shorter voting duration, the expedited proposal is then converted to a regular proposal and restarts voting under regular voting conditions.
 
 ### Threshold
