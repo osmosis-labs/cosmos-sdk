@@ -42,7 +42,6 @@ var (
 	ActiveProposalQueuePrefix   = []byte{0x01}
 	InactiveProposalQueuePrefix = []byte{0x02}
 	ProposalIDKey               = []byte{0x03}
-	ExpeditedProposalsKeyPrefix = []byte{0x04}
 
 	DepositsKeyPrefix = []byte{0x10}
 
