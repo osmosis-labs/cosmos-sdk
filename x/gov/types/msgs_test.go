@@ -45,7 +45,7 @@ func TestMsgSubmitProposal(t *testing.T) {
 
 	for i, tc := range tests {
 		msg, err := NewMsgSubmitProposal(
-			ContentFromProposalType(tc.title, tc.description, tc.proposalType, tc.isExpedited),
+			ContentFromProposalType(tc.title, tc.description, tc.proposalType),
 			tc.initialDeposit,
 			tc.proposerAddr,
 			tc.isExpedited,

@@ -26,7 +26,7 @@ func TestDecodeStore(t *testing.T) {
 	dec := simulation.NewDecodeStore(cdc)
 
 	endTime := time.Now().UTC()
-	content := types.ContentFromProposalType("test", "test", types.ProposalTypeText, false)
+	content := types.ContentFromProposalType("test", "test", types.ProposalTypeText)
 	proposalA, err := types.NewProposal(content, 1, endTime, endTime.Add(24*time.Hour), false)
 	require.NoError(t, err)
 	proposalB, err := types.NewProposal(content, 2, endTime, endTime.Add(24*time.Hour), false)

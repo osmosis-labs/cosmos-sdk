@@ -232,7 +232,7 @@ func RegisterProposalType(ty string) {
 }
 
 // ContentFromProposalType returns a Content object based on the proposal type.
-func ContentFromProposalType(title, desc, ty string, isExpedited bool) Content {
+func ContentFromProposalType(title, desc, ty string) Content {
 	switch ty {
 	case ProposalTypeText:
 		return NewTextProposal(title, desc)
