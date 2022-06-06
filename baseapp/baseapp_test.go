@@ -1841,7 +1841,7 @@ func TestListSnapshots(t *testing.T) {
 		// we check that the query snapshot and function snapshot are equal
 		// Then we check that the hash and metadata are not empty. We atm
 		// do not have a good way to generate the expected value for these.
-		assert.Equal(t, *s, querySnapshot)
+		assert.Equal(t, *s, *querySnapshot)
 		assert.NotEmpty(t, s.Hash)
 		assert.NotEmpty(t, s.Metadata)
 		// Set hash and metadata to nil, so we can check the other snapshot
