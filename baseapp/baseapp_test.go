@@ -1838,16 +1838,16 @@ func TestListSnapshots(t *testing.T) {
 
 	for i, s := range resp.Snapshots {
 		querySnapshot := queryListSnapshotsResp.Snapshots[i]
-
+		// we check that the query snapshot and function snapshot are equal
+		// Then we check that the hash and metadata are not empty. We atm
+		// do not have a good way to generate the expected value for these.
+		assert.Equal(t, *s, querySnapshot)
 		assert.NotEmpty(t, s.Hash)
 		assert.NotEmpty(t, s.Metadata)
+		// Set hash and metadata to nil, so we can check the other snapshot
+		// fields against expected
 		s.Hash = nil
 		s.Metadata = nil
-
-		assert.NotEmpty(t, querySnapshot.Hash)
-		assert.NotEmpty(t, querySnapshot.Metadata)
-		querySnapshot.Hash = nil
-		querySnapshot.Metadata = nil
 	}
 	assert.Equal(t, expected, resp)
 	assert.Equal(t, expected, queryListSnapshotsResp)
