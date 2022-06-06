@@ -1850,7 +1850,6 @@ func TestListSnapshots(t *testing.T) {
 		s.Metadata = nil
 	}
 	assert.Equal(t, expected, resp)
-	assert.Equal(t, expected, queryListSnapshotsResp)
 }
 
 func TestSnapshotWithPruning(t *testing.T) {
