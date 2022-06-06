@@ -759,13 +759,11 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) abci.Res
 			}
 
 		case "snapshots":
+			var responseValue []byte
 
 			response := app.ListSnapshots(abci.RequestListSnapshots{})
 
-			var responseValue []byte
-
 			responseValue, err := json.Marshal(response)
-
 			if err != nil {
 				sdkerrors.QueryResult(sdkerrors.Wrap(err, fmt.Sprintf("failed to marshal list snapshots response %v", response)))
 			}
