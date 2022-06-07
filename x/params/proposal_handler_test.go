@@ -76,6 +76,17 @@ func (suite *HandlerTestSuite) TestProposalHandler() {
 			},
 			false,
 		},
+		{
+			"min_deposit equals to min_expedited_deposit",
+			testProposal(proposal.ParamChange{
+				Subspace: govtypes.ModuleName,
+				Key:      string(govtypes.ParamStoreKeyDepositParams),
+				Value:    `{"min_deposit": [{"denom": "uatom","amount": "64000000"}],"min_expedited_deposit": [{"denom": "uatom","amount": "64000000"}]}`,
+			}),
+			func() {
+			},
+			true,
+		},
 	}
 
 	for _, tc := range testCases {
