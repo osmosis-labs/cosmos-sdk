@@ -23,7 +23,7 @@ message GenesisState {
   // denom_metadata defines the metadata of the differents coins.
   repeated Metadata denom_metadata = 4 [(gogoproto.moretags) = "yaml:\"denom_metadata\"", (gogoproto.nullable) = false];
 
-  // denom_metadata defines the metadata of the differents coins.
+  // supply_offsets defines the amount of supply offset.
   repeated GenesisSupplyOffset supply_offsets = 5
       [(gogoproto.moretags) = "yaml:\"supply_offsets\"", (gogoproto.nullable) = false];
 }

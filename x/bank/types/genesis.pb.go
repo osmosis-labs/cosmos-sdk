@@ -36,7 +36,7 @@ type GenesisState struct {
 	Supply github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,3,rep,name=supply,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"supply"`
 	// denom_metadata defines the metadata of the differents coins.
 	DenomMetadata []Metadata `protobuf:"bytes,4,rep,name=denom_metadata,json=denomMetadata,proto3" json:"denom_metadata" yaml:"denom_metadata"`
-	// denom_metadata defines the metadata of the differents coins.
+	// supply_offsets defines the amount of supply offset.
 	SupplyOffsets []GenesisSupplyOffset `protobuf:"bytes,5,rep,name=supply_offsets,json=supplyOffsets,proto3" json:"supply_offsets" yaml:"supply_offsets"`
 }
 
