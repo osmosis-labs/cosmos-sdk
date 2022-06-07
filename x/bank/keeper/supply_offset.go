@@ -115,3 +115,24 @@ func (k BaseViewKeeper) IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(s
 		}
 	}
 }
+
+// IterateTotalSupplyWithOffsets iterates over the total supply with offsets calling the given cb (callback) function
+// with the balance of each coin.
+// The iteration stops if the callback returns true.
+func (k BaseViewKeeper) getGenesisSupplyOffsets(ctx sdk.Context) []types.GenesisSupplyOffset {
+	store := ctx.KVStore(k.storeKey)
+	supplyStore := prefix.NewStore(store, types.SupplyKey)
+
+	iterator := supplyStore.Iterator(nil, nil)
+	defer iterator.Close()
+
+	supplyOffsets := []types.GenesisSupplyOffset{}
+	for ; iterator.Valid(); iterator.Next() {
+		supplyOffset := types.GenesisSupplyOffset{
+			Denom:  string(iterator.Key()),
+			Offset: k.GetSupplyOffset(ctx, string(iterator.Key())),
+		}
+		supplyOffsets = append(supplyOffsets, supplyOffset)
+	}
+	return supplyOffsets
+}
