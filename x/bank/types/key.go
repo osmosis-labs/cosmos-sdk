@@ -26,7 +26,7 @@ var (
 	BalancesPrefix             = []byte{0x02}
 	SupplyKey                  = []byte{0x00}
 	DenomMetadataPrefix        = []byte{0x1}
-	DenomMetadataReversePrefix = []byte{0x2}
+	DenomMetadataReversePrefix = []byte{0x03}
 	SupplyOffsetKey            = []byte{0x88}
 )
 
