@@ -435,13 +435,13 @@ func (app *BaseApp) GetConsensusParams(ctx sdk.Context) *abci.ConsensusParams {
 		cp.Validator = &vp
 	}
 
-	if app.paramStore.Has(ctx, ParamStoreKeyVersionParams) {
-		var vp tmproto.VersionParams
-
-		app.paramStore.Get(ctx, ParamStoreKeyVersionParams, &vp)
-		cp.Version = &vp
+	appVersion, err := app.cms.GetAppVersion()
+	if err != nil {
+		panic(err)
 	}
-
+	cp.Version = &tmproto.VersionParams{
+		AppVersion: appVersion,
+	}
 	return cp
 }
 
@@ -465,7 +465,8 @@ func (app *BaseApp) StoreConsensusParams(ctx sdk.Context, cp *abci.ConsensusPara
 	app.paramStore.Set(ctx, ParamStoreKeyBlockParams, cp.Block)
 	app.paramStore.Set(ctx, ParamStoreKeyEvidenceParams, cp.Evidence)
 	app.paramStore.Set(ctx, ParamStoreKeyValidatorParams, cp.Validator)
-	app.paramStore.Set(ctx, ParamStoreKeyVersionParams, cp.Version)
+	// We do not store the version params here because they are
+	// persisted in multi stored which is used as the single source of truth.
 }
 
 // getMaximumBlockGas gets the maximum gas from the consensus params. It panics
