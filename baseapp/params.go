@@ -18,7 +18,7 @@ var (
 	ParamStoreKeyBlockParams     = []byte("BlockParams")
 	ParamStoreKeyEvidenceParams  = []byte("EvidenceParams")
 	ParamStoreKeyValidatorParams = []byte("ValidatorParams")
-	ParamStoreKeyVersionParams   = []byte("VersionParams")
+	ParamStoreKeyVersionParams   = []byte("ConsensusVersionParams")
 )
 
 // ParamStore defines the interface the parameter store used by the BaseApp must

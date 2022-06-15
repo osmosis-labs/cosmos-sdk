@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -34,6 +35,7 @@ import (
 const (
 	latestVersionKey = "s/latest"
 	commitInfoKeyFmt = "s/%d" // s/<version>
+	appVersionKey    = "s/appversion"
 
 	proofsPath = "proofs"
 )
@@ -705,6 +707,23 @@ func (rs *Store) Snapshot(height uint64, protoWriter protoio.Writer) error {
 		return strings.Compare(stores[i].name, stores[j].name) == -1
 	})
 
+	appVersion, err := rs.GetAppVersion()
+	if err != nil {
+		return err
+	}
+
+	err = protoWriter.WriteMsg(&snapshottypes.SnapshotItem{
+		Item: &snapshottypes.SnapshotItem_Extension{
+			Extension: &snapshottypes.SnapshotExtensionMeta{
+				Name:   "app_version",
+				Format: uint32(appVersion),
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	// Export each IAVL store. Stores are serialized as a stream of SnapshotItem Protobuf
 	// messages. The first item contains a SnapshotStore with store metadata (i.e. name),
 	// and the following messages contain a SnapshotNode (i.e. an ExportNode). Store changes
@@ -817,6 +836,13 @@ loop:
 			err := importer.Add(node)
 			if err != nil {
 				return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "IAVL node import failed")
+			}
+
+		case *snapshottypes.SnapshotItem_Extension:
+			// App version
+			err := rs.SetAppVersion(uint64(item.Extension.Format))
+			if err != nil {
+				return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "IAVL node import failed - error flushing app version")
 			}
 
 		default:
@@ -973,6 +999,29 @@ func (rs *Store) getCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
 	}
 
 	return cInfo, nil
+}
+
+func (rs *Store) SetAppVersion(appVersion uint64) error {
+	if err := rs.db.SetSync([]byte(appVersionKey), []byte(strconv.Itoa(int(appVersion)))); err != nil {
+		panic(fmt.Errorf("error on write %w", err))
+	}
+	return nil
+}
+
+func (rs *Store) GetAppVersion() (uint64, error) {
+	bz, err := rs.db.Get([]byte(appVersionKey))
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get commit info")
+	} else if bz == nil {
+		return 0, nil
+	}
+
+	appVersion, err := strconv.ParseUint(string(bz), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return appVersion, nil
 }
 
 func (rs *Store) doProofsQuery(req abci.RequestQuery) abci.ResponseQuery {

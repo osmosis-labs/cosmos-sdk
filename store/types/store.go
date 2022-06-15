@@ -41,6 +41,12 @@ type Queryable interface {
 	Query(abci.RequestQuery) abci.ResponseQuery
 }
 
+// ProtocolVersionManager defines the interface which allows managing the appVersion field.
+type ProtocolVersionManager interface {
+	GetAppVersion() (uint64, error)
+	SetAppVersion(version uint64) error
+}
+
 //----------------------------------------
 // MultiStore
 
@@ -151,6 +157,7 @@ type CommitMultiStore interface {
 	Committer
 	MultiStore
 	snapshottypes.Snapshotter
+	ProtocolVersionManager
 
 	// Mount a store of type using the given db.
 	// If db == nil, the new store will use the CommitMultiStore db.

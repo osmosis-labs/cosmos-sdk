@@ -1,7 +1,6 @@
 package baseapp
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -313,12 +312,12 @@ func (app *BaseApp) init() error {
 	// If there is no app version set in the store, we should set it to 0.
 	// Panic on any other error.
 	// If errMsgNoProtocolVersionSet, we assume that appVersion is assigned to be 0.
-	appVersion, err := app.GetAppVersion(app.checkState.ctx)
-	if err != nil && !errors.Is(err, errMsgNoProtocolVersionSet) {
+	appVersion, err := app.GetAppVersion()
+	if err != nil {
 		return err
 	}
 
-	if err := app.SetAppVersion(app.checkState.ctx, appVersion); err != nil {
+	if err := app.SetAppVersion(appVersion); err != nil {
 		return err
 	}
 	app.Seal()
@@ -467,8 +466,6 @@ func (app *BaseApp) StoreConsensusParams(ctx sdk.Context, cp *abci.ConsensusPara
 	app.paramStore.Set(ctx, ParamStoreKeyEvidenceParams, cp.Evidence)
 	app.paramStore.Set(ctx, ParamStoreKeyValidatorParams, cp.Validator)
 	app.paramStore.Set(ctx, ParamStoreKeyVersionParams, cp.Version)
-	// We're explicitly not storing the Tendermint app_version in the param store. It's
-	// stored instead in the x/upgrade store, with its own bump logic.
 }
 
 // getMaximumBlockGas gets the maximum gas from the consensus params. It panics
