@@ -1010,7 +1010,7 @@ func (rs *Store) SetAppVersion(appVersion uint64) error {
 func (rs *Store) GetAppVersion() (uint64, error) {
 	bz, err := rs.db.Get([]byte(appVersionKey))
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to get commit info")
+		return 0, errors.Wrap(err, "failed to get app version")
 	} else if bz == nil {
 		return 0, nil
 	}
