@@ -774,6 +774,41 @@ func TestCacheWraps(t *testing.T) {
 	require.IsType(t, cachemulti.Store{}, cacheWrappedWithListeners)
 }
 
+func TestSetAppVersion(t *testing.T) {
+	testcases := map[string]struct {
+		expectError bool
+	}{
+		"no error": {},
+		"error": {
+			expectError: true,
+		},
+	}
+
+	for name, tc := range testcases {
+		t.Run(name, func(t *testing.T) {
+			var db dbm.DB
+			if tc.expectError {
+				ctrl := gomock.NewController(t)
+				dbMock := mock.NewMockDB(ctrl)
+				dbMock.EXPECT().SetSync(gomock.Any(), gomock.Any()).Return(errors.New(dbErr)).Times(1)
+				db = dbMock
+			} else {
+				db = dbm.NewMemDB()
+			}
+
+			store := newMultiStoreWithMounts(db, pruningtypes.NewPruningOptions(pruningtypes.PruningNothing))
+
+			err := store.SetAppVersion(0)
+
+			if tc.expectError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestGetAppVersion(t *testing.T) {
 	testcases := map[string]struct {
 		store          *Store
