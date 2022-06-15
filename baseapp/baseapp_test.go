@@ -53,8 +53,12 @@ func defaultLogger() log.Logger {
 }
 
 func newBaseApp(name string, options ...func(*BaseApp)) *BaseApp {
-	logger := defaultLogger()
 	db := dbm.NewMemDB()
+	return newBaseAppWithDb(name, db, options...)
+}
+
+func newBaseAppWithDb(name string, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
+	logger := defaultLogger()
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 	return NewBaseApp(name, logger, db, testTxDecoder(codec), options...)
@@ -482,7 +486,7 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, int64(0), res.LastBlockHeight)
 	require.Equal(t, []uint8(nil), res.LastBlockAppHash)
 
-	appVersion, err := app.GetAppVersion(app.deliverState.ctx)
+	appVersion, err := app.GetAppVersion()
 	require.NoError(t, err)
 
 	assert.Equal(t, appVersion, res.AppVersion)
@@ -632,7 +636,7 @@ func TestInitChain_ProtocolVersionSetToZero(t *testing.T) {
 		},
 	)
 
-	protocolVersion, err := app.GetAppVersion(app.deliverState.ctx)
+	protocolVersion, err := app.GetAppVersion()
 	require.NoError(t, err)
 	require.Equal(t, uint64(0), protocolVersion)
 }
@@ -2443,11 +2447,11 @@ func TestBaseApp_Init_PruningAndSnapshot(t *testing.T) {
 }
 
 func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
-	const versionNotSet = -1
+	const versionNotSet = 0
 
 	testcases := []struct {
 		name            string
-		protocolVersion int64
+		protocolVersion uint64
 	}{
 		{
 			name:            "no app version was set - set to 0",
@@ -2461,29 +2465,23 @@ func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			app := newBaseApp(t.Name())
 			db := dbm.NewMemDB()
+			app := newBaseAppWithDb(t.Name(), db)
 
-			app.SetParamStore(&mock.ParamStore{db})
-
-			var expectedProtocolVersion uint64
 			if tc.protocolVersion != versionNotSet {
-				// Set version on another app with the same param store (db),
-				// pretending that the app version was set on the app in advance.
-				oldApp := newBaseApp(t.Name())
-				oldApp.SetParamStore(&mock.ParamStore{db})
-				require.NoError(t, oldApp.init())
-
-				expectedProtocolVersion = uint64(tc.protocolVersion)
-				require.NoError(t, oldApp.SetAppVersion(oldApp.checkState.ctx, expectedProtocolVersion))
+				err := app.cms.SetAppVersion(tc.protocolVersion)
+				require.NoError(t, err)
 			}
+
+			// recreate app
+			app = newBaseAppWithDb(t.Name(), db)
 
 			require.NoError(t, app.init())
 
-			actualProtocolVersion, err := app.GetAppVersion(app.checkState.ctx)
+			actualProtocolVersion, err := app.GetAppVersion()
 			require.NoError(t, err)
 
-			require.Equal(t, expectedProtocolVersion, actualProtocolVersion)
+			require.Equal(t, tc.protocolVersion, actualProtocolVersion)
 		})
 	}
 }

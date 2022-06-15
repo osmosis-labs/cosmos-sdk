@@ -85,7 +85,7 @@ func (k Keeper) SetModuleVersionMap(ctx sdk.Context, vm module.VersionMap) {
 
 // SetAppVersion sets app version to version
 func (k Keeper) SetAppVersion(ctx sdk.Context, version uint64) error {
-	return k.versionManager.SetAppVersion(ctx, version)
+	return k.versionManager.SetAppVersion(version)
 }
 
 // GetModuleVersionMap returns a map of key module name and value module consensus version
@@ -292,11 +292,11 @@ func (k Keeper) ApplyUpgrade(ctx sdk.Context, plan types.Plan) {
 
 	if k.versionManager != nil {
 		// increment the app version and set it in state and baseapp
-		appVersion, err := k.versionManager.GetAppVersion(ctx)
+		appVersion, err := k.versionManager.GetAppVersion()
 		if err != nil {
 			panic(err)
 		}
-		if err := k.versionManager.SetAppVersion(ctx, appVersion+1); err != nil {
+		if err := k.versionManager.SetAppVersion(appVersion + 1); err != nil {
 			panic(err)
 		}
 	}

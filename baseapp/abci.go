@@ -46,7 +46,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	app.setDeliverState(initHeader)
 	app.setCheckState(initHeader)
 
-	if err := app.SetAppVersion(app.deliverState.ctx, 0); err != nil {
+	if err := app.SetAppVersion(0); err != nil {
 		panic(err)
 	}
 
@@ -112,10 +112,8 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
-	appVersion, err := app.GetAppVersion(app.checkState.ctx)
-	if err != nil {
-		app.logger.Error("failed to get app version", err)
-	}
+	appVersion, err := app.GetAppVersion()
+	app.logger.Info("get app version", "app version", appVersion, "error", err)
 
 	return abci.ResponseInfo{
 		Data:             app.name,
