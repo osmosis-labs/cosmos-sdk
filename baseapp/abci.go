@@ -129,7 +129,9 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
 	appVersion, err := app.GetAppVersion()
-	app.logger.Info("get app version", "app version", appVersion, "error", err)
+	if err != nil {
+		app.logger.Error("failed to get app version", err)
+	}
 
 	return abci.ResponseInfo{
 		Data:             app.name,
