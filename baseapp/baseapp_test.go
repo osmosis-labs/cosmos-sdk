@@ -623,7 +623,9 @@ func TestInitChainer(t *testing.T) {
 	require.Equal(t, value, res.Value)
 }
 
-func TestInitChain_ProtocolVersionSetToZero(t *testing.T) {
+func TestInitChain_AppVersionSetToZero(t *testing.T) {
+	const expectedAppVersion = uint64(0)
+
 	name := t.Name()
 	db := dbm.NewMemDB()
 	logger := defaultLogger()
@@ -638,7 +640,33 @@ func TestInitChain_ProtocolVersionSetToZero(t *testing.T) {
 
 	protocolVersion, err := app.GetAppVersion()
 	require.NoError(t, err)
-	require.Equal(t, uint64(0), protocolVersion)
+	require.Equal(t, expectedAppVersion, protocolVersion)
+
+	consensusParams := app.GetConsensusParams(app.checkState.ctx)
+
+	require.Equal(t, expectedAppVersion, consensusParams.Version.AppVersion)
+}
+
+func TestInitChain_NonZeroAppVersionInRequestPanic(t *testing.T) {
+	name := t.Name()
+	db := dbm.NewMemDB()
+	logger := defaultLogger()
+	app := NewBaseApp(name, logger, db, nil)
+	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
+
+	sut := func() {
+		app.InitChain(
+			abci.RequestInitChain{
+				InitialHeight: 3,
+				ConsensusParams: &abci.ConsensusParams{
+					Version: &tmproto.VersionParams{
+						AppVersion: 10,
+					},
+				},
+			},
+		)
+	}
+	require.Panics(t, sut)
 }
 
 func TestInitChain_WithInitialHeight(t *testing.T) {
