@@ -841,7 +841,7 @@ loop:
 			// App version
 			err := rs.SetAppVersion(uint64(item.AppVersion.Version))
 			if err != nil {
-				return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "IAVL node import failed - error flushing app version")
+				return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "IAVL node import failed - error saving app version from received snapshot")
 			}
 
 		default:
