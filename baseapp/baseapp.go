@@ -129,7 +129,7 @@ type BaseApp struct { // nolint: maligned
 	indexEvents map[string]struct{}
 }
 
-var _ upgrade.ProtocolVersionManager = (*BaseApp)(nil)
+var _ upgrade.AppVersionManager = (*BaseApp)(nil)
 
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
 // variadic number of option functions, which act on the BaseApp to set

@@ -30,6 +30,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/transient"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	vm "github.com/cosmos/cosmos-sdk/x/upgrade/exported"
 )
 
 const (
@@ -73,6 +74,7 @@ type Store struct {
 
 var (
 	_ types.CommitMultiStore = (*Store)(nil)
+	_ vm.AppVersionManager   = (*Store)(nil)
 	_ types.Queryable        = (*Store)(nil)
 )
 

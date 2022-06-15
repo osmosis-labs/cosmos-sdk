@@ -11,6 +11,7 @@ import (
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
+	vm "github.com/cosmos/cosmos-sdk/x/upgrade/exported"
 )
 
 type Store interface {
@@ -39,12 +40,6 @@ type CommitStore interface {
 // This is an optional, but useful extension to any CommitStore
 type Queryable interface {
 	Query(abci.RequestQuery) abci.ResponseQuery
-}
-
-// ProtocolVersionManager defines the interface which allows managing the appVersion field.
-type ProtocolVersionManager interface {
-	GetAppVersion() (uint64, error)
-	SetAppVersion(version uint64) error
 }
 
 //----------------------------------------
@@ -157,7 +152,7 @@ type CommitMultiStore interface {
 	Committer
 	MultiStore
 	snapshottypes.Snapshotter
-	ProtocolVersionManager
+	vm.AppVersionManager
 
 	// Mount a store of type using the given db.
 	// If db == nil, the new store will use the CommitMultiStore db.
