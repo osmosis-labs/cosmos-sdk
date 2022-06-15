@@ -179,7 +179,11 @@ func TestMultistoreSnapshot_Errors(t *testing.T) {
 }
 
 func TestMultistoreSnapshotRestore(t *testing.T) {
+	const expectedAppVersion = uint64(10)
+
 	source := newMultiStoreWithMixedMountsAndBasicData(dbm.NewMemDB())
+	require.NoError(t, source.SetAppVersion(expectedAppVersion))
+
 	target := newMultiStoreWithMixedMounts(dbm.NewMemDB())
 	version := uint64(source.LastCommitID().Version)
 	require.EqualValues(t, 3, version)
@@ -209,6 +213,11 @@ func TestMultistoreSnapshotRestore(t *testing.T) {
 	nextItem, err := target.Restore(version, snapshottypes.CurrentFormat, streamReader)
 	require.NoError(t, err)
 	require.Equal(t, *dummyExtensionItem.GetExtension(), *nextItem.GetExtension())
+
+	// check that the app version is restored from snapshot.
+	appVersion, err := target.GetAppVersion()
+	require.NoError(t, err)
+	require.Equal(t, expectedAppVersion, appVersion)
 
 	assert.Equal(t, source.LastCommitID(), target.LastCommitID())
 	for key, sourceStore := range source.GetStores() {
