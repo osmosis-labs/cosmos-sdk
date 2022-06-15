@@ -2474,7 +2474,7 @@ func TestBaseApp_Init_PruningAndSnapshot(t *testing.T) {
 	}
 }
 
-func TestBaseApp_Init_ProtocolVersion(t *testing.T) {
+func TestBaseApp_Init_AppVersion(t *testing.T) {
 	const versionNotSet = 0
 
 	testcases := []struct {

@@ -110,7 +110,7 @@ func (app *BaseApp) SetAppVersion(v uint64) error {
 }
 
 // GetAppVersion gets the application's app version
-// an error, if any.
+// or error, if any.
 func (app *BaseApp) GetAppVersion() (uint64, error) {
 	appVersion, err := app.cms.GetAppVersion()
 	if err != nil {

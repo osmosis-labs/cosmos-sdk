@@ -214,7 +214,7 @@ func TestMultistoreSnapshotRestore(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, *dummyExtensionItem.GetExtension(), *nextItem.GetExtension())
 
-	// check that the app version is restored from snapshot.
+	// check that the app version is restored from a snapshot.
 	appVersion, err := target.GetAppVersion()
 	require.NoError(t, err)
 	require.Equal(t, expectedAppVersion, appVersion)

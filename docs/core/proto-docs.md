@@ -2865,10 +2865,7 @@ SnapshotItem is an item contained in a rootmulti.Store snapshot.
 | `iavl` | [SnapshotIAVLItem](#cosmos.base.snapshots.v1beta1.SnapshotIAVLItem) |  |  |
 | `extension` | [SnapshotExtensionMeta](#cosmos.base.snapshots.v1beta1.SnapshotExtensionMeta) |  |  |
 | `extension_payload` | [SnapshotExtensionPayload](#cosmos.base.snapshots.v1beta1.SnapshotExtensionPayload) |  |  |
-<<<<<<< HEAD
-=======
 | `app_version` | [SnapshotAppVersion](#cosmos.base.snapshots.v1beta1.SnapshotAppVersion) |  |  |
->>>>>>> 2a493e4719 (increase snapshot format version to with app version shared)
 
 
 
