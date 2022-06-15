@@ -463,7 +463,7 @@ func (app *BaseApp) StoreConsensusParams(ctx sdk.Context, cp *abci.ConsensusPara
 	app.paramStore.Set(ctx, ParamStoreKeyEvidenceParams, cp.Evidence)
 	app.paramStore.Set(ctx, ParamStoreKeyValidatorParams, cp.Validator)
 	// We do not store the version params here because they are
-	// persisted in multi stored which is used as the single source of truth.
+	// persisted in a multi-store which is used as the single source of truth.
 }
 
 // getMaximumBlockGas gets the maximum gas from the consensus params. It panics
