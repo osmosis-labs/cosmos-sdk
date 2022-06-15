@@ -713,10 +713,9 @@ func (rs *Store) Snapshot(height uint64, protoWriter protoio.Writer) error {
 	}
 
 	err = protoWriter.WriteMsg(&snapshottypes.SnapshotItem{
-		Item: &snapshottypes.SnapshotItem_Extension{
-			Extension: &snapshottypes.SnapshotExtensionMeta{
-				Name:   "app_version",
-				Format: uint32(appVersion),
+		Item: &snapshottypes.SnapshotItem_AppVersion{
+			AppVersion: &snapshottypes.SnapshotAppVersion{
+				Version: appVersion,
 			},
 		},
 	})
@@ -838,9 +837,9 @@ loop:
 				return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "IAVL node import failed")
 			}
 
-		case *snapshottypes.SnapshotItem_Extension:
+		case *snapshottypes.SnapshotItem_AppVersion:
 			// App version
-			err := rs.SetAppVersion(uint64(item.Extension.Format))
+			err := rs.SetAppVersion(uint64(item.AppVersion.Version))
 			if err != nil {
 				return snapshottypes.SnapshotItem{}, sdkerrors.Wrap(err, "IAVL node import failed - error flushing app version")
 			}

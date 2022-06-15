@@ -1827,8 +1827,8 @@ func TestListSnapshots(t *testing.T) {
 	defer teardown()
 
 	expected := abci.ResponseListSnapshots{Snapshots: []*abci.Snapshot{
-		{Height: 4, Format: 1, Chunks: 2},
-		{Height: 2, Format: 1, Chunks: 1},
+		{Height: 4, Format: 2, Chunks: 2},
+		{Height: 2, Format: 2, Chunks: 1},
 	}}
 
 	resp := app.ListSnapshots(abci.RequestListSnapshots{})
@@ -1871,7 +1871,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 				pruningOpts:       pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
 			},
 			expectedSnapshots: []*abci.Snapshot{
-				{Height: 20, Format: 1, Chunks: 5},
+				{Height: 20, Format: 2, Chunks: 5},
 			},
 		},
 		"prune everything with snapshot": {
@@ -1883,7 +1883,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 				pruningOpts:       pruningtypes.NewPruningOptions(pruningtypes.PruningEverything),
 			},
 			expectedSnapshots: []*abci.Snapshot{
-				{Height: 20, Format: 1, Chunks: 5},
+				{Height: 20, Format: 2, Chunks: 5},
 			},
 		},
 		"default pruning with snapshot": {
@@ -1895,7 +1895,7 @@ func TestSnapshotWithPruning(t *testing.T) {
 				pruningOpts:       pruningtypes.NewPruningOptions(pruningtypes.PruningDefault),
 			},
 			expectedSnapshots: []*abci.Snapshot{
-				{Height: 20, Format: 1, Chunks: 5},
+				{Height: 20, Format: 2, Chunks: 5},
 			},
 		},
 		"custom": {
@@ -1907,8 +1907,8 @@ func TestSnapshotWithPruning(t *testing.T) {
 				pruningOpts:       pruningtypes.NewCustomPruningOptions(12, 12),
 			},
 			expectedSnapshots: []*abci.Snapshot{
-				{Height: 25, Format: 1, Chunks: 6},
-				{Height: 20, Format: 1, Chunks: 5},
+				{Height: 25, Format: 2, Chunks: 6},
+				{Height: 20, Format: 2, Chunks: 5},
 			},
 		},
 		"no snapshots": {
@@ -1929,9 +1929,9 @@ func TestSnapshotWithPruning(t *testing.T) {
 				pruningOpts:       pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
 			},
 			expectedSnapshots: []*abci.Snapshot{
-				{Height: 9, Format: 1, Chunks: 2},
-				{Height: 6, Format: 1, Chunks: 2},
-				{Height: 3, Format: 1, Chunks: 1},
+				{Height: 9, Format: 2, Chunks: 2},
+				{Height: 6, Format: 2, Chunks: 2},
+				{Height: 3, Format: 2, Chunks: 1},
 			},
 		},
 	}
@@ -2008,13 +2008,13 @@ func TestLoadSnapshotChunk(t *testing.T) {
 		chunk       uint32
 		expectEmpty bool
 	}{
-		"Existing snapshot": {2, 1, 1, false},
-		"Missing height":    {100, 1, 1, true},
-		"Missing format":    {2, 2, 1, true},
-		"Missing chunk":     {2, 1, 9, true},
-		"Zero height":       {0, 1, 1, true},
+		"Existing snapshot": {2, 2, 1, false},
+		"Missing height":    {100, 2, 1, true},
+		"Missing format":    {2, 1, 1, true},
+		"Missing chunk":     {2, 2, 9, true},
+		"Zero height":       {0, 2, 1, true},
 		"Zero format":       {2, 0, 1, true},
-		"Zero chunk":        {2, 1, 0, false},
+		"Zero chunk":        {2, 2, 0, false},
 	}
 	for name, tc := range testcases {
 		tc := tc
@@ -2060,13 +2060,13 @@ func TestOfferSnapshot_Errors(t *testing.T) {
 			Height: 1, Format: 9, Chunks: 3, Hash: hash, Metadata: metadata,
 		}, abci.ResponseOfferSnapshot_REJECT_FORMAT},
 		"incorrect chunk count": {&abci.Snapshot{
-			Height: 1, Format: 1, Chunks: 2, Hash: hash, Metadata: metadata,
+			Height: 1, Format: 2, Chunks: 2, Hash: hash, Metadata: metadata,
 		}, abci.ResponseOfferSnapshot_REJECT},
 		"no chunks": {&abci.Snapshot{
-			Height: 1, Format: 1, Chunks: 0, Hash: hash, Metadata: metadata,
+			Height: 1, Format: 2, Chunks: 0, Hash: hash, Metadata: metadata,
 		}, abci.ResponseOfferSnapshot_REJECT},
 		"invalid metadata serialization": {&abci.Snapshot{
-			Height: 1, Format: 1, Chunks: 0, Hash: hash, Metadata: []byte{3, 1, 4},
+			Height: 1, Format: 2, Chunks: 0, Hash: hash, Metadata: []byte{3, 1, 4},
 		}, abci.ResponseOfferSnapshot_REJECT},
 	}
 	for name, tc := range testcases {
