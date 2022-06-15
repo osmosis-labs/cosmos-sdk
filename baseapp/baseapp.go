@@ -309,9 +309,6 @@ func (app *BaseApp) init() error {
 	// needed for the export command which inits from store but never calls initchain
 	app.setCheckState(tmproto.Header{})
 
-	// If there is no app version set in the store, we should set it to 0.
-	// Panic on any other error.
-	// If errMsgNoProtocolVersionSet, we assume that appVersion is assigned to be 0.
 	appVersion, err := app.GetAppVersion()
 	if err != nil {
 		return err
