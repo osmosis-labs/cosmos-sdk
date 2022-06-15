@@ -1002,7 +1002,7 @@ func (rs *Store) getCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
 
 func (rs *Store) SetAppVersion(appVersion uint64) error {
 	if err := rs.db.SetSync([]byte(appVersionKey), []byte(strconv.Itoa(int(appVersion)))); err != nil {
-		panic(fmt.Errorf("error on write %w", err))
+		return fmt.Errorf("error on write %w", err)
 	}
 	return nil
 }
