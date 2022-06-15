@@ -1,7 +1,6 @@
 package baseapp
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -13,10 +12,6 @@ import (
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
-var (
-	errMsgNilParamStore = errors.New("paramStore was nil")
 )
 
 // File for storing in-package BaseApp optional functions,
