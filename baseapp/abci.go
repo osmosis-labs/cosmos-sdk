@@ -24,15 +24,14 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const (
-	initialAppVersion = 0
-)
+type AppVersionError struct {
+	Actual  uint64
+	Initial uint64
+}
 
-var (
-	errAppVersionIsNotInitial = func(actualVersion uint64) error {
-		return fmt.Errorf("app version is not initial, was %d, expected %d", actualVersion, initialAppVersion)
-	}
-)
+func (e *AppVersionError) Error() string {
+	return fmt.Sprintf("app version (%d) is not initial (%d)", e.Actual, e.Initial)
+}
 
 // InitChain implements the ABCI interface. It runs the initialization logic
 // directly on the CommitMultiStore.
