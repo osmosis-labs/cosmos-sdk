@@ -54,10 +54,10 @@ func defaultLogger() log.Logger {
 
 func newBaseApp(name string, options ...func(*BaseApp)) *BaseApp {
 	db := dbm.NewMemDB()
-	return newBaseAppWithDb(name, db, options...)
+	return newBaseAppWithDB(name, db, options...)
 }
 
-func newBaseAppWithDb(name string, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
+func newBaseAppWithDB(name string, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
 	logger := defaultLogger()
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
@@ -2494,7 +2494,7 @@ func TestBaseApp_Init_AppVersion(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			db := dbm.NewMemDB()
-			app := newBaseAppWithDb(t.Name(), db)
+			app := newBaseAppWithDB(t.Name(), db)
 
 			if tc.protocolVersion != versionNotSet {
 				err := app.cms.SetAppVersion(tc.protocolVersion)
@@ -2502,7 +2502,7 @@ func TestBaseApp_Init_AppVersion(t *testing.T) {
 			}
 
 			// recreate app
-			app = newBaseAppWithDb(t.Name(), db)
+			app = newBaseAppWithDB(t.Name(), db)
 
 			require.NoError(t, app.init())
 
