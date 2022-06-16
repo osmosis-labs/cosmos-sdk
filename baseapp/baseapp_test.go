@@ -624,7 +624,7 @@ func TestInitChainer(t *testing.T) {
 }
 
 func TestInitChain_AppVersionSetToZero(t *testing.T) {
-	const expectedAppVersion uint64
+	const expectedAppVersion = uint64(0)
 
 	name := t.Name()
 	db := dbm.NewMemDB()
