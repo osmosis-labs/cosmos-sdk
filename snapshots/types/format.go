@@ -6,5 +6,5 @@ package types
 // nodes for a given height, so this must be bumped when the binary
 // snapshot output changes.
 // CurrentFormat of 1 is the original format.
-// CurrentFormat of 2 serailizes app version in addition to the original snapshot data.
+// CurrentFormat of 2 serializes the app version in addition to the original snapshot data.
 const CurrentFormat uint32 = 2
