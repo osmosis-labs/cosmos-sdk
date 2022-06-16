@@ -24,6 +24,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+const initialAppVersion = 0
+
 type AppVersionError struct {
 	Actual  uint64
 	Initial uint64
@@ -66,7 +68,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		// When InitChain is called, the app version should either be absent and determined by the application
 		// or set to 0. Panic if it's not.
 		if req.ConsensusParams.Version != nil && req.ConsensusParams.Version.AppVersion != initialAppVersion {
-			panic(errAppVersionIsNotInitial(req.ConsensusParams.Version.AppVersion))
+			panic(AppVersionError{Actual: req.ConsensusParams.Version.AppVersion, Initial: initialAppVersion})
 		}
 
 		app.StoreConsensusParams(app.deliverState.ctx, req.ConsensusParams)
