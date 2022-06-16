@@ -64,7 +64,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	// done after the deliver state and context have been set as it's persisted
 	// to state.
 	if req.ConsensusParams != nil {
-		// When init chain is called, the app version should either be absent and determined by the application
+		// When InitChain is called, the app version should either be absent and determined by the application
 		// or set to 0. Panic if it's not.
 		if req.ConsensusParams.Version != nil && req.ConsensusParams.Version.AppVersion != initialAppVersion {
 			panic(errAppVersionIsNotInitial(req.ConsensusParams.Version.AppVersion))
