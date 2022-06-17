@@ -274,7 +274,8 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		chainID := ctx.ChainID()
 		var accNum uint64
 		if !genesis {
-			fmt.Printf("ACC NUMBER %v \n", accNum)
+			fmt.Printf("ACC NUMBER INIT %v \n", accNum)
+			fmt.Printf("ADDR INIT %v \n", acc.GetAddress())
 			accNum = acc.GetAccountNumber()
 		}
 		signerData := authsigning.SignerData{
@@ -294,7 +295,8 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
 				} else {
 					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s)", accNum, chainID)
-					fmt.Printf("ACC NUMBER %v \n", accNum)
+					fmt.Printf("ACC NUMBER LATER %v \n", accNum)
+					fmt.Printf("ADDR INIT %v \n", acc.GetAddress())
 				}
 				return ctx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, errMsg)
 
