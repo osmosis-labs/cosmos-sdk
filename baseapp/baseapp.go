@@ -462,8 +462,11 @@ func (app *BaseApp) StoreConsensusParams(ctx sdk.Context, cp *abci.ConsensusPara
 	app.paramStore.Set(ctx, ParamStoreKeyBlockParams, cp.Block)
 	app.paramStore.Set(ctx, ParamStoreKeyEvidenceParams, cp.Evidence)
 	app.paramStore.Set(ctx, ParamStoreKeyValidatorParams, cp.Validator)
-	// We do not store version params here because they are
+	// We do not store version param here because it is
 	// persisted in the multi-store which is used as the single source of truth.
+	// The reason for storing the version in multi-store is to be able
+	// to serialize it for state-sync snapshots. The app version is then
+	// deserialized by the state-synching node to be validated in Tendermint.
 }
 
 // getMaximumBlockGas gets the maximum gas from the consensus params. It panics
