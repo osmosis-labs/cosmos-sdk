@@ -66,6 +66,22 @@ func (s *IntegrationTestSuite) TestGRPCQuery_TestService() {
 	s.Require().Equal("hello", testRes.Message)
 }
 
+func (s *IntegrationTestSuite) TestGRPCConcurrency() {
+	val0 := s.network.Validators[0]
+	clientCtx := val0.ClientCtx
+	clientCtx.GRPCConcurrency = true
+	in := &testdata.EchoRequest{Message: "hello"}
+	out := &testdata.EchoResponse{}
+	err := clientCtx.Invoke(context.Background(), "/testdata.Query/Echo", in, out)
+	s.Require().NoError(err)
+	s.Require().Equal("hello", out.Message)
+
+	clientCtx.GRPCConcurrency = false
+	err = clientCtx.Invoke(context.Background(), "/testdata.Query/Echo", in, out)
+	s.Require().NoError(err)
+	s.Require().Equal("hello", out.Message)
+}
+
 func (s *IntegrationTestSuite) TestGRPCQuery_BankService_VariousInputs() {
 	val0 := s.network.Validators[0]
 
@@ -108,6 +124,7 @@ func (s *IntegrationTestSuite) TestGRPCQuery_BankService_VariousInputs() {
 		s.T().Run(name, func(t *testing.T) {
 			// Setup
 			clientCtx := val0.ClientCtx
+			clientCtx.GRPCConcurrency = true
 			clientCtx.Height = 0
 
 			if tc.clientContextHeight != heightNotSetFlag {
@@ -175,6 +192,7 @@ func TestSelectHeight(t *testing.T) {
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
 			clientCtx := client.Context{}
+			clientCtx.GRPCConcurrency = true
 			if tc.clientContextHeight != heightNotSetFlag {
 				clientCtx = clientCtx.WithHeight(tc.clientContextHeight)
 			}

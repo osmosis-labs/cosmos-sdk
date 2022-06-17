@@ -43,6 +43,7 @@ type Context struct {
 	KeyringDir        string
 	From              string
 	BroadcastMode     string
+	GRPCConcurrency   bool
 	FromName          string
 	SignModeStr       string
 	UseLedger         bool
@@ -250,6 +251,11 @@ func (ctx Context) WithAccountRetriever(retriever AccountRetriever) Context {
 // WithInterfaceRegistry returns the context with an updated InterfaceRegistry
 func (ctx Context) WithInterfaceRegistry(interfaceRegistry codectypes.InterfaceRegistry) Context {
 	ctx.InterfaceRegistry = interfaceRegistry
+	return ctx
+}
+
+func (ctx Context) WithConcurrency(grpcConcurrency bool) Context {
+	ctx.GRPCConcurrency = grpcConcurrency
 	return ctx
 }
 

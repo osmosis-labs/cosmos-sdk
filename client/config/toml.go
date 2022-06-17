@@ -13,7 +13,7 @@ const defaultConfigTemplate = `# This is a TOML config file.
 # For more information, see https://github.com/toml-lang/toml
 
 ###############################################################################
-###                           Client Configuration                            ###
+###                           Client Configuration                          ###
 ###############################################################################
 
 # The network chain ID
@@ -26,6 +26,10 @@ output = "{{ .Output }}"
 node = "{{ .Node }}"
 # Transaction broadcasting mode (sync|async|block)
 broadcast-mode = "{{ .BroadcastMode }}"
+# Concurrency defines if node queries should be done in parallel.
+# This is experimental and has led to node failures, so enable with caution.
+# The default value is false.
+grpc-concurrency = {{ .GRPCConcurrency }}
 `
 
 // writeConfigToFile parses defaultConfigTemplate, renders config using the template and writes it to
