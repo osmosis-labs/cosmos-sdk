@@ -89,12 +89,15 @@
 - [cosmos/bank/v1beta1/genesis.proto](#cosmos/bank/v1beta1/genesis.proto)
     - [Balance](#cosmos.bank.v1beta1.Balance)
     - [GenesisState](#cosmos.bank.v1beta1.GenesisState)
+    - [GenesisSupplyOffset](#cosmos.bank.v1beta1.GenesisSupplyOffset)
   
 - [cosmos/bank/v1beta1/query.proto](#cosmos/bank/v1beta1/query.proto)
     - [QueryAllBalancesRequest](#cosmos.bank.v1beta1.QueryAllBalancesRequest)
     - [QueryAllBalancesResponse](#cosmos.bank.v1beta1.QueryAllBalancesResponse)
     - [QueryBalanceRequest](#cosmos.bank.v1beta1.QueryBalanceRequest)
     - [QueryBalanceResponse](#cosmos.bank.v1beta1.QueryBalanceResponse)
+    - [QueryBaseDenomRequest](#cosmos.bank.v1beta1.QueryBaseDenomRequest)
+    - [QueryBaseDenomResponse](#cosmos.bank.v1beta1.QueryBaseDenomResponse)
     - [QueryDenomMetadataRequest](#cosmos.bank.v1beta1.QueryDenomMetadataRequest)
     - [QueryDenomMetadataResponse](#cosmos.bank.v1beta1.QueryDenomMetadataResponse)
     - [QueryDenomsMetadataRequest](#cosmos.bank.v1beta1.QueryDenomsMetadataRequest)
@@ -1736,6 +1739,24 @@ GenesisState defines the bank module's genesis state.
 | `balances` | [Balance](#cosmos.bank.v1beta1.Balance) | repeated | balances is an array containing the balances of all the accounts. |
 | `supply` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated | supply represents the total supply. If it is left empty, then supply will be calculated based on the provided balances. Otherwise, it will be used to validate that the sum of the balances equals this amount. |
 | `denom_metadata` | [Metadata](#cosmos.bank.v1beta1.Metadata) | repeated | denom_metadata defines the metadata of the differents coins. |
+| `supply_offsets` | [GenesisSupplyOffset](#cosmos.bank.v1beta1.GenesisSupplyOffset) | repeated | supply_offsets defines the amount of supply offset. |
+
+
+
+
+
+
+<a name="cosmos.bank.v1beta1.GenesisSupplyOffset"></a>
+
+### GenesisSupplyOffset
+GenesisSupplyOffset encodes the supply offsets, just for genesis.
+The offsets are serialized directly by denom in state.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `denom` | [string](#string) |  | Denom |
+| `offset` | [string](#string) |  | SupplyOffset |
 
 
 
@@ -1816,6 +1837,36 @@ QueryBalanceResponse is the response type for the Query/Balance RPC method.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `balance` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  | balance is the balance of the coin. |
+
+
+
+
+
+
+<a name="cosmos.bank.v1beta1.QueryBaseDenomRequest"></a>
+
+### QueryBaseDenomRequest
+QueryBaseDenomRequest defines the request type for the BaseDenom gRPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `denom` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="cosmos.bank.v1beta1.QueryBaseDenomResponse"></a>
+
+### QueryBaseDenomResponse
+QueryBaseDenomResponse defines the response type for the BaseDenom gRPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `base_denom` | [string](#string) |  |  |
 
 
 
@@ -2066,6 +2117,7 @@ Query defines the gRPC querier service.
 | `Params` | [QueryParamsRequest](#cosmos.bank.v1beta1.QueryParamsRequest) | [QueryParamsResponse](#cosmos.bank.v1beta1.QueryParamsResponse) | Params queries the parameters of x/bank module. | GET|/cosmos/bank/v1beta1/params|
 | `DenomMetadata` | [QueryDenomMetadataRequest](#cosmos.bank.v1beta1.QueryDenomMetadataRequest) | [QueryDenomMetadataResponse](#cosmos.bank.v1beta1.QueryDenomMetadataResponse) | DenomsMetadata queries the client metadata of a given coin denomination. | GET|/cosmos/bank/v1beta1/denoms_metadata/{denom}|
 | `DenomsMetadata` | [QueryDenomsMetadataRequest](#cosmos.bank.v1beta1.QueryDenomsMetadataRequest) | [QueryDenomsMetadataResponse](#cosmos.bank.v1beta1.QueryDenomsMetadataResponse) | DenomsMetadata queries the client metadata for all registered coin denominations. | GET|/cosmos/bank/v1beta1/denoms_metadata|
+| `BaseDenom` | [QueryBaseDenomRequest](#cosmos.bank.v1beta1.QueryBaseDenomRequest) | [QueryBaseDenomResponse](#cosmos.bank.v1beta1.QueryBaseDenomResponse) | BaseDenom queries for a base denomination given a denom that can either be the base denom itself or a metadata denom unit that maps to the base denom. | GET|/cosmos/bank/v1beta1/base_denom|
 
  <!-- end services -->
 

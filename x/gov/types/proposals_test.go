@@ -65,5 +65,4 @@ func TestProposalGetMinDepositFromParams(t *testing.T) {
 		require.Equal(t, sdk.DefaultBondDenom, actualMinDeposit[0].Denom)
 		require.Equal(t, tc.expectedMinDeposit, actualMinDeposit[0].Amount)
 	}
-
 }
