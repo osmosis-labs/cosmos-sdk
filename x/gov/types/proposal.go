@@ -86,7 +86,7 @@ func (p Proposal) GetTitle() string {
 }
 
 // GetMinDepositFromParams returns min expedited deposit from depositParams if
-// the proposal is expedidted. Otherwise, returns the regular min deposit from
+// the proposal is expedited. Otherwise, returns the regular min deposit from
 // depositParams.
 func (p Proposal) GetMinDepositFromParams(depositParams DepositParams) sdk.Coins {
 	if p.IsExpedited {
