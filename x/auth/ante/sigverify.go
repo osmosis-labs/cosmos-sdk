@@ -274,8 +274,8 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		chainID := ctx.ChainID()
 		var accNum uint64
 		if !genesis {
-			fmt.Printf("ACC NUMBER INIT %v \n", accNum)
 			accNum = acc.GetAccountNumber()
+			fmt.Printf("ACC NUMBER INIT %v \n", accNum)
 			fmt.Printf("ADDR INIT %v \n", acc.GetAddress())
 		}
 		signerData := authsigning.SignerData{
