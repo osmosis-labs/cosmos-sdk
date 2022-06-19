@@ -200,9 +200,7 @@ func (c Context) WithIsReCheckTx(isRecheckTx bool) Context {
 
 // WithIsGenesis sets isGenesis
 func (c Context) WithIsGenesis(isGenesis bool) Context {
-	if isGenesis {
-		c.isGenesis = true
-	}
+	c.isGenesis = isGenesis
 	return c
 }
 
