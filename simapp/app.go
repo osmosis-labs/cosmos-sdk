@@ -445,7 +445,6 @@ func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 		panic(err)
 	}
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
-	ctx = ctx.WithIsGenesis(true)
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
