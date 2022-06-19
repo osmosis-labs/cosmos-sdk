@@ -95,6 +95,9 @@ type BaseApp struct { // nolint: maligned
 	// initialHeight is the initial height at which we start the baseapp
 	initialHeight int64
 
+	// isGenesis is used to determine if genesis logic should be run, despite whether or not the chain is at a non-zero height
+	isGenesis bool
+
 	// flag for sealing options and parameters to a BaseApp
 	sealed bool
 
@@ -175,6 +178,11 @@ func (app *BaseApp) Name() string {
 // Version returns the application's version string.
 func (app *BaseApp) Version() string {
 	return app.version
+}
+
+// IsGenesis returns the boolean value for genesis state.
+func (app *BaseApp) IsGenesis() bool {
+	return app.isGenesis
 }
 
 // Logger returns the logger of the BaseApp.

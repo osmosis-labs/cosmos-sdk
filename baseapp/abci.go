@@ -29,6 +29,7 @@ import (
 func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitChain) {
 	// On a new chain, we consider the init chain block height as 0, even though
 	// req.InitialHeight is 1 by default.
+	// app.isGenesis = true
 	initHeader := tmproto.Header{ChainID: req.ChainId, Time: req.Time}
 
 	// If req.InitialHeight is > 1, then we set the initial version in the
@@ -62,6 +63,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	}
 
 	// add block gas meter for any genesis transactions (allow infinite gas)
+	// app.deliverState.ctx.WithIsGenesis(true)
 	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
 	res = app.initChainer(app.deliverState.ctx, req)
@@ -98,6 +100,9 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		emptyHash := sha256.Sum256([]byte{})
 		appHash = emptyHash[:]
 	}
+
+	// app.isGenesis = false
+	// app.deliverState.ctx.WithIsGenesis(false)
 
 	// NOTE: We don't commit, but BeginBlock for block `initial_height` starts from this
 	// deliverState.
