@@ -67,6 +67,8 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 
 	res = app.initChainer(app.deliverState.ctx, req)
 
+	app.deliverState.ctx = app.deliverState.ctx.WithIsGenesis(false)
+
 	// sanity check
 	if len(req.Validators) > 0 {
 		if len(req.Validators) != len(res.Validators) {
@@ -99,8 +101,6 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		emptyHash := sha256.Sum256([]byte{})
 		appHash = emptyHash[:]
 	}
-
-	app.deliverState.ctx = app.deliverState.ctx.WithIsGenesis(false)
 
 	// NOTE: We don't commit, but BeginBlock for block `initial_height` starts from this
 	// deliverState.
