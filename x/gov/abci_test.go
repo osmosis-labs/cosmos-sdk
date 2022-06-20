@@ -646,7 +646,7 @@ func TestEndBlockerProposalHandlerFailed(t *testing.T) {
 	gov.EndBlocker(ctx, app.GovKeeper)
 }
 
-// With expedited proposals the minimum deposit is higer, so we must
+// With expedited proposal's minimum deposit set higher than the default deposit, we must
 // initialize and deposit an amount depositMultiplier times larger
 // than the regular min deposit amount.
 func getDepositMultiplier(isExpedited bool) int64 {
