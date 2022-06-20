@@ -100,6 +100,8 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		appHash = emptyHash[:]
 	}
 
+	app.deliverState.ctx = app.deliverState.ctx.WithIsGenesis(false)
+
 	// NOTE: We don't commit, but BeginBlock for block `initial_height` starts from this
 	// deliverState.
 	return abci.ResponseInitChain{
