@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 )
 
@@ -292,7 +293,7 @@ set by the committed block's time. The cliff duration should be specified in hou
 
 			cliffDuration, err := time.ParseDuration(args[2])
 			if err != nil {
-				fmt.Println("duration incorrectly formatted, see https://pkg.go.dev/time#ParseDuration")
+				err = errors.Wrap(err, "duration incorrectly formatted, see https://pkg.go.dev/time#ParseDuration")
 				return err
 			}
 			cliffVesting := true
