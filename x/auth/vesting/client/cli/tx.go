@@ -31,12 +31,7 @@ func GetTxCmd() *cobra.Command {
 
 	txCmd.AddCommand(
 		NewMsgCreateVestingAccountCmd(),
-<<<<<<< HEAD
-=======
 		NewMsgCreateCliffVestingAccountCmd(),
-		NewMsgCreateClawbackVestingAccountCmd(),
-		NewMsgClawbackCmd(),
->>>>>>> bf5b16352 (feat!: bring back the cliff vesting command (#111) (#271))
 	)
 
 	return txCmd
@@ -134,4 +129,3 @@ set by the committed block's time. The cliff duration should be specified in hou
 
 	return cmd
 }
-
