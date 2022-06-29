@@ -286,8 +286,9 @@ func (c *msgClient) MultiSend(ctx context.Context, in *MsgMultiSend, opts ...grp
 type MsgServer interface {
 	// Send defines a method for sending coins from one account to another account.
 	Send(context.Context, *MsgSend) (*MsgSendResponse, error)
-	// MultiSend defines a method for sending coins from some accounts to other accounts.
-	MultiSend(context.Context, *MsgMultiSend) (*MsgMultiSendResponse, error)
+	// We deactivate MultiSend for Osmosis
+	// // MultiSend defines a method for sending coins from some accounts to other accounts.
+	// MultiSend(context.Context, *MsgMultiSend) (*MsgMultiSendResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.

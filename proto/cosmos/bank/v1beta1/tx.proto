@@ -12,8 +12,9 @@ service Msg {
   // Send defines a method for sending coins from one account to another account.
   rpc Send(MsgSend) returns (MsgSendResponse);
 
-  // MultiSend defines a method for sending coins from some accounts to other accounts.
-  rpc MultiSend(MsgMultiSend) returns (MsgMultiSendResponse);
+  // We are removing the MsgMultiSend in Osmosis in order to avoid bypass of bank hooks
+  // // MultiSend defines a method for sending coins from some accounts to other accounts.
+  // rpc MultiSend(MsgMultiSend) returns (MsgMultiSendResponse);
 }
 
 // MsgSend represents a message to send coins from one account to another.
