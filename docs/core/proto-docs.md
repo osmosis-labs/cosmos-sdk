@@ -116,8 +116,6 @@
     - [Query](#cosmos.bank.v1beta1.Query)
   
 - [cosmos/bank/v1beta1/tx.proto](#cosmos/bank/v1beta1/tx.proto)
-    - [MsgMultiSend](#cosmos.bank.v1beta1.MsgMultiSend)
-    - [MsgMultiSendResponse](#cosmos.bank.v1beta1.MsgMultiSendResponse)
     - [MsgSend](#cosmos.bank.v1beta1.MsgSend)
     - [MsgSendResponse](#cosmos.bank.v1beta1.MsgSendResponse)
   
@@ -2128,32 +2126,6 @@ Query defines the gRPC querier service.
 <p align="right"><a href="#top">Top</a></p>
 
 ## cosmos/bank/v1beta1/tx.proto
-
-
-
-<a name="cosmos.bank.v1beta1.MsgMultiSend"></a>
-
-### MsgMultiSend
-MsgMultiSend represents an arbitrary multi-in, multi-out send message.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `inputs` | [Input](#cosmos.bank.v1beta1.Input) | repeated |  |
-| `outputs` | [Output](#cosmos.bank.v1beta1.Output) | repeated |  |
-
-
-
-
-
-
-<a name="cosmos.bank.v1beta1.MsgMultiSendResponse"></a>
-
-### MsgMultiSendResponse
-MsgMultiSendResponse defines the Msg/MultiSend response type.
-
-
-
 
 
 
