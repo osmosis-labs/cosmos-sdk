@@ -79,9 +79,7 @@
   
 - [cosmos/bank/v1beta1/bank.proto](#cosmos/bank/v1beta1/bank.proto)
     - [DenomUnit](#cosmos.bank.v1beta1.DenomUnit)
-    - [Input](#cosmos.bank.v1beta1.Input)
     - [Metadata](#cosmos.bank.v1beta1.Metadata)
-    - [Output](#cosmos.bank.v1beta1.Output)
     - [Params](#cosmos.bank.v1beta1.Params)
     - [SendEnabled](#cosmos.bank.v1beta1.SendEnabled)
     - [Supply](#cosmos.bank.v1beta1.Supply)
@@ -1586,22 +1584,6 @@ denomination unit of the basic token.
 
 
 
-<a name="cosmos.bank.v1beta1.Input"></a>
-
-### Input
-Input models transaction input.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `address` | [string](#string) |  |  |
-| `coins` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
-
-
-
-
-
-
 <a name="cosmos.bank.v1beta1.Metadata"></a>
 
 ### Metadata
@@ -1621,22 +1603,6 @@ Since: cosmos-sdk 0.43 |
 | `symbol` | [string](#string) |  | symbol is the token symbol usually shown on exchanges (eg: ATOM). This can be the same as the display.
 
 Since: cosmos-sdk 0.43 |
-
-
-
-
-
-
-<a name="cosmos.bank.v1beta1.Output"></a>
-
-### Output
-Output models transaction outputs.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `address` | [string](#string) |  |  |
-| `coins` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) | repeated |  |
 
 
 
