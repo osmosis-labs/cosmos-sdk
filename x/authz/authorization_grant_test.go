@@ -18,7 +18,7 @@ func expecError(r *require.Assertions, expected string, received error) {
 
 func TestNewGrant(t *testing.T) {
 	a := NewGenericAuthorization("some-type")
-	var tcs = []struct {
+	tcs := []struct {
 		title     string
 		a         Authorization
 		blockTime time.Time
@@ -38,5 +38,4 @@ func TestNewGrant(t *testing.T) {
 			expecError(require.New(t), tc.err, err)
 		})
 	}
-
 }

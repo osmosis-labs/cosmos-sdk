@@ -16,7 +16,6 @@ import (
 )
 
 func (suite *KeeperTestSuite) TestGetSetProposal() {
-
 	testcases := map[string]struct {
 		proposal    types.Content
 		isExpedited bool

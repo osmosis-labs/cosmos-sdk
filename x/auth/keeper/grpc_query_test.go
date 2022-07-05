@@ -9,9 +9,7 @@ import (
 )
 
 func (suite *KeeperTestSuite) TestGRPCQueryAccounts() {
-	var (
-		req *types.QueryAccountsRequest
-	)
+	var req *types.QueryAccountsRequest
 	_, _, first := testdata.KeyTestPubAddr()
 	_, _, second := testdata.KeyTestPubAddr()
 
@@ -67,9 +65,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryAccounts() {
 }
 
 func (suite *KeeperTestSuite) TestGRPCQueryAccount() {
-	var (
-		req *types.QueryAccountRequest
-	)
+	var req *types.QueryAccountRequest
 	_, _, addr := testdata.KeyTestPubAddr()
 
 	testCases := []struct {
@@ -193,9 +189,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryParameters() {
 }
 
 func (suite *KeeperTestSuite) TestGRPCQueryModuleAccounts() {
-	var (
-		req *types.QueryModuleAccountsRequest
-	)
+	var req *types.QueryModuleAccountsRequest
 
 	testCases := []struct {
 		msg       string
@@ -210,7 +204,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryModuleAccounts() {
 			},
 			true,
 			func(res *types.QueryModuleAccountsResponse) {
-				var mintModuleExists = false
+				mintModuleExists := false
 				for _, acc := range res.Accounts {
 					var account types.AccountI
 					err := suite.app.InterfaceRegistry().UnpackAny(acc, &account)
@@ -233,7 +227,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryModuleAccounts() {
 			},
 			true,
 			func(res *types.QueryModuleAccountsResponse) {
-				var mintModuleExists = false
+				mintModuleExists := false
 				for _, acc := range res.Accounts {
 					var account types.AccountI
 					err := suite.app.InterfaceRegistry().UnpackAny(acc, &account)

@@ -32,15 +32,11 @@ const (
 	DefaultHistoricalEntries uint32 = 10000
 )
 
-var (
-	// DefaultMinCommissionRate is set to 0%
-	DefaultMinCommissionRate = sdk.ZeroDec()
-)
+// DefaultMinCommissionRate is set to 0%
+var DefaultMinCommissionRate = sdk.ZeroDec()
 
-var (
-	// DefaultMinSelfDelegation is set to 0
-	DefaultMinSelfDelegation = sdk.ZeroInt()
-)
+// DefaultMinSelfDelegation is set to 0
+var DefaultMinSelfDelegation = sdk.ZeroInt()
 
 var (
 	KeyUnbondingTime     = []byte("UnbondingTime")

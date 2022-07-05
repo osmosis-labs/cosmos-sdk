@@ -42,7 +42,7 @@ func createValidator(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers i
 	addrs := simapp.AddTestAddrsIncremental(app, ctx, 1, valTokens)
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
 	pks := simapp.CreateTestPubKeys(1)
-	cdc := app.AppCodec() //simapp.MakeTestEncodingConfig().Marshaler
+	cdc := app.AppCodec() // simapp.MakeTestEncodingConfig().Marshaler
 
 	app.StakingKeeper = stakingkeeper.NewKeeper(
 		cdc,
@@ -393,7 +393,8 @@ func TestGetVestedCoinsPeriodicVestingAcc(t *testing.T) {
 	vestedCoins = pva.GetVestedCoins(now.Add(18 * time.Hour))
 	require.Equal(t,
 		sdk.Coins{
-			sdk.NewInt64Coin(feeDenom, 750), sdk.NewInt64Coin(stakeDenom, 75)}, vestedCoins)
+			sdk.NewInt64Coin(feeDenom, 750), sdk.NewInt64Coin(stakeDenom, 75),
+		}, vestedCoins)
 
 	// require 100% of coins vested
 	vestedCoins = pva.GetVestedCoins(now.Add(48 * time.Hour))
@@ -750,7 +751,8 @@ func TestGetVestedCoinsClawbackVestingAcc(t *testing.T) {
 	vestedCoins = va.GetVestedCoins(now.Add(18 * time.Hour))
 	require.Equal(t,
 		sdk.Coins{
-			sdk.NewInt64Coin(feeDenom, 750), sdk.NewInt64Coin(stakeDenom, 75)}, vestedCoins)
+			sdk.NewInt64Coin(feeDenom, 750), sdk.NewInt64Coin(stakeDenom, 75),
+		}, vestedCoins)
 
 	// require 100% of coins vested
 	vestedCoins = va.GetVestedCoins(now.Add(48 * time.Hour))
@@ -1082,6 +1084,7 @@ func TestDelayedVestingAccountMarshal(t *testing.T) {
 	_, err = app.AccountKeeper.UnmarshalAccount(bz[:len(bz)/2])
 	require.NotNil(t, err)
 }
+
 func TestPermanentLockedAccountMarshal(t *testing.T) {
 	baseAcc, coins := initBaseAccount()
 	acc := types.NewPermanentLockedAccount(baseAcc, coins)

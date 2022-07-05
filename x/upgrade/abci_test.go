@@ -242,9 +242,7 @@ func VerifySet(t *testing.T, skipUpgradeHeights map[int64]bool) {
 }
 
 func TestContains(t *testing.T) {
-	var (
-		skipOne int64 = 11
-	)
+	var skipOne int64 = 11
 	s := setupTest(10, map[int64]bool{skipOne: true})
 
 	VerifySet(t, map[int64]bool{skipOne: true})

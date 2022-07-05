@@ -3,8 +3,9 @@ package iavl
 import (
 	crand "crypto/rand"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 
@@ -285,7 +286,7 @@ func TestIAVLReverseIterator(t *testing.T) {
 	iavlStore.Set([]byte{0x00, 0x02}, []byte("0 2"))
 	iavlStore.Set([]byte{0x01}, []byte("1"))
 
-	var testReverseIterator = func(t *testing.T, start []byte, end []byte, expected []string) {
+	testReverseIterator := func(t *testing.T, start []byte, end []byte, expected []string) {
 		iter := iavlStore.ReverseIterator(start, end)
 		var i int
 		for i = 0; iter.Valid(); iter.Next() {

@@ -25,7 +25,6 @@ const (
 func WeightedOperations(
 	appParams simtypes.AppParams, cdc codec.JSONCodec, ak types.AccountKeeper, bk keeper.Keeper,
 ) simulation.WeightedOperations {
-
 	var weightMsgSend int
 	appParams.GetOrGenerate(cdc, OpWeightMsgSend, &weightMsgSend, nil,
 		func(_ *rand.Rand) {
@@ -105,7 +104,6 @@ func sendMsgSend(
 	r *rand.Rand, app *baseapp.BaseApp, bk keeper.Keeper, ak types.AccountKeeper,
 	msg *types.MsgSend, ctx sdk.Context, chainID string, privkeys []cryptotypes.PrivKey,
 ) error {
-
 	var (
 		fees sdk.Coins
 		err  error
@@ -155,7 +153,6 @@ func sendMsgSend(
 func randomSendFields(
 	r *rand.Rand, ctx sdk.Context, accs []simtypes.Account, bk keeper.Keeper, ak types.AccountKeeper,
 ) (simtypes.Account, simtypes.Account, sdk.Coins, bool) {
-
 	from, _ := simtypes.RandomAcc(r, accs)
 	to, _ := simtypes.RandomAcc(r, accs)
 
@@ -180,7 +177,6 @@ func randomSendFields(
 }
 
 func getModuleAccounts(ak types.AccountKeeper, ctx sdk.Context, moduleAccCount int) []simtypes.Account {
-
 	moduleAccounts := make([]simtypes.Account, moduleAccCount)
 
 	for i := 0; i < moduleAccCount; i++ {

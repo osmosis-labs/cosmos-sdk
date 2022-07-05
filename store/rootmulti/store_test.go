@@ -323,7 +323,6 @@ func TestParsePath(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, substore, "bang")
 	require.Equal(t, subsubpath, "/baz")
-
 }
 
 func TestMultiStoreRestart(t *testing.T) {
@@ -833,7 +832,6 @@ func TestGetAppVersion(t *testing.T) {
 
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-
 			var db dbm.DB
 			if tc.expectError {
 				ctrl := gomock.NewController(t)

@@ -13,7 +13,7 @@ func TestMsgSendRoute(t *testing.T) {
 	addr1 := sdk.AccAddress([]byte("from"))
 	addr2 := sdk.AccAddress([]byte("to"))
 	coins := sdk.NewCoins(sdk.NewInt64Coin("atom", 10))
-	var msg = NewMsgSend(addr1, addr2, coins)
+	msg := NewMsgSend(addr1, addr2, coins)
 
 	require.Equal(t, msg.Route(), RouterKey)
 	require.Equal(t, msg.Type(), "send")
@@ -58,7 +58,7 @@ func TestMsgSendGetSignBytes(t *testing.T) {
 	addr1 := sdk.AccAddress([]byte("input"))
 	addr2 := sdk.AccAddress([]byte("output"))
 	coins := sdk.NewCoins(sdk.NewInt64Coin("atom", 10))
-	var msg = NewMsgSend(addr1, addr2, coins)
+	msg := NewMsgSend(addr1, addr2, coins)
 	res := msg.GetSignBytes()
 
 	expected := `{"type":"cosmos-sdk/MsgSend","value":{"amount":[{"amount":"10","denom":"atom"}],"from_address":"cosmos1d9h8qat57ljhcm","to_address":"cosmos1da6hgur4wsmpnjyg"}}`
@@ -66,7 +66,7 @@ func TestMsgSendGetSignBytes(t *testing.T) {
 }
 
 func TestMsgSendGetSigners(t *testing.T) {
-	var msg = NewMsgSend(sdk.AccAddress([]byte("input111111111111111")), sdk.AccAddress{}, sdk.NewCoins())
+	msg := NewMsgSend(sdk.AccAddress([]byte("input111111111111111")), sdk.AccAddress{}, sdk.NewCoins())
 	res := msg.GetSigners()
 	// TODO: fix this !
 	require.Equal(t, fmt.Sprintf("%v", res), "[696E707574313131313131313131313131313131]")
