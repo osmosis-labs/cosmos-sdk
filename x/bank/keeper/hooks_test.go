@@ -13,9 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	// 	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-	// 	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-	// 	govtypes.ModuleName:            {authtypes.Burner},
 )
 
 var _ types.BankHooks = &MockBankHooksReceiver{}
