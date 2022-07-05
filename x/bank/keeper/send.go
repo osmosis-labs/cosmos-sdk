@@ -73,12 +73,15 @@ func (k BaseSendKeeper) SetParams(ctx sdk.Context, params types.Params) {
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	err := k.hooks.BeforeSend(ctx, fromAddr, toAddr, amt)
-	if err != nil {
-		return err
+	// if there are hooks, call the BeforeSend hook
+	if k.hooks != nil {
+		err := k.hooks.BeforeSend(ctx, fromAddr, toAddr, amt)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = k.subUnlockedCoins(ctx, fromAddr, amt)
+	err := k.subUnlockedCoins(ctx, fromAddr, amt)
 	if err != nil {
 		return err
 	}
@@ -122,7 +125,14 @@ func (k BaseSendKeeper) SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, 
 	}
 
 	totalAmt := sdk.Coins{}
-	for _, amt := range amts {
+	for i, amt := range amts {
+		// make sure to trigger a BeforeSend hook for all the sends that are about to occur
+		if k.hooks != nil {
+			err := k.hooks.BeforeSend(ctx, fromAddr, toAddrs[i], amts[i])
+			if err != nil {
+				return err
+			}
+		}
 		totalAmt = sdk.Coins.Add(totalAmt, amt...)
 	}
 
