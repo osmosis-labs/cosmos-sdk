@@ -183,6 +183,14 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
 
+	// if there are hooks, call the BeforeSend hook
+	if k.hooks != nil {
+		err := k.hooks.BeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
+		if err != nil {
+			return err
+		}
+	}
+
 	balances := sdk.NewCoins()
 
 	for _, coin := range amt {
@@ -229,6 +237,14 @@ func (k BaseKeeper) UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAdd
 
 	if !amt.IsValid() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
+	}
+
+	// if there are hooks, call the BeforeSend hook
+	if k.hooks != nil {
+		err := k.hooks.BeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
+		if err != nil {
+			return err
+		}
 	}
 
 	err := k.subUnlockedCoins(ctx, moduleAccAddr, amt)
