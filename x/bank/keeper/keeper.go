@@ -183,12 +183,10 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
 
-	// if there are hooks, call the BeforeSend hook
-	if k.hooks != nil {
-		err := k.hooks.BeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
-		if err != nil {
-			return err
-		}
+	// call the BeforeSend hooks
+	err := k.BeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
+	if err != nil {
+		return err
 	}
 
 	balances := sdk.NewCoins()
@@ -216,7 +214,7 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		types.NewCoinSpentEvent(delegatorAddr, amt),
 	)
 
-	err := k.addCoins(ctx, moduleAccAddr, amt)
+	err = k.addCoins(ctx, moduleAccAddr, amt)
 	if err != nil {
 		return err
 	}
@@ -239,15 +237,13 @@ func (k BaseKeeper) UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAdd
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
 
-	// if there are hooks, call the BeforeSend hook
-	if k.hooks != nil {
-		err := k.hooks.BeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
-		if err != nil {
-			return err
-		}
+	// call the BeforeSend hooks
+	err := k.BeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
+	if err != nil {
+		return err
 	}
 
-	err := k.subUnlockedCoins(ctx, moduleAccAddr, amt)
+	err = k.subUnlockedCoins(ctx, moduleAccAddr, amt)
 	if err != nil {
 		return err
 	}
