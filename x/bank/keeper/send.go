@@ -59,6 +59,17 @@ func NewBaseSendKeeper(
 	}
 }
 
+// Set the validator hooks
+func (k *BaseSendKeeper) SetHooks(bh types.BankHooks) *BaseSendKeeper {
+	if k.hooks != nil {
+		panic("cannot set bank hooks twice")
+	}
+
+	k.hooks = bh
+
+	return k
+}
+
 // GetParams returns the total set of bank parameters.
 func (k BaseSendKeeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSpace.GetParamSet(ctx, &params)
