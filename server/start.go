@@ -117,7 +117,7 @@ which accepts a path for the resulting pprof file.
 				return err
 			}
 
-			withTM, _ := cmd.Flags().GetBool(flagWithTendermint)
+			withTM := serverCtx.Viper.GetBool(flags.FlagCountTotal)
 			if !withTM {
 				serverCtx.Logger.Info("starting ABCI without Tendermint")
 				return startStandAlone(serverCtx, appCreator)
