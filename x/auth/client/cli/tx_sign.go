@@ -99,6 +99,8 @@ func makeSignBatchCmd() func(cmd *cobra.Command, args []string) error {
 				return err
 			}
 			if ms == "" {
+				fmt.Println("poolas")
+
 				from, _ := cmd.Flags().GetString(flags.FlagFrom)
 				_, fromName, _, err := client.GetFromFields(txFactory.Keybase(), from, clientCtx.GenerateOnly)
 				if err != nil {
@@ -109,7 +111,6 @@ func makeSignBatchCmd() func(cmd *cobra.Command, args []string) error {
 					return err
 				}
 			} else {
-
 				multisigAddr, err := sdk.AccAddressFromBech32(ms)
 
 				// if passed in string for multisig flag is not an address, check to see if it is a name in the keybase
@@ -243,10 +244,17 @@ func makeSignCmd() func(cmd *cobra.Command, args []string) error {
 
 		overwrite, _ := f.GetBool(flagOverwrite)
 		if multisig != "" {
-			multisigAddr, _, _, err := client.GetFromFields(txFactory.Keybase(), multisig, clientCtx.GenerateOnly)
+
+			multisigAddr, err := sdk.AccAddressFromBech32(multisig)
+
+			// if passed in string for multisig flag is not an address, check to see if it is a name in the keybase
 			if err != nil {
-				return fmt.Errorf("error getting account from keybase: %w", err)
+				multisigAddr, _, _, err = client.GetFromFields(txFactory.Keybase(), multisig, clientCtx.GenerateOnly)
+				if err != nil {
+					return fmt.Errorf("error getting account from keybase: %w", err)
+				}
 			}
+
 			err = authclient.SignTxWithSignerAddress(
 				txF, clientCtx, multisigAddr, fromName, txBuilder, clientCtx.Offline, overwrite)
 			if err != nil {
