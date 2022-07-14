@@ -1,4 +1,4 @@
-package v045osmov11
+package v3
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -6,7 +6,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-// MigrateStore performs in-place store migrations from v0.43/v0.44 to v0.45.
+// MigrateStore performs in-place store migrations for consensus version 3
+// in the staking module.
+// Please note that this is the first version that switches from using
+// SDK versioning (v046 etc) for package names to consensus versioning
+// of the staking module.
 // The migration includes:
 //
 // - Setting the MinCommissionRate param in the paramstore
