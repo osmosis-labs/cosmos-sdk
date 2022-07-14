@@ -23,6 +23,8 @@ func TestStoreMigration(t *testing.T) {
 	// Check no params
 	require.False(t, paramstore.Has(ctx, types.KeyMinSelfDelegation))
 
+	paramstore = paramstore.WithKeyTable(types.ParamKeyTable())
+
 	// Run migrations.
 	err := v3.MigrateStore(ctx, paramstore)
 	require.NoError(t, err)
