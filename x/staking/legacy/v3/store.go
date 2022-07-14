@@ -22,6 +22,5 @@ func MigrateStore(ctx sdk.Context, paramstore paramtypes.Subspace) error {
 
 func migrateParamsStore(ctx sdk.Context, paramstore paramtypes.Subspace) {
 	DefaultMinSelfDelegation := sdk.ZeroInt()
-	paramstore.WithKeyTable(types.ParamKeyTable())
 	paramstore.Set(ctx, types.KeyMinSelfDelegation, DefaultMinSelfDelegation)
 }
