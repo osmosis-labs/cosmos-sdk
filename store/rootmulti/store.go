@@ -20,7 +20,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/pruning"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
-
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/cachemulti"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
