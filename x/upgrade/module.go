@@ -3,6 +3,7 @@ package upgrade
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -18,6 +19,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	"github.com/cosmos/cosmos-sdk/x/upgrade/types"
+)
+
+const (
+	consensusVersion = 2
 )
 
 func init() {
@@ -116,17 +121,25 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis is always successful, as we ignore the value
-func (AppModuleBasic) ValidateGenesis(_ codec.JSONCodec, config client.TxEncodingConfig, _ json.RawMessage) error {
-	return nil
+func (amb AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, data json.RawMessage) error {
+	var genState types.GenesisState
+	if err := cdc.UnmarshalJSON(data, &genState); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+
+	return genState.Params.Validate()
 }
 
 // ExportGenesis is always empty, as InitGenesis does nothing either
-func (am AppModule) ExportGenesis(_ sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	return am.DefaultGenesis(cdc)
+func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+	genState := am.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(&genState)
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+func (AppModule) ConsensusVersion() uint64 {
+	return consensusVersion
+}
 
 // BeginBlock calls the upgrade module hooks
 //

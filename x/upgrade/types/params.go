@@ -33,6 +33,16 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	}
 }
 
+// Validate performs basic validation on the Params type returning an error upon
+// validation failure.
+func (p Params) Validate() error {
+	if err := validateIsMainnet(p.IsMainnet); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func validateIsMainnet(i interface{}) error {
 	_, ok := i.(bool)
 	if !ok {

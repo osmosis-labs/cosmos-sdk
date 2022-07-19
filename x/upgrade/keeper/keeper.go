@@ -70,6 +70,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 }
 
+// ExportGenesis returns the x/upgrade module's state in GenesisState.
+func (k Keeper) ExportGenesis(ctx sdk.Context) types.GenesisState {
+	return types.GenesisState{
+		Params: k.GetParams(ctx),
+	}
+}
+
 // SetUpgradeHandler sets an UpgradeHandler for the upgrade specified by name. This handler will be called when the upgrade
 // with this name is applied. In order for an upgrade with the given name to proceed, a handler for this upgrade
 // must be set even if it is a no-op function.
