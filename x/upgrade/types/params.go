@@ -22,6 +22,7 @@ func NewParams(isMainnet bool) Params {
 	}
 }
 
+// DefaultParams returns the x/upgrade module's default parameters.
 func DefaultParams() Params {
 	return NewParams(true)
 }

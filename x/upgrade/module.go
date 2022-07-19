@@ -103,6 +103,8 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+
+	// TODO: Register migration!
 }
 
 // InitGenesis initializes the x/upgrade module genesis state. It returns no
