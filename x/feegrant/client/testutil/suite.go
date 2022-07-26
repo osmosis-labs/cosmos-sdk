@@ -20,6 +20,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/feegrant/client/cli"
+	govcli "github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govtestutil "github.com/cosmos/cosmos-sdk/x/gov/client/testutil"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
@@ -694,6 +695,7 @@ func (s *IntegrationTestSuite) TestTxWithFeeGrant() {
 	out, err := govtestutil.MsgSubmitProposal(val.ClientCtx, grantee.String(),
 		"Text Proposal", "No desc", govtypes.ProposalTypeText,
 		fmt.Sprintf("--%s=%s", flags.FlagFeeAccount, granter.String()),
+		fmt.Sprintf("--%s=%s", govcli.FlagDeposit, sdk.NewCoin(s.cfg.BondDenom, govtypes.DefaultMinDepositTokens).String()),
 	)
 
 	s.Require().NoError(err)
@@ -832,7 +834,7 @@ func (s *IntegrationTestSuite) TestFilteredFeeAllowance() {
 				return govtestutil.MsgSubmitProposal(val.ClientCtx, grantee.String(),
 					"Text Proposal", "No desc", govtypes.ProposalTypeText,
 					fmt.Sprintf("--%s=%s", flags.FlagFeeAccount, granter.String()),
-					// fmt.Sprintf("--%s=%s", govcli.FlagDeposit, )
+					fmt.Sprintf("--%s=%s", govcli.FlagDeposit, sdk.NewCoin(s.cfg.BondDenom, govtypes.DefaultMinDepositTokens).String()),
 				)
 			},
 			&sdk.TxResponse{},

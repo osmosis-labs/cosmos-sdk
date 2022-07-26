@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
+	govcli "github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
@@ -44,8 +45,7 @@ func (s *DepositTestSuite) TearDownSuite() {
 func (s *DepositTestSuite) TestQueryDepositsInitialDeposit() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
-	initialDeposit := sdk.NewCoin(s.cfg.BondDenom, types.DefaultMinDepositTokens.Sub(sdk.NewInt(20))).String()
-
+	initialDeposit := GetMinInitialValidDeposit(types.DefaultDepositParams().MinDeposit)
 	// create a proposal with deposit
 	_, err := MsgSubmitProposal(val.ClientCtx, val.Address.String(),
 		"Text Proposal 1", "Where is the title!?", types.ProposalTypeText,
@@ -74,13 +74,23 @@ func (s *DepositTestSuite) TestQueryDepositsWithoutInitialDeposit() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 
-	// create a proposal without deposit
+	// create a proposal without deposit - error
 	_, err := MsgSubmitProposal(val.ClientCtx, val.Address.String(),
 		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText)
-	s.Require().NoError(err)
+	s.Require().Error(err)
+
+	// create a proposal with min iniital deposit
+	depositParams := types.DefaultDepositParams()
+
+	minInitialDeposit := GetMinInitialValidDeposit(depositParams.MinDeposit)
+	_, err = MsgSubmitProposal(val.ClientCtx, val.Address.String(),
+		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText, fmt.Sprintf("--%s=%s", govcli.FlagDeposit, minInitialDeposit))
+	s.Require().Error(err)
 
 	// deposit amount
-	_, err = MsgDeposit(clientCtx, val.Address.String(), "2", sdk.NewCoin(s.cfg.BondDenom, types.DefaultMinDepositTokens.Add(sdk.NewInt(50))).String())
+	// remainingAmount = min deposit * (100 - min initial deposit percent) / 100 + 50
+	remainingDepositAmount := types.DefaultMinDepositTokens.ToDec().Mul(sdk.NewDec(100).Sub(sdk.NewDec(int64(depositParams.MinInitialDepositPercent)))).Quo(sdk.NewDec(100)).RoundInt().Add(sdk.NewInt(50))
+	_, err = MsgDeposit(clientCtx, val.Address.String(), "2", sdk.NewCoin(s.cfg.BondDenom, remainingDepositAmount).String())
 	s.Require().NoError(err)
 
 	// waiting for voting period to end
