@@ -1,6 +1,3 @@
-//go:build norace
-// +build norace
-
 package rest_test
 
 import (
@@ -52,9 +49,11 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	_, err = govtestutil.MsgVote(val.ClientCtx, val.Address.String(), "1", "yes")
 	s.Require().NoError(err)
 
-	// create a proposal without deposit
+	// create a proposal with min initial deposit
+	minInitialDeposit := govtestutil.GetMinInitialValidDeposit(types.DefaultDepositParams().MinDeposit)
 	_, err = govtestutil.MsgSubmitProposal(val.ClientCtx, val.Address.String(),
-		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText)
+		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText,
+		fmt.Sprintf("--%s=%s", cli.FlagDeposit, minInitialDeposit))
 	s.Require().NoError(err)
 	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
