@@ -832,6 +832,7 @@ func (s *IntegrationTestSuite) TestFilteredFeeAllowance() {
 				return govtestutil.MsgSubmitProposal(val.ClientCtx, grantee.String(),
 					"Text Proposal", "No desc", govtypes.ProposalTypeText,
 					fmt.Sprintf("--%s=%s", flags.FlagFeeAccount, granter.String()),
+					// fmt.Sprintf("--%s=%s", govcli.FlagDeposit, )
 				)
 			},
 			&sdk.TxResponse{},
