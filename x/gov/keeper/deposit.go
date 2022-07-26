@@ -186,3 +186,19 @@ func (keeper Keeper) RefundDeposits(ctx sdk.Context, proposalID uint64) {
 		return false
 	})
 }
+
+// validateInitialDeposit validates if initial deposit is greater than or equal to the minimum
+// required at the time of proposal submission. This threshold amount is determined by
+// the deposit parameters. Returns nil on success, error otherwise.
+func (keeper Keeper) validateInitialDeposit(ctx sdk.Context, initialDeposit sdk.Coins) error {
+	depositParams := keeper.GetDepositParams(ctx)
+	minDepositCoins := depositParams.MinDeposit
+	minInitialDepositRatio := sdk.NewDec(int64(depositParams.MinInitialDepositPercent)).Quo(sdk.NewDec(100))
+	for i := range minDepositCoins {
+		minDepositCoins[i].Amount = minDepositCoins[i].Amount.ToDec().Mul(minInitialDepositRatio).RoundInt()
+	}
+	if !initialDeposit.IsAllGTE(minDepositCoins) {
+		return sdkerrors.Wrapf(types.ErrMinDepositTooSmall, "was (%s), need (%s)", initialDeposit, minDepositCoins)
+	}
+	return nil
+}

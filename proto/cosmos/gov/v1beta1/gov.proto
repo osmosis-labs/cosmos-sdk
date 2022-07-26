@@ -168,6 +168,9 @@ message DepositParams {
     (gogoproto.moretags)     = "yaml:\"min_expedited_deposit\"",
     (gogoproto.jsontag)      = "min_expedited_deposit,omitempty"
   ];
+
+  //  The percentage of the min deposit that must be paid at proposal submission.
+  uint32 min_initial_deposit_percent = 4;
 }
 
 // VotingParams defines the params for voting on governance proposals.
