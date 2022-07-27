@@ -74,12 +74,12 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewDepositParams creates a new DepositParams object
-func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration, minExpeditedDeposit sdk.Coins, minInitialDepositRatio sdk.Dec) DepositParams {
+func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration, minExpeditedDeposit sdk.Coins) DepositParams {
 	return DepositParams{
 		MinDeposit:             minDeposit,
 		MaxDepositPeriod:       maxDepositPeriod,
 		MinExpeditedDeposit:    minExpeditedDeposit,
-		MinInitialDepositRatio: minInitialDepositRatio,
+		MinInitialDepositRatio: sdk.ZeroDec(),
 	}
 }
 
@@ -88,9 +88,12 @@ func DefaultDepositParams() DepositParams {
 	return NewDepositParams(
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinDepositTokens)),
 		DefaultPeriod,
-		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinExpeditedDepositTokens)),
-		sdk.ZeroDec(),
-	)
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinExpeditedDepositTokens)))
+}
+
+func (dp DepositParams) WithMinInitialDepositRatio(ratio sdk.Dec) DepositParams {
+	dp.MinInitialDepositRatio = ratio
+	return dp
 }
 
 // String implements stringer insterface
