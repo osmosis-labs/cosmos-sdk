@@ -6,7 +6,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-const minInitialDepositRatio = 25
+var minInitialDepositRatio = sdk.NewDec(25).Quo(sdk.NewDec(100))
 
 // MigrateStore performs in-place store migrations for consensus version 3
 // in the gov module.
@@ -24,6 +24,6 @@ func MigrateStore(ctx sdk.Context, paramstore paramtypes.Subspace) error {
 func migrateParamsStore(ctx sdk.Context, paramstore paramtypes.Subspace) {
 	var depositParams types.DepositParams
 	paramstore.Get(ctx, types.ParamStoreKeyDepositParams, &depositParams)
-	depositParams.MinInitialDepositRatio = sdk.NewDec(minInitialDepositRatio).Quo(sdk.NewDec(100))
+	depositParams.MinInitialDepositRatio = minInitialDepositRatio
 	paramstore.Set(ctx, types.ParamStoreKeyDepositParams, depositParams)
 }
