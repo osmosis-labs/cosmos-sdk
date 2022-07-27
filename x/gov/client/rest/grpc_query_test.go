@@ -53,7 +53,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	// create a proposal without deposit
-	govtestutil.MsgSubmitProposal(val.ClientCtx, val.Address.String(),
+	_, err = govtestutil.MsgSubmitProposal(val.ClientCtx, val.Address.String(),
 		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText)
 	s.Require().NoError(err)
 	_, err = s.network.WaitForHeight(1)
