@@ -74,12 +74,12 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewDepositParams creates a new DepositParams object
-func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration, minExpeditedDeposit sdk.Coins, minInitialDepositPercent uint32) DepositParams {
+func NewDepositParams(minDeposit sdk.Coins, maxDepositPeriod time.Duration, minExpeditedDeposit sdk.Coins, minInitialDepositRatio sdk.Dec) DepositParams {
 	return DepositParams{
-		MinDeposit:               minDeposit,
-		MaxDepositPeriod:         maxDepositPeriod,
-		MinExpeditedDeposit:      minExpeditedDeposit,
-		MinInitialDepositPercent: minInitialDepositPercent,
+		MinDeposit:             minDeposit,
+		MaxDepositPeriod:       maxDepositPeriod,
+		MinExpeditedDeposit:    minExpeditedDeposit,
+		MinInitialDepositRatio: minInitialDepositRatio,
 	}
 }
 
@@ -89,7 +89,7 @@ func DefaultDepositParams() DepositParams {
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinDepositTokens)),
 		DefaultPeriod,
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinExpeditedDepositTokens)),
-		0,
+		sdk.ZeroDec(),
 	)
 }
 

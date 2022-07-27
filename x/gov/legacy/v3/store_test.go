@@ -22,9 +22,9 @@ func TestGovStoreMigrationToV3ConsensusVersion(t *testing.T) {
 
 	paramstore = paramstore.WithKeyTable(types.ParamKeyTable())
 
-	// We assume that all deposit params are set besdides the MinInitialDepositPercent
+	// We assume that all deposit params are set besdides the MinInitialDepositRatio
 	originalDepositParams := types.DefaultDepositParams()
-	originalDepositParams.MinInitialDepositPercent = 0
+	originalDepositParams.MinInitialDepositRatio = sdk.ZeroDec()
 	paramstore.Set(ctx, types.ParamStoreKeyDepositParams, originalDepositParams)
 
 	// Run migrations.
@@ -34,5 +34,5 @@ func TestGovStoreMigrationToV3ConsensusVersion(t *testing.T) {
 	// Make sure the new param is set.
 	var depositParams types.DepositParams
 	paramstore.Get(ctx, types.ParamStoreKeyDepositParams, &depositParams)
-	require.Equal(t, v3.MinInitialDepositPercent, depositParams.MinInitialDepositPercent)
+	require.Equal(t, v3.MinInitialDepositRatio, depositParams.MinInitialDepositRatio)
 }

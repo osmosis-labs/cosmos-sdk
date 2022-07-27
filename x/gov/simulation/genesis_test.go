@@ -48,7 +48,7 @@ func TestRandomizedGenState(t *testing.T) {
 	require.Equal(t, "272stake", govGenesis.DepositParams.MinDeposit.String())
 	require.Equal(t, "41h11m36s", govGenesis.DepositParams.MaxDepositPeriod.String())
 	require.Equal(t, "800stake", govGenesis.DepositParams.MinExpeditedDeposit.String())
-	require.Equal(t, uint32(0x58), govGenesis.DepositParams.MinInitialDepositPercent)
+	require.Equal(t, uint32(0x58), govGenesis.DepositParams.MinInitialDepositRatio)
 	require.Equal(t, float64(307362), govGenesis.VotingParams.VotingPeriod.Seconds())
 	require.Equal(t, float64(115820), govGenesis.VotingParams.ExpeditedVotingPeriod.Seconds())
 	require.Equal(t, dec1, govGenesis.TallyParams.Quorum)

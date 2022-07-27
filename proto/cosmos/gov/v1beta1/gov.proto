@@ -170,7 +170,11 @@ message DepositParams {
   ];
 
   //  The percentage of the min deposit that must be paid at proposal submission.
-  uint32 min_initial_deposit_percent = 4;
+  string min_initial_deposit_ratio = 4 [
+    (gogoproto.moretags)   = "yaml:\"community_tax\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
 }
 
 // VotingParams defines the params for voting on governance proposals.

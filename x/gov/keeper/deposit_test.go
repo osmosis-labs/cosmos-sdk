@@ -139,7 +139,7 @@ func TestDeposits(t *testing.T) {
 func TestValidateInitialDeposit(t *testing.T) {
 	testcases := map[string]struct {
 		minDeposit               sdk.Coins
-		minInitialDepositPercent uint32
+		minInitialDepositPercent int64
 		initialDeposit           sdk.Coins
 
 		expectError bool
@@ -220,7 +220,7 @@ func TestValidateInitialDeposit(t *testing.T) {
 
 			params := types.DefaultDepositParams()
 			params.MinDeposit = tc.minDeposit
-			params.MinInitialDepositPercent = tc.minInitialDepositPercent
+			params.MinInitialDepositRatio = sdk.NewDec(tc.minInitialDepositPercent).Quo(sdk.NewDec(100))
 
 			govKeeper.SetDepositParams(ctx, params)
 

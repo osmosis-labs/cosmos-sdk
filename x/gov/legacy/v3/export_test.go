@@ -1,3 +1,3 @@
 package v3
 
-const MinInitialDepositPercent = minInitialDepositPercent
+const MinInitialDepositRatio = minInitialDepositRatio

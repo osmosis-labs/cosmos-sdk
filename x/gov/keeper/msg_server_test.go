@@ -13,42 +13,43 @@ import (
 
 func TestSubmitProposal_InitialDeposit(t *testing.T) {
 	const meetsDepositValue = baseDepositTestAmount * baseDepositTestPercent / 100
+	var baseDepositRatioDec = sdk.NewDec(baseDepositTestPercent).Quo(sdk.NewDec(100))
 
 	testcases := map[string]struct {
-		minDeposit               sdk.Coins
-		minInitialDepositPercent uint32
-		initialDeposit           sdk.Coins
-		accountBalance           sdk.Coins
+		minDeposit             sdk.Coins
+		minInitialDepositRatio sdk.Dec
+		initialDeposit         sdk.Coins
+		accountBalance         sdk.Coins
 
 		expectError bool
 	}{
 		"meets initial deposit, enough balance - success": {
-			minDeposit:               sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
-			minInitialDepositPercent: baseDepositTestPercent,
-			initialDeposit:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
-			accountBalance:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
+			minDeposit:             sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
+			minInitialDepositRatio: baseDepositRatioDec,
+			initialDeposit:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
+			accountBalance:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
 		},
 		"does not meet initial deposit, enough balance - error": {
-			minDeposit:               sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
-			minInitialDepositPercent: baseDepositTestPercent,
-			initialDeposit:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
-			accountBalance:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
+			minDeposit:             sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
+			minInitialDepositRatio: baseDepositRatioDec,
+			initialDeposit:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
+			accountBalance:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
 
 			expectError: true,
 		},
 		"meets initial deposit, not enough balance - error": {
-			minDeposit:               sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
-			minInitialDepositPercent: baseDepositTestPercent,
-			initialDeposit:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
-			accountBalance:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
+			minDeposit:             sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
+			minInitialDepositRatio: baseDepositRatioDec,
+			initialDeposit:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue))),
+			accountBalance:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
 
 			expectError: true,
 		},
 		"does not meet initial deposit and not enough balance - error": {
-			minDeposit:               sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
-			minInitialDepositPercent: baseDepositTestPercent,
-			initialDeposit:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
-			accountBalance:           sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
+			minDeposit:             sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(baseDepositTestAmount))),
+			minInitialDepositRatio: baseDepositRatioDec,
+			initialDeposit:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
+			accountBalance:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(meetsDepositValue-1))),
 
 			expectError: true,
 		},
@@ -64,7 +65,7 @@ func TestSubmitProposal_InitialDeposit(t *testing.T) {
 
 			params := types.DefaultDepositParams()
 			params.MinDeposit = tc.minDeposit
-			params.MinInitialDepositPercent = tc.minInitialDepositPercent
+			params.MinInitialDepositRatio = tc.minInitialDepositRatio
 			govKeeper.SetDepositParams(ctx, params)
 
 			address := simapp.AddTestAddrs(app, ctx, 1, sdk.NewInt(0))[0]
