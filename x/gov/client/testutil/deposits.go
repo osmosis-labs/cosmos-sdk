@@ -45,6 +45,7 @@ func (s *DepositTestSuite) TestQueryDepositsInitialDeposit() {
 	val := s.network.Validators[0]
 	clientCtx := val.ClientCtx
 	initialDeposit := sdk.NewCoin(s.cfg.BondDenom, types.DefaultMinDepositTokens.Sub(sdk.NewInt(20))).String()
+
 	// create a proposal with deposit
 	_, err := MsgSubmitProposal(val.ClientCtx, val.Address.String(),
 		"Text Proposal 1", "Where is the title!?", types.ProposalTypeText,

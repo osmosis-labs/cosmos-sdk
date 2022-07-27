@@ -192,6 +192,9 @@ func (keeper Keeper) RefundDeposits(ctx sdk.Context, proposalID uint64) {
 // the deposit parameters. Returns nil on success, error otherwise.
 func (keeper Keeper) validateInitialDeposit(ctx sdk.Context, initialDeposit sdk.Coins) error {
 	depositParams := keeper.GetDepositParams(ctx)
+	if depositParams.MinInitialDepositPercent == 0 {
+		return nil
+	}
 	minDepositCoins := depositParams.MinDeposit
 	minInitialDepositRatio := sdk.NewDec(int64(depositParams.MinInitialDepositPercent)).Quo(sdk.NewDec(100))
 	for i := range minDepositCoins {
