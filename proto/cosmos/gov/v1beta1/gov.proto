@@ -169,7 +169,7 @@ message DepositParams {
     (gogoproto.jsontag)      = "min_expedited_deposit,omitempty"
   ];
 
-  //  The percentage of the min deposit that must be paid at proposal submission.
+  //  The ratio representing the prportion of the deposit value that must be paid at proposal submission.
   string min_initial_deposit_ratio = 4 [
     (gogoproto.moretags)   = "yaml:\"community_tax\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",

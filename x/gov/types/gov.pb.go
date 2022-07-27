@@ -380,7 +380,7 @@ type DepositParams struct {
 	MaxDepositPeriod time.Duration `protobuf:"bytes,2,opt,name=max_deposit_period,json=maxDepositPeriod,proto3,stdduration" json:"max_deposit_period,omitempty" yaml:"max_deposit_period"`
 	//  Minimum expedited deposit for a proposal to enter voting period.
 	MinExpeditedDeposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,3,rep,name=min_expedited_deposit,json=minExpeditedDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"min_expedited_deposit,omitempty" yaml:"min_expedited_deposit"`
-	//  The percentage of the min deposit that must be paid at proposal submission.
+	//  The ratio representing the prportion of the deposit value that must be paid at proposal submission.
 	MinInitialDepositRatio github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=min_initial_deposit_ratio,json=minInitialDepositRatio,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"min_initial_deposit_ratio" yaml:"community_tax"`
 }
 
