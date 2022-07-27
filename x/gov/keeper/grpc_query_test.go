@@ -470,8 +470,9 @@ func (suite *KeeperTestSuite) TestGRPCQueryParams() {
 			func() {
 				req = &types.QueryParamsRequest{ParamsType: types.ParamVoting}
 				expRes = &types.QueryParamsResponse{
-					VotingParams: types.DefaultVotingParams(),
-					TallyParams:  types.NewTallyParams(sdk.NewDec(0), sdk.NewDec(0), sdk.NewDec(0)),
+					VotingParams:  types.DefaultVotingParams(),
+					DepositParams: types.DepositParams{MinInitialDepositRatio: sdk.ZeroDec()},
+					TallyParams:   types.NewTallyParams(sdk.NewDec(0), sdk.NewDec(0), sdk.NewDec(0)),
 				}
 			},
 			true,
@@ -481,7 +482,8 @@ func (suite *KeeperTestSuite) TestGRPCQueryParams() {
 			func() {
 				req = &types.QueryParamsRequest{ParamsType: types.ParamTallying}
 				expRes = &types.QueryParamsResponse{
-					TallyParams: types.DefaultTallyParams(),
+					DepositParams: types.DepositParams{MinInitialDepositRatio: sdk.ZeroDec()},
+					TallyParams:   types.DefaultTallyParams(),
 				}
 			},
 			true,

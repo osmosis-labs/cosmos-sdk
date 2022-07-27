@@ -97,7 +97,8 @@ func TestMigrate(t *testing.T) {
 	expected := `{
 	"deposit_params": {
 		"max_deposit_period": "0s",
-		"min_deposit": []
+		"min_deposit": [],
+		"min_initial_deposit_ratio": "0"
 	},
 	"deposits": [],
 	"proposals": [
