@@ -9,7 +9,6 @@ import (
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govcli "github.com/cosmos/cosmos-sdk/x/gov/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 var commonArgs = []string{
@@ -55,15 +54,4 @@ func MsgDeposit(clientCtx client.Context, from, id, deposit string, extraArgs ..
 	args = append(args, extraArgs...)
 
 	return clitestutil.ExecTestCLICmd(clientCtx, govcli.NewCmdDeposit(), args)
-}
-
-func GetMinInitialValidDeposit(minDeposit sdk.Coins) sdk.Coins {
-	minInitialDeposit := sdk.NewCoins()
-	for _, coin := range minDeposit {
-		minInitialDepositCoin := sdk.NewCoin(coin.Denom, coin.Amount)
-		minInitialDepositCoin.Amount = minInitialDepositCoin.Amount.ToDec().Mul(sdk.NewDec(int64(types.DefaultInitialDepositPercent))).Quo(sdk.NewDec(100)).RoundInt()
-
-		minInitialDeposit = append(minInitialDeposit, minInitialDepositCoin)
-	}
-	return minInitialDeposit
 }

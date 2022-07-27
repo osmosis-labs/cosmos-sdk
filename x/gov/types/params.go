@@ -15,9 +15,8 @@ import (
 
 // Default period for deposits & voting
 const (
-	DefaultPeriod                time.Duration = time.Hour * 24 * 2 // 2 days
-	DefaultExpeditedPeriod       time.Duration = time.Hour * 24     // 1 day
-	DefaultInitialDepositPercent               = 25
+	DefaultPeriod          time.Duration = time.Hour * 24 * 2 // 2 days
+	DefaultExpeditedPeriod time.Duration = time.Hour * 24     // 1 day
 )
 
 // Default governance params
@@ -90,7 +89,7 @@ func DefaultDepositParams() DepositParams {
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinDepositTokens)),
 		DefaultPeriod,
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultMinExpeditedDepositTokens)),
-		DefaultInitialDepositPercent,
+		0,
 	)
 }
 

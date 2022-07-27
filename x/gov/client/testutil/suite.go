@@ -52,11 +52,9 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	_, err = MsgVote(val.ClientCtx, val.Address.String(), "1", "yes")
 	s.Require().NoError(err)
 
-	// create a proposal with minimum deposit
-	minimumDeposit := GetMinInitialValidDeposit(types.DefaultDepositParams().MinDeposit)
+	// create a proposal without deposit
 	_, err = MsgSubmitProposal(val.ClientCtx, val.Address.String(),
-		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText,
-		fmt.Sprintf("--%s=%s", cli.FlagDeposit, minimumDeposit))
+		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText)
 	s.Require().NoError(err)
 	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
