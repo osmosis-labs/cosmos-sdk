@@ -59,7 +59,7 @@ func NewBaseSendKeeper(
 	}
 }
 
-// Set the validator hooks
+// Set the bank hooks
 func (k *BaseSendKeeper) SetHooks(bh types.BankHooks) *BaseSendKeeper {
 	if k.hooks != nil {
 		panic("cannot set bank hooks twice")
