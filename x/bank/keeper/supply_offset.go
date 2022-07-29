@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
@@ -12,7 +13,7 @@ import (
 )
 
 // GetSupplyOffset retrieves the SupplyOffset from store for a specific denom
-func (k BaseViewKeeper) GetSupplyOffset(ctx sdk.Context, denom string) math.Int {
+func (k BaseViewKeeper) GetSupplyOffset(ctx context.Context, denom string) math.Int {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	supplyOffsetStore := prefix.NewStore(store, types.SupplyOffsetKey)
 
@@ -31,7 +32,7 @@ func (k BaseViewKeeper) GetSupplyOffset(ctx sdk.Context, denom string) math.Int 
 }
 
 // setSupplyOffset sets the supply offset for the given denom
-func (k BaseKeeper) setSupplyOffset(ctx sdk.Context, denom string, offsetAmount math.Int) {
+func (k BaseKeeper) setSupplyOffset(ctx context.Context, denom string, offsetAmount math.Int) {
 	intBytes, err := offsetAmount.Marshal()
 	if err != nil {
 		panic(fmt.Errorf("unable to marshal amount value %v", err))
@@ -49,19 +50,26 @@ func (k BaseKeeper) setSupplyOffset(ctx sdk.Context, denom string, offsetAmount 
 }
 
 // AddSupplyOffset adjusts the current supply offset of a denom by the inputted offsetAmount
-func (k BaseKeeper) AddSupplyOffset(ctx sdk.Context, denom string, offsetAmount math.Int) {
+func (k BaseKeeper) AddSupplyOffset(ctx context.Context, denom string, offsetAmount math.Int) {
 	k.setSupplyOffset(ctx, denom, k.GetSupplyOffset(ctx, denom).Add(offsetAmount))
 }
 
 // GetSupplyWithOffset retrieves the Supply of a denom and offsets it by SupplyOffset
-func (k BaseKeeper) GetSupplyWithOffset(ctx sdk.Context, denom string) sdk.Coin {
+// If SupplyWithOffset is negative, it returns 0.  This is because sdk.Coin is not valid
+// with a negative amount
+func (k BaseKeeper) GetSupplyWithOffset(ctx context.Context, denom string) sdk.Coin {
 	supply := k.GetSupply(ctx, denom)
 	supply.Amount = supply.Amount.Add(k.GetSupplyOffset(ctx, denom))
+
+	if supply.Amount.IsNegative() {
+		supply.Amount = math.ZeroInt()
+	}
+
 	return supply
 }
 
 // GetPaginatedTotalSupplyWithOffsets queries for the supply with offset, ignoring 0 coins, with a given pagination
-func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
+func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx context.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	supplyStore := prefix.NewStore(store, types.SupplyKey)
 
@@ -93,7 +101,7 @@ func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, paginati
 // IterateTotalSupplyWithOffsets iterates over the total supply with offsets calling the given cb (callback) function
 // with the balance of each coin.
 // The iteration stops if the callback returns true.
-func (k BaseViewKeeper) IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(sdk.Coin) bool) {
+func (k BaseViewKeeper) IterateTotalSupplyWithOffsets(ctx context.Context, cb func(sdk.Coin) bool) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	supplyStore := prefix.NewStore(store, types.SupplyKey)
 

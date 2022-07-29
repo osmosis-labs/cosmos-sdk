@@ -280,7 +280,7 @@ func (suite *KeeperTestSuite) TestSpendableBalanceByDenom() {
 
 func (suite *KeeperTestSuite) TestQueryTotalSupply() {
 	ctx, queryClient := suite.ctx, suite.queryClient
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	res, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
@@ -299,7 +299,7 @@ func (suite *KeeperTestSuite) TestQueryTotalSupply() {
 	suite.Require().Equal(expectedTotalSupply, res.Supply)
 
 	// test total supply query with supply offset
-	suite.bankKeeper.AddSupplyOffset(sdkCtx, "test", math.NewInt(-100000000))
+	suite.bankKeeper.AddSupplyOffset(ctx, "test", math.NewInt(-100000000))
 	res, err = queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
@@ -317,7 +317,6 @@ func (suite *KeeperTestSuite) TestQueryTotalSupply() {
 
 func (suite *KeeperTestSuite) TestQueryTotalSupplyOf() {
 	ctx, queryClient := suite.ctx, suite.queryClient
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
@@ -341,7 +340,7 @@ func (suite *KeeperTestSuite) TestQueryTotalSupplyOf() {
 	suite.Require().Equal(sdk.NewInt64Coin("bogus", 0), res.Amount)
 
 	// test total supply of query with supply offset
-	suite.bankKeeper.AddSupplyOffset(sdkCtx, "test1", math.NewInt(-1000000))
+	suite.bankKeeper.AddSupplyOffset(ctx, "test1", math.NewInt(-1000000))
 	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test1Supply.Denom})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
@@ -354,6 +353,14 @@ func (suite *KeeperTestSuite) TestQueryTotalSupplyOf() {
 	suite.Require().NotNil(res2)
 
 	suite.Require().Equal(test1Supply, res2.Amount)
+
+	// try to make SupplyWithOffset negative, should return as 0
+	suite.bankKeeper.AddSupplyOffset(ctx, "test1", math.NewInt(-100000000000))
+	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test1Supply.Denom})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+
+	suite.Require().Equal(sdk.NewInt64Coin("test1", 0), res.Amount)
 }
 
 func (suite *KeeperTestSuite) TestQueryParams() {

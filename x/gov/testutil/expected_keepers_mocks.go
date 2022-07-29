@@ -145,7 +145,7 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // AddSupplyOffset mocks base method.
-func (m *MockBankKeeper) AddSupplyOffset(ctx types.Context, denom string, offsetAmount math.Int) {
+func (m *MockBankKeeper) AddSupplyOffset(ctx context.Context, denom string, offsetAmount math.Int) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "AddSupplyOffset", ctx, denom, offsetAmount)
 }
@@ -502,7 +502,7 @@ func (mr *MockBankKeeperMockRecorder) GetPaginatedTotalSupply(ctx, pagination in
 }
 
 // GetPaginatedTotalSupplyWithOffsets mocks base method.
-func (m *MockBankKeeper) GetPaginatedTotalSupplyWithOffsets(ctx types.Context, pagination *query.PageRequest) (types.Coins, *query.PageResponse, error) {
+func (m *MockBankKeeper) GetPaginatedTotalSupplyWithOffsets(ctx context.Context, pagination *query.PageRequest) (types.Coins, *query.PageResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPaginatedTotalSupplyWithOffsets", ctx, pagination)
 	ret0, _ := ret[0].(types.Coins)
@@ -561,7 +561,7 @@ func (mr *MockBankKeeperMockRecorder) GetSupply(ctx, denom interface{}) *gomock.
 }
 
 // GetSupplyOffset mocks base method.
-func (m *MockBankKeeper) GetSupplyOffset(ctx types.Context, denom string) math.Int {
+func (m *MockBankKeeper) GetSupplyOffset(ctx context.Context, denom string) math.Int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSupplyOffset", ctx, denom)
 	ret0, _ := ret[0].(math.Int)
@@ -575,7 +575,7 @@ func (mr *MockBankKeeperMockRecorder) GetSupplyOffset(ctx, denom interface{}) *g
 }
 
 // GetSupplyWithOffset mocks base method.
-func (m *MockBankKeeper) GetSupplyWithOffset(ctx types.Context, denom string) types.Coin {
+func (m *MockBankKeeper) GetSupplyWithOffset(ctx context.Context, denom string) types.Coin {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSupplyWithOffset", ctx, denom)
 	ret0, _ := ret[0].(types.Coin)
@@ -764,7 +764,7 @@ func (mr *MockBankKeeperMockRecorder) IterateTotalSupply(ctx, cb interface{}) *g
 }
 
 // IterateTotalSupplyWithOffsets mocks base method.
-func (m *MockBankKeeper) IterateTotalSupplyWithOffsets(ctx types.Context, cb func(types.Coin) bool) {
+func (m *MockBankKeeper) IterateTotalSupplyWithOffsets(ctx context.Context, cb func(types.Coin) bool) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateTotalSupplyWithOffsets", ctx, cb)
 }
