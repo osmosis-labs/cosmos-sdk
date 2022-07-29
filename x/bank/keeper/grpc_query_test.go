@@ -157,7 +157,6 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 	suite.Require().NotNil(res)
 
 	suite.Require().Equal(sdk.NewInt64Coin("test1", 0), res.Amount)
-
 }
 
 func (suite *IntegrationTestSuite) TestQueryParams() {
