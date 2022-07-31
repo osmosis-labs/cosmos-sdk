@@ -82,14 +82,19 @@ func TestHooks(t *testing.T) {
 	require.Error(t, err)
 
 	// make sure that module to many accounts doesn't bypass hook
+	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{validSendAmount, validSendAmount})
+	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{validSendAmount, invalidSendAmount})
 	require.Error(t, err)
 
 	// make sure that DelegateCoins doesn't bypass the hook
+	err = app.BankKeeper.DelegateCoins(ctx, addrs[0], app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), validSendAmount)
+	require.NoError(t, err)
 	err = app.BankKeeper.DelegateCoins(ctx, addrs[0], app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), invalidSendAmount)
 	require.Error(t, err)
 
 	// make sure that UndelegateCoins doesn't bypass the hook
-	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], invalidSendAmount)
+	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], validSendAmount)
+	require.NoError(t, err)
 	require.Error(t, err)
 }
