@@ -304,6 +304,16 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 	}()
 
 	gInfo, result, anteEvents, err := app.runTx(runTxModeDeliver, req.Tx)
+	// cap gas used at gas wanted + 1, to reduce application sensitivity to gas when were exceeding the limit
+	// cref: https://github.com/cosmos/cosmos-sdk/issues/12788
+	// TODO: In the future, the entire gas wanted & gas used being communicated to Tendermint is a bad design
+	// That should be purely state machine side
+	if gInfo.GasUsed > gInfo.GasWanted {
+		newEvent := sdk.NewEvent("out_of_gas", sdk.NewAttribute("gas_used", fmt.Sprintf("%d", gInfo.GasUsed)))
+		result.Events = append(result.Events, sdk.Events{newEvent}.ToABCIEvents()...)
+		gInfo.GasUsed = gInfo.GasWanted + 1
+	}
+
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)

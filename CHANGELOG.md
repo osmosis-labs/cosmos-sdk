@@ -35,6 +35,10 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## [Unreleased Osmosis fork]()
+
+* Cap the `gas_used` communicated to tendermint at `gas_wanted + 1`, and emit an event with exact excess gas used.
+
 ## [Unreleased]
 
 ## [v0.45.0](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.45.0) - 2022-01-18
