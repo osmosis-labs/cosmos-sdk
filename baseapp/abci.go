@@ -314,7 +314,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx 
 		result.Events = append(result.Events, sdk.Events{newEvent}.ToABCIEvents()...)
 		gInfo.GasUsed = gInfo.GasWanted + 1
 	}
-
+	// err check must come after the gas used changes
 	if err != nil {
 		resultStr = "failed"
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, anteEvents, app.trace)
