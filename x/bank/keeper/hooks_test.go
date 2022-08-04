@@ -20,11 +20,11 @@ var _ types.BankHooks = &MockBankHooksReceiver{}
 // BankHooks event hooks for bank (noalias)
 type MockBankHooksReceiver struct{}
 
-// Mock BeforeSend bank hook that doesn't allow the sending of exactly 100 coins of any denom
+// Mock BeforeSend bank hook that doesn't allow the sending of exactly 100 coins of any denom.
 func (h *MockBankHooksReceiver) BeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
 	for _, coin := range amount {
 		if coin.Amount.Equal(sdk.NewInt(100)) {
-			return errors.New("not allowed")
+			return fmt.Errorf("not allowed; expected %v, got: %v", 100, coin.Amount)
 		}
 	}
 

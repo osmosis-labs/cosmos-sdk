@@ -8,7 +8,7 @@ import (
 // Implements StakingHooks interface
 var _ types.BankHooks = BaseSendKeeper{}
 
-// BeforeSend - call hook if registered
+// BeforeSend executes the BeforeSend hook if registered.
 func (k BaseSendKeeper) BeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
 	if k.hooks != nil {
 		return k.hooks.BeforeSend(ctx, from, to, amount)
