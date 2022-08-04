@@ -10,6 +10,8 @@ type Config struct {
 	ExportStatePath    string // custom file path to save the exported app state JSON
 	ExportStatsPath    string // custom file path to save the exported simulation statistics JSON
 
+	ExcludeLongInvariant float64 // probability simulator will skip longer invariants that run every period value
+
 	Seed               int64  // simulation random seed
 	InitialBlockHeight int    // initial block to start the simulation
 	NumBlocks          int    // number of new blocks to simulate from the initial block height

@@ -8,20 +8,21 @@ import (
 
 // List of available flags for the simulator
 var (
-	FlagGenesisFileValue        string
-	FlagParamsFileValue         string
-	FlagExportParamsPathValue   string
-	FlagExportParamsHeightValue int
-	FlagExportStatePathValue    string
-	FlagExportStatsPathValue    string
-	FlagSeedValue               int64
-	FlagInitialBlockHeightValue int
-	FlagNumBlocksValue          int
-	FlagBlockSizeValue          int
-	FlagLeanValue               bool
-	FlagCommitValue             bool
-	FlagOnOperationValue        bool // TODO: Remove in favor of binary search for invariant violation
-	FlagAllInvariantsValue      bool
+	FlagGenesisFileValue                string
+	FlagParamsFileValue                 string
+	FlagExportParamsPathValue           string
+	FlagExportParamsHeightValue         int
+	FlagExportStatePathValue            string
+	FlagExportStatsPathValue            string
+	FlagExcludeLongInvariantProbability float64
+	FlagSeedValue                       int64
+	FlagInitialBlockHeightValue         int
+	FlagNumBlocksValue                  int
+	FlagBlockSizeValue                  int
+	FlagLeanValue                       bool
+	FlagCommitValue                     bool
+	FlagOnOperationValue                bool // TODO: Remove in favor of binary search for invariant violation
+	FlagAllInvariantsValue              bool
 
 	FlagEnabledValue     bool
 	FlagVerboseValue     bool
@@ -38,6 +39,7 @@ func GetSimulatorFlags() {
 	flag.IntVar(&FlagExportParamsHeightValue, "ExportParamsHeight", 0, "height to which export the randomly generated params")
 	flag.StringVar(&FlagExportStatePathValue, "ExportStatePath", "", "custom file path to save the exported app state JSON")
 	flag.StringVar(&FlagExportStatsPathValue, "ExportStatsPath", "", "custom file path to save the exported simulation statistics JSON")
+	flag.Float64Var(&FlagExcludeLongInvariantProbability, "ExcludeLongInvariant", 0, "probability simulator will skip longer invariants that run every period value")
 	flag.Int64Var(&FlagSeedValue, "Seed", 42, "simulation random seed")
 	flag.IntVar(&FlagInitialBlockHeightValue, "InitialBlockHeight", 1, "initial block to start the simulation")
 	flag.IntVar(&FlagNumBlocksValue, "NumBlocks", 500, "number of new blocks to simulate from the initial block height")
@@ -57,19 +59,20 @@ func GetSimulatorFlags() {
 // NewConfigFromFlags creates a simulation from the retrieved values of the flags.
 func NewConfigFromFlags() simulation.Config {
 	return simulation.Config{
-		GenesisFile:        FlagGenesisFileValue,
-		ParamsFile:         FlagParamsFileValue,
-		ExportParamsPath:   FlagExportParamsPathValue,
-		ExportParamsHeight: FlagExportParamsHeightValue,
-		ExportStatePath:    FlagExportStatePathValue,
-		ExportStatsPath:    FlagExportStatsPathValue,
-		Seed:               FlagSeedValue,
-		InitialBlockHeight: FlagInitialBlockHeightValue,
-		NumBlocks:          FlagNumBlocksValue,
-		BlockSize:          FlagBlockSizeValue,
-		Lean:               FlagLeanValue,
-		Commit:             FlagCommitValue,
-		OnOperation:        FlagOnOperationValue,
-		AllInvariants:      FlagAllInvariantsValue,
+		GenesisFile:          FlagGenesisFileValue,
+		ParamsFile:           FlagParamsFileValue,
+		ExportParamsPath:     FlagExportParamsPathValue,
+		ExportParamsHeight:   FlagExportParamsHeightValue,
+		ExportStatePath:      FlagExportStatePathValue,
+		ExportStatsPath:      FlagExportStatsPathValue,
+		ExcludeLongInvariant: FlagExcludeLongInvariantProbability,
+		Seed:                 FlagSeedValue,
+		InitialBlockHeight:   FlagInitialBlockHeightValue,
+		NumBlocks:            FlagNumBlocksValue,
+		BlockSize:            FlagBlockSizeValue,
+		Lean:                 FlagLeanValue,
+		Commit:               FlagCommitValue,
+		OnOperation:          FlagOnOperationValue,
+		AllInvariants:        FlagAllInvariantsValue,
 	}
 }

@@ -58,6 +58,11 @@ func (k Keeper) Routes() []types.InvarRoute {
 	return k.routes
 }
 
+// NewRoutes - modifies the keeper's invariant routes
+func (k *Keeper) NewRoutes(routes []types.InvarRoute) {
+	k.routes = routes
+}
+
 // Invariants returns a copy of all registered Crisis keeper invariants.
 func (k Keeper) Invariants() []sdk.Invariant {
 	invars := make([]sdk.Invariant, len(k.routes))
