@@ -25,7 +25,6 @@ func TestGovStoreMigrationToV4ConsensusVersion(t *testing.T) {
 
 	// We assume that all deposit params are set besides the MinInitialDepositRatio
 	originalDepositParams := types.DefaultDepositParams()
-	originalDepositParams.MinInitialDepositRatio = sdk.ZeroDec()
 	originalDepositParams.MinExpeditedDeposit = sdk.NewCoins()
 	paramstore.Set(ctx, types.ParamStoreKeyDepositParams, originalDepositParams)
 
@@ -44,7 +43,6 @@ func TestGovStoreMigrationToV4ConsensusVersion(t *testing.T) {
 	// Make sure the new params are set.
 	var depositParams types.DepositParams
 	paramstore.Get(ctx, types.ParamStoreKeyDepositParams, &depositParams)
-	require.Equal(t, v4.MinInitialDepositRatio, depositParams.MinInitialDepositRatio)
 	require.Equal(t, v4.MinExpeditedDeposit, depositParams.MinExpeditedDeposit)
 
 	var votingParams types.VotingParams

@@ -10,19 +10,18 @@ import (
 // If expedited, the deposit to enter voting period will be
 // increased to 5000 OSMO. The proposal will have 24 hours to achieve
 // a two-thirds majority of all staked OSMO voting power voting YES.
-var minInitialDepositRatio = sdk.NewDec(25).Quo(sdk.NewDec(100))
-var minExpeditedDeposit = sdk.NewCoins(sdk.NewCoin("osmo", sdk.NewInt(5000)))
-var expeditedVotingPeriod = time.Duration(time.Hour * 24)
-var expeditedThreshold = sdk.NewDec(2).Quo(sdk.NewDec(3))
 
-// MigrateStore performs in-place store migrations for consensus version 3
+var (
+	minExpeditedDeposit = sdk.NewCoins(sdk.NewCoin("uosmo", sdk.NewInt(5000 * 1_000_000)))
+	expeditedVotingPeriod = time.Duration(time.Hour * 24)
+	expeditedThreshold = sdk.NewDec(2).Quo(sdk.NewDec(3))
+)
+
+// MigrateStore performs in-place store migrations for consensus version 4
 // in the gov module.
-// Please note that this is the first version that switches from using
-// SDK versioning (v043 etc) for package names to consensus versioning
-// of the gov module.
 // The migration includes:
 //
-// - Setting the minimum deposit param in the paramstore.
+// - Setting the expedited proposals params in the paramstore.
 func MigrateStore(ctx sdk.Context, paramstore types.ParamSubspace) error {
 	migrateParamsStore(ctx, paramstore)
 	return nil
@@ -35,7 +34,6 @@ func migrateParamsStore(ctx sdk.Context, paramstore types.ParamSubspace) {
 
 	//Set depositParams
 	paramstore.Get(ctx, types.ParamStoreKeyDepositParams, &depositParams)
-	depositParams.MinInitialDepositRatio = minInitialDepositRatio
 	depositParams.MinExpeditedDeposit = minExpeditedDeposit
 	paramstore.Set(ctx, types.ParamStoreKeyDepositParams, depositParams)
 
