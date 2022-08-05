@@ -52,7 +52,7 @@ func (k BaseKeeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		panic(fmt.Errorf("unable to fetch total supply %v", err))
 	}
 
-	return types.NewGenesisState(
+	return types.NewGenesisStateWithSupplyOffsets(
 		k.GetParams(ctx),
 		k.GetAccountsBalances(ctx),
 		totalSupply,
