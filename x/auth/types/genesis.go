@@ -33,6 +33,9 @@ func NewGenesisState(params Params, accounts GenesisAccounts) *GenesisState {
 func (g GenesisState) UnpackInterfaces(unpacker types.AnyUnpacker) error {
 	for _, any := range g.Accounts {
 		var account GenesisAccount
+		if any.TypeUrl == "/ibc.applications.interchain_accounts.v1.InterchainAccount" {
+			continue
+		}
 		err := unpacker.UnpackAny(any, &account)
 		if err != nil {
 			return err
