@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -86,7 +85,6 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 	for ; iterator.Valid(); iterator.Next() {
 		account, err := ak.decodeAccount(iterator.Value())
 		if err != nil {
-			fmt.Printf("ERRRRRR %v", err)
 			if strings.Contains(err.Error(), "InterchainAccount") {
 				continue
 			}
