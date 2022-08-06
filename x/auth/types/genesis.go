@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	proto "github.com/gogo/protobuf/proto"
 
@@ -33,7 +34,7 @@ func NewGenesisState(params Params, accounts GenesisAccounts) *GenesisState {
 func (g GenesisState) UnpackInterfaces(unpacker types.AnyUnpacker) error {
 	for _, any := range g.Accounts {
 		var account GenesisAccount
-		if any.TypeUrl == "/ibc.applications.interchain_accounts.v1.InterchainAccount" {
+		if strings.Contains(any.TypeUrl, "InterchainAccount") {
 			continue
 		}
 		err := unpacker.UnpackAny(any, &account)
