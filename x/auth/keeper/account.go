@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -38,8 +40,8 @@ func (ak AccountKeeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) types.A
 	if bz == nil {
 		return nil
 	}
-
-	return ak.decodeAccount(bz)
+	acc, _ := ak.decodeAccount(bz)
+	return acc
 }
 
 // GetAllAccounts returns all accounts in the accountKeeper.
@@ -81,8 +83,8 @@ func (ak AccountKeeper) IterateAccounts(ctx sdk.Context, cb func(account types.A
 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		account := ak.decodeAccount(iterator.Value())
-		if account.String() == "" {
+		account, err := ak.decodeAccount(iterator.Value())
+		if strings.Contains(err.Error(), "InterchainAccount") {
 			continue
 		}
 

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"strings"
 
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -214,16 +213,13 @@ func (ak AccountKeeper) SetModuleAccount(ctx sdk.Context, macc types.ModuleAccou
 	ak.SetAccount(ctx, macc)
 }
 
-func (ak AccountKeeper) decodeAccount(bz []byte) types.AccountI {
+func (ak AccountKeeper) decodeAccount(bz []byte) (types.AccountI, error) {
 	acc, err := ak.UnmarshalAccount(bz)
-	if strings.Contains(err.Error(), "InterchainAccount") {
-		return &types.BaseAccount{}
-	}
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return acc
+	return acc, nil
 }
 
 // MarshalAccount protobuf serializes an Account interface
