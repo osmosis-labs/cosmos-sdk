@@ -28,6 +28,7 @@ type SendKeeper interface {
 
 	InputOutputCoins(ctx context.Context, input types.Input, outputs []types.Output) error
 	SendCoins(ctx context.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
+	SendManyCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddrs []sdk.AccAddress, amts []sdk.Coins) error
 
 	GetParams(ctx context.Context) types.Params
 	SetParams(ctx context.Context, params types.Params) error
@@ -60,6 +61,7 @@ type BaseSendKeeper struct {
 	ak           types.AccountKeeper
 	storeService store.KVStoreService
 	logger       log.Logger
+	hooks        types.BankHooks
 
 	// list of addresses that are restricted from receiving transactions
 	blockedAddrs map[string]bool
@@ -113,6 +115,17 @@ func (k BaseSendKeeper) ClearSendRestriction() {
 // GetAuthority returns the x/bank module's authority.
 func (k BaseSendKeeper) GetAuthority() string {
 	return k.authority
+}
+
+// Set the bank hooks
+func (k *BaseSendKeeper) SetHooks(bh types.BankHooks) *BaseSendKeeper {
+	if k.hooks != nil {
+		panic("cannot set bank hooks twice")
+	}
+
+	k.hooks = bh
+
+	return k
 }
 
 // GetParams returns the total set of bank parameters.
@@ -206,7 +219,12 @@ func (k BaseSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx context.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	var err error
+	// call the BeforeSend hooks
+	err := k.BeforeSend(ctx, fromAddr, toAddr, amt)
+	if err != nil {
+		return err
+	}
+
 	err = k.subUnlockedCoins(ctx, fromAddr, amt)
 	if err != nil {
 		return err
@@ -247,6 +265,61 @@ func (k BaseSendKeeper) SendCoins(ctx context.Context, fromAddr, toAddr sdk.AccA
 			sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
 		),
 	})
+
+	return nil
+}
+
+// SendManyCoins transfer multiple amt coins from a sending account to multiple receiving accounts.
+// An error is returned upon failure.
+func (k BaseSendKeeper) SendManyCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddrs []sdk.AccAddress, amts []sdk.Coins) error {
+	if len(toAddrs) != len(amts) {
+		return fmt.Errorf("addresses and amounts numbers does not match")
+	}
+
+	totalAmt := sdk.Coins{}
+	for i, amt := range amts {
+		// make sure to trigger the BeforeSend hooks for all the sends that are about to occur
+		err := k.BeforeSend(ctx, fromAddr, toAddrs[i], amts[i])
+		if err != nil {
+			return err
+		}
+		totalAmt = sdk.Coins.Add(totalAmt, amt...)
+	}
+
+	err := k.subUnlockedCoins(ctx, fromAddr, totalAmt)
+	if err != nil {
+		return err
+	}
+
+	fromAddrString := fromAddr.String()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	for i, toAddr := range toAddrs {
+		amt := amts[i]
+
+		err := k.addCoins(ctx, toAddr, amt)
+		if err != nil {
+			return err
+		}
+
+		acc := k.ak.GetAccount(ctx, toAddr)
+		if acc == nil {
+			defer telemetry.IncrCounter(1, "new", "account")
+			k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
+		}
+
+		sdkCtx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeTransfer,
+				sdk.NewAttribute(types.AttributeKeyRecipient, toAddr.String()),
+				sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+				sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
+			),
+		})
+	}
 
 	return nil
 }
