@@ -217,7 +217,7 @@ func (ak AccountKeeper) SetModuleAccount(ctx sdk.Context, macc types.ModuleAccou
 func (ak AccountKeeper) decodeAccount(bz []byte) types.AccountI {
 	acc, err := ak.UnmarshalAccount(bz)
 	if strings.Contains(err.Error(), "InterchainAccount") {
-		return nil
+		return &types.BaseAccount{}
 	}
 	if err != nil {
 		panic(err)
