@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -96,6 +96,6 @@ func TestHooks(t *testing.T) {
 	// make sure that UndelegateCoins doesn't bypass the hook
 	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], validSendAmount)
 	require.NoError(t, err)
-        err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], invalidSendAmount)
+	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], invalidSendAmount)
 	require.Error(t, err)
 }
