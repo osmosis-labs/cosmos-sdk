@@ -28,9 +28,11 @@ func MigrateStore(ctx sdk.Context, paramstore types.ParamSubspace) error {
 }
 
 func migrateParamsStore(ctx sdk.Context, paramstore types.ParamSubspace) {
-	var depositParams types.DepositParams
-	var votingParams types.VotingParams
-	var tallyParams types.TallyParams
+	var (
+		depositParams types.DepositParams 
+		votingParams types.VotingParams 
+		tallyParams types.TallyParams
+	)
 
 	//Set depositParams
 	paramstore.Get(ctx, types.ParamStoreKeyDepositParams, &depositParams)
