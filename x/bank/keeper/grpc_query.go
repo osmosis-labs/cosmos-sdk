@@ -105,9 +105,9 @@ func (q Querier) SupplyOf(c context.Context, req *types.QuerySupplyOfRequest) (*
 
 	ctx := sdk.UnwrapSDKContext(c)
 	supply := q.GetSupplyWithOffset(ctx, req.Denom)
-	if supply.IsNegative() {
-		return nil, status.Errorf(codes.OutOfRange, "resulting supply is negative: %v", supply)
-	}
+	// if supply.IsNegative() {
+	// 	return nil, status.Errorf(codes.OutOfRange, "resulting supply is negative: %v", supply)
+	// }
 
 	return &types.QuerySupplyOfResponse{Amount: sdk.NewCoin(req.Denom, supply)}, nil
 }
