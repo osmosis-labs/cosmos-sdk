@@ -32,7 +32,7 @@ type Keeper interface {
 	IterateTotalSupply(ctx sdk.Context, cb func(sdk.Coin) bool)
 	GetSupplyOffset(ctx sdk.Context, denom string) sdk.Int
 	AddSupplyOffset(ctx sdk.Context, denom string, offsetAmount sdk.Int)
-	GetSupplyWithOffset(ctx sdk.Context, denom string) sdk.Coin
+	GetSupplyWithOffset(ctx sdk.Context, denom string) sdk.Int
 	GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
 	IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(sdk.Coin) bool)
 	GetBaseDenom(ctx sdk.Context, denom string) (string, bool)
