@@ -73,16 +73,10 @@ func NewGenesisState(params Params, balances []Balance, supply sdk.Coins,
 	}
 }
 
-// NewGenesisState creates a new genesis state with supply offsets
-func NewGenesisStateWithSupplyOffsets(params Params, balances []Balance, supply sdk.Coins,
-	denomMetaData []Metadata, supplyOffsets []GenesisSupplyOffset) *GenesisState {
-	return &GenesisState{
-		Params:        params,
-		Balances:      balances,
-		Supply:        supply,
-		DenomMetadata: denomMetaData,
-		SupplyOffsets: supplyOffsets,
-	}
+// WithSupplyOffsets adds supply offsets to a genesis state
+func (gs *GenesisState) WithSupplyOffsets(supplyOffsets []GenesisSupplyOffset) *GenesisState {
+	gs.SupplyOffsets = supplyOffsets
+	return gs
 }
 
 // DefaultGenesisState returns a default bank module genesis state.
