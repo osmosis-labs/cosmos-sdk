@@ -58,7 +58,12 @@ func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKe
 		return nil, err
 	}
 
-	if tree.IsUpgradeable() && logger != nil {
+	isUpgradeable, err := tree.IsUpgradeable()
+	if err != nil {
+		return nil, err
+	}
+
+	if isUpgradeable && logger != nil {
 		logger.Info(
 			"Upgrading IAVL storage for faster queries + execution on live state. This may take a while",
 			"store_key", key.String(),
@@ -137,9 +142,13 @@ func (st *Store) Commit() types.CommitID {
 
 // LastCommitID implements Committer.
 func (st *Store) LastCommitID() types.CommitID {
+	hash, err := st.tree.Hash()
+	if err != nil {
+		panic(err)
+	}
 	return types.CommitID{
 		Version: st.tree.Version(),
-		Hash:    st.tree.Hash(),
+		Hash:    hash,
 	}
 }
 
@@ -190,13 +199,21 @@ func (st *Store) Set(key, value []byte) {
 // Implements types.KVStore.
 func (st *Store) Get(key []byte) []byte {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "get")
-	return st.tree.Get(key)
+	value, err := st.tree.Get(key)
+	if err != nil {
+		panic(err)
+	}
+	return value
 }
 
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool) {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "has")
-	return st.tree.Has(key)
+	has, err := st.tree.Has(key)
+	if err != nil {
+		panic(err)
+	}
+	return has
 }
 
 // Implements types.KVStore.
@@ -217,7 +234,11 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 // goroutine.
 // CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	return st.tree.Iterator(start, end, true)
+	iterator, err := st.tree.Iterator(start, end, true)
+	if err != nil {
+		panic(err)
+	}
+	return iterator
 }
 
 // Implements types.KVStore.
@@ -225,7 +246,11 @@ func (st *Store) Iterator(start, end []byte) types.Iterator {
 // goroutine.
 // CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	return st.tree.Iterator(start, end, false)
+	iterator, err := st.tree.Iterator(start, end, false)
+	if err != nil {
+		panic(err)
+	}
+	return iterator
 }
 
 // SetInitialVersion sets the initial version of the IAVL tree. It is used when
@@ -300,7 +325,12 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 			break
 		}
 
-		res.Value = tree.GetVersioned(key, res.Height)
+		value, err := tree.GetVersioned(key, res.Height)
+		if err != nil {
+			panic(err)
+		}
+		res.Value = value
+
 		if !req.Prove {
 			break
 		}
