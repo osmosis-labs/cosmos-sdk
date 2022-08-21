@@ -121,6 +121,7 @@ func (ms multiStore) PruneSnapshotHeight(height int64) {
 func (ms multiStore) SetInterBlockCache(_ sdk.MultiStorePersistentCache) {
 	panic("not implemented")
 }
+
 func (ms multiStore) SetIAVLCacheSize(size int) {
 	panic("not implemented")
 }

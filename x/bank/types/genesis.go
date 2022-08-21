@@ -63,7 +63,8 @@ func (gs GenesisState) Validate() error {
 
 // NewGenesisState creates a new genesis state.
 func NewGenesisState(params Params, balances []Balance, supply sdk.Coins,
-	denomMetaData []Metadata) *GenesisState {
+	denomMetaData []Metadata,
+) *GenesisState {
 	return &GenesisState{
 		Params:        params,
 		Balances:      balances,

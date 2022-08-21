@@ -31,8 +31,10 @@ type IntegrationTestSuite struct {
 	grantee sdk.AccAddress
 }
 
-var typeMsgSend = banktypes.SendAuthorization{}.MsgTypeURL()
-var typeMsgVote = sdk.MsgTypeURL(&govtypes.MsgVote{})
+var (
+	typeMsgSend = banktypes.SendAuthorization{}.MsgTypeURL()
+	typeMsgVote = sdk.MsgTypeURL(&govtypes.MsgVote{})
+)
 
 func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
@@ -228,7 +230,6 @@ func (s *IntegrationTestSuite) TestQueryGrantsGRPC() {
 				s.Require().NoError(err)
 				tc.postRun(&authorizations)
 			}
-
 		})
 	}
 }

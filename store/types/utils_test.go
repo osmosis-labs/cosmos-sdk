@@ -2,8 +2,9 @@ package types_test
 
 import (
 	"bytes"
-	"github.com/tendermint/tendermint/libs/log"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"

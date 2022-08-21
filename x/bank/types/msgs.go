@@ -14,6 +14,7 @@ const (
 var _ sdk.Msg = &MsgSend{}
 
 // NewMsgSend - construct a msg to send coins from one account to another.
+//
 //nolint:interfacer
 func NewMsgSend(fromAddr, toAddr sdk.AccAddress, amount sdk.Coins) *MsgSend {
 	return &MsgSend{FromAddress: fromAddr.String(), ToAddress: toAddr.String(), Amount: amount}

@@ -1337,7 +1337,6 @@ func TestTxGasLimits(t *testing.T) {
 
 			return newCtx, nil
 		})
-
 	}
 
 	routerOpt := func(bapp *BaseApp) {

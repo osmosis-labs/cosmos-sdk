@@ -113,7 +113,6 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
 	suite.Require().NotNil(res2)
 
 	suite.Require().Equal(expectedTotalSupply, res2.Supply)
-
 }
 
 func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {

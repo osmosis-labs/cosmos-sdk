@@ -74,7 +74,6 @@ func (q Querier) AllBalances(ctx context.Context, req *types.QueryAllBalancesReq
 		balances = append(balances, result)
 		return nil
 	})
-
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
 	}
@@ -167,7 +166,6 @@ func (q Querier) DenomsMetadata(c context.Context, req *types.QueryDenomsMetadat
 		metadatas = append(metadatas, metadata)
 		return nil
 	})
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

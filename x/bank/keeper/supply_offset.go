@@ -87,7 +87,6 @@ func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, paginati
 		supply = supply.Add(sdk.NewCoin(denom, amount))
 		return nil
 	})
-
 	if err != nil {
 		return nil, nil, err
 	}

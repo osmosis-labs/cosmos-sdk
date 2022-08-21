@@ -13,7 +13,7 @@ import (
 
 func TestSubmitProposal_InitialDeposit(t *testing.T) {
 	const meetsDepositValue = baseDepositTestAmount * baseDepositTestPercent / 100
-	var baseDepositRatioDec = sdk.NewDec(baseDepositTestPercent).Quo(sdk.NewDec(100))
+	baseDepositRatioDec := sdk.NewDec(baseDepositTestPercent).Quo(sdk.NewDec(100))
 
 	testcases := map[string]struct {
 		minDeposit             sdk.Coins
