@@ -266,7 +266,7 @@ func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTi
 	}
 
 	endTime = time
-	return
+	return startTime, endTime, merged
 }
 
 // AlignSchedules rewrites the first period length to align the two arguments to the same start time,

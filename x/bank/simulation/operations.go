@@ -18,7 +18,7 @@ import (
 
 // Simulation operation weights constants
 const (
-	OpWeightMsgSend = "op_weight_msg_send"
+	OpWeightMsgSend = "op_weight_msg_send" //nolint:gosec
 )
 
 // WeightedOperations returns all the operations from the module with their respective weights

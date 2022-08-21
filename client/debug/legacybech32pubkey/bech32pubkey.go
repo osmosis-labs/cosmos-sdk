@@ -9,7 +9,7 @@ import (
 )
 
 // Bech32PubKeyType defines a string type alias for a Bech32 public key type.
-type Bech32PubKeyType string
+type Bech32PubKeyType string //nolint:revive
 
 // Bech32 conversion constants
 const (

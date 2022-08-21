@@ -197,7 +197,7 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	return newCacheMergeIterator(parent, cache, ascending)
 }
 
-func findStartIndex(strL []string, startQ string) int {
+func findStartIndex(strL []string, startQ string) int { //nolint:deadcode,unused
 	// Modified binary search to find the very first element in >=startQ.
 	if len(strL) == 0 {
 		return -1
@@ -231,7 +231,7 @@ func findStartIndex(strL []string, startQ string) int {
 	return -1
 }
 
-func findEndIndex(strL []string, endQ string) int {
+func findEndIndex(strL []string, endQ string) int { //nolint:deadcode,unused
 	if len(strL) == 0 {
 		return -1
 	}
@@ -270,11 +270,11 @@ func findEndIndex(strL []string, endQ string) int {
 	return -1
 }
 
-type sortState int
+type sortState int //nolint:unused
 
 const (
-	stateUnsorted sortState = iota
-	stateAlreadySorted
+	stateUnsorted      sortState = iota //nolint:deadcode,unused
+	stateAlreadySorted                  //nolint:deadcode,unused
 )
 
 // strToByte is meant to make a zero allocation conversion
