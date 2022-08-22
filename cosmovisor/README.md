@@ -9,7 +9,7 @@
 To install `cosmovisor`, run the following command:
 
 ```
-go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
+go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
 ```
 
 ## Command Line Arguments And Environment Variables
