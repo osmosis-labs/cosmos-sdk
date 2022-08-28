@@ -50,7 +50,7 @@ func TestWeightedOperations(t *testing.T) {
 	}
 
 	for i, w := range weightesOps {
-		operationMsg, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
+		operationMsg, _, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
 		// the following checks are very much dependent from the ordering of the output given
 		// by WeightedOperations. if the ordering in WeightedOperations changes some tests
 		// will fail
@@ -75,7 +75,7 @@ func TestSimulateMsgCreateValidator(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgCreateValidator(app.AccountKeeper, app.BankKeeper, app.StakingKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgCreateValidator
@@ -112,7 +112,7 @@ func TestSimulateMsgEditValidator(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgEditValidator(app.AccountKeeper, app.BankKeeper, app.StakingKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgEditValidator
@@ -150,7 +150,7 @@ func TestSimulateMsgDelegate(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgDelegate(app.AccountKeeper, app.BankKeeper, app.StakingKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgDelegate
@@ -195,7 +195,7 @@ func TestSimulateMsgUndelegate(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgUndelegate(app.AccountKeeper, app.BankKeeper, app.StakingKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgUndelegate
@@ -244,7 +244,7 @@ func TestSimulateMsgBeginRedelegate(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgBeginRedelegate(app.AccountKeeper, app.BankKeeper, app.StakingKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgBeginRedelegate

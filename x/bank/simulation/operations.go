@@ -47,26 +47,26 @@ func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operatio
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
 		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
 		from, to, coins, skip := randomSendFields(r, ctx, accs, bk, ak)
 
 		// Check send_enabled status of each coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil, nil
 		}
 
 		if skip {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "skip all transfers"), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "skip all transfers"), nil, nil, nil
 		}
 
 		msg := types.NewMsgSend(from.Address, to.Address, coins)
 
-		gasInfo, err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []cryptotypes.PrivKey{from.PrivKey})
+		gasInfo, result, err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []cryptotypes.PrivKey{from.PrivKey})
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, nil, err
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, nil
 	}
 }
 
@@ -76,7 +76,7 @@ func SimulateMsgSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keeper, mo
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
 		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
 		from := accs[0]
 
 		to := getModuleAccounts(ak, ctx, moduleAccCount)[0]
@@ -86,17 +86,17 @@ func SimulateMsgSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keeper, mo
 
 		// Check send_enabled status of each coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil, nil
 		}
 
 		msg := types.NewMsgSend(from.Address, to.Address, coins)
 
-		gasInfo, err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []cryptotypes.PrivKey{from.PrivKey})
+		gasInfo, result, err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []cryptotypes.PrivKey{from.PrivKey})
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, nil, err
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, nil
 	}
 }
 
@@ -104,7 +104,7 @@ func SimulateMsgSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keeper, mo
 func sendMsgSend(
 	r *rand.Rand, app *baseapp.BaseApp, bk keeper.Keeper, ak types.AccountKeeper,
 	msg *types.MsgSend, ctx sdk.Context, chainID string, privkeys []cryptotypes.PrivKey,
-) (sdk.GasInfo, error) {
+) (sdk.GasInfo, *sdk.Result, error) {
 
 	var (
 		fees sdk.Coins
@@ -113,7 +113,7 @@ func sendMsgSend(
 
 	from, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
-		return sdk.GasInfo{}, err
+		return sdk.GasInfo{}, nil, err
 	}
 
 	account := ak.GetAccount(ctx, from)
@@ -124,7 +124,7 @@ func sendMsgSend(
 		feeCoins := coins.FilterDenoms([]string{sdk.DefaultBondDenom})
 		fees, err = simtypes.RandomFees(r, ctx, feeCoins)
 		if err != nil {
-			return sdk.GasInfo{}, err
+			return sdk.GasInfo{}, nil, err
 		}
 	}
 	txGen := simappparams.MakeTestEncodingConfig().TxConfig
@@ -139,15 +139,15 @@ func sendMsgSend(
 		privkeys...,
 	)
 	if err != nil {
-		return sdk.GasInfo{}, err
+		return sdk.GasInfo{}, nil, err
 	}
 
-	gasInfo, _, err := app.Deliver(txGen.TxEncoder(), tx)
+	gasInfo, result, err := app.Deliver(txGen.TxEncoder(), tx)
 	if err != nil {
-		return sdk.GasInfo{}, err
+		return sdk.GasInfo{}, nil, err
 	}
 
-	return gasInfo, nil
+	return gasInfo, result, nil
 }
 
 // randomSendFields returns the sender and recipient simulation accounts as well

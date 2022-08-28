@@ -51,7 +51,7 @@ func (suite *SimTestSuite) TestWeightedOperations() {
 	}
 
 	for i, w := range weightesOps {
-		operationMsg, _, _ := w.Op()(r, suite.app.BaseApp, suite.ctx, accs, "")
+		operationMsg, _, _, _ := w.Op()(r, suite.app.BaseApp, suite.ctx, accs, "")
 		// the following checks are very much dependent from the ordering of the output given
 		// by WeightedOperations. if the ordering in WeightedOperations changes some tests
 		// will fail
@@ -74,7 +74,7 @@ func (suite *SimTestSuite) TestSimulateMsgSend() {
 
 	// execute operation
 	op := simulation.SimulateMsgSend(suite.app.AccountKeeper, suite.app.BankKeeper)
-	operationMsg, futureOperations, err := op(r, suite.app.BaseApp, suite.ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, suite.app.BaseApp, suite.ctx, accounts, "")
 	suite.Require().NoError(err)
 
 	var msg types.MsgSend
@@ -108,7 +108,7 @@ func (suite *SimTestSuite) TestSimulateModuleAccountMsgSend() {
 	s = rand.NewSource(1)
 	r = rand.New(s)
 
-	operationMsg, futureOperations, err := op(r, suite.app.BaseApp, suite.ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, suite.app.BaseApp, suite.ctx, accounts, "")
 	suite.Require().Error(err)
 
 	var msg types.MsgSend

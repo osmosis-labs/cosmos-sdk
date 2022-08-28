@@ -86,7 +86,7 @@ func (suite *SimTestSuite) TestWeightedOperations() {
 	}
 
 	for i, w := range weightedOps {
-		operationMsg, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
+		operationMsg, _, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
 		// the following checks are very much dependent from the ordering of the output given
 		// by WeightedOperations. if the ordering in WeightedOperations changes some tests
 		// will fail
@@ -109,7 +109,7 @@ func (suite *SimTestSuite) TestSimulateMsgGrantAllowance() {
 
 	// execute operation
 	op := simulation.SimulateMsgGrantAllowance(app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(err)
 
 	var msg feegrant.MsgGrantAllowance
@@ -151,7 +151,7 @@ func (suite *SimTestSuite) TestSimulateMsgRevokeAllowance() {
 
 	// execute operation
 	op := simulation.SimulateMsgRevokeAllowance(app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(err)
 
 	var msg feegrant.MsgRevokeAllowance

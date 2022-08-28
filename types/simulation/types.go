@@ -53,7 +53,7 @@ type WeightedOperation interface {
 // These will be ran at the beginning of the corresponding block.
 type Operation func(r *rand.Rand, app *baseapp.BaseApp,
 	ctx sdk.Context, accounts []Account, chainID string) (
-	OperationMsg OperationMsg, futureOps []FutureOperation, err error)
+	OperationMsg OperationMsg, futureOps []FutureOperation, result *sdk.Result, err error)
 
 // OperationMsg - structure for operation output
 type OperationMsg struct {

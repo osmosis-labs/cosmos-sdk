@@ -84,7 +84,7 @@ func TestWeightedOperations(t *testing.T) {
 	}
 
 	for i, w := range weightesOps {
-		operationMsg, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
+		operationMsg, _, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
 		// the following checks are very much dependent from the ordering of the output given
 		// by WeightedOperations. if the ordering in WeightedOperations changes some tests
 		// will fail
@@ -109,7 +109,7 @@ func TestSimulateMsgSubmitProposal(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgSubmitProposal(app.AccountKeeper, app.BankKeeper, app.GovKeeper, MockWeightedProposalContent{3}.ContentSimulatorFn())
-	operationMsg, _, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, _, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgSubmitProposal
@@ -154,7 +154,7 @@ func TestSimulateMsgDeposit(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgDeposit(app.AccountKeeper, app.BankKeeper, app.GovKeeper)
-	operationMsg, _, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, _, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgDeposit
@@ -197,7 +197,7 @@ func TestSimulateMsgVote(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgVote(app.AccountKeeper, app.BankKeeper, app.GovKeeper)
-	operationMsg, _, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, _, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgVote
@@ -240,7 +240,7 @@ func TestSimulateMsgVoteWeighted(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgVoteWeighted(app.AccountKeeper, app.BankKeeper, app.GovKeeper)
-	operationMsg, _, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, _, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgVoteWeighted

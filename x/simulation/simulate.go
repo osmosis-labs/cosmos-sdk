@@ -290,7 +290,7 @@ func createBlockSimulator(testingMode bool, tb testing.TB, w io.Writer, params P
 			// NOTE: the Rand 'r' should not be used here.
 			opAndR := opAndRz[i]
 			op, r2 := opAndR.op, opAndR.rand
-			opMsg, futureOps, err := op(r2, app, ctx, accounts, config.ChainID)
+			opMsg, futureOps, _, err := op(r2, app, ctx, accounts, config.ChainID)
 			opMsg.LogEvent(event)
 
 			if !config.Lean || opMsg.OK {
@@ -336,7 +336,7 @@ func runQueuedOperations(queueOps map[int][]simulation.Operation,
 		// For now, queued operations cannot queue more operations.
 		// If a need arises for us to support queued messages to queue more messages, this can
 		// be changed.
-		opMsg, _, err := queuedOp[i](r, app, ctx, accounts, chainID)
+		opMsg, _, _, err := queuedOp[i](r, app, ctx, accounts, chainID)
 		opMsg.LogEvent(event)
 
 		if !lean || opMsg.OK {
@@ -365,7 +365,7 @@ func runQueuedTimeOperations(queueOps []simulation.FutureOperation,
 		// For now, queued operations cannot queue more operations.
 		// If a need arises for us to support queued messages to queue more messages, this can
 		// be changed.
-		opMsg, _, err := queueOps[0].Op(r, app, ctx, accounts, chainID)
+		opMsg, _, _, err := queueOps[0].Op(r, app, ctx, accounts, chainID)
 		opMsg.LogEvent(event)
 
 		if !lean || opMsg.OK {

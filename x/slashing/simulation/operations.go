@@ -47,35 +47,35 @@ func SimulateMsgUnjail(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Kee
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
 		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
 
 		validator, ok := stakingkeeper.RandomValidator(r, sk, ctx)
 		if !ok {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "validator is not ok"), nil, nil // skip
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "validator is not ok"), nil, nil, nil // skip
 		}
 
 		simAccount, found := simtypes.FindAccount(accs, sdk.AccAddress(validator.GetOperator()))
 		if !found {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to find account"), nil, nil // skip
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to find account"), nil, nil, nil // skip
 		}
 
 		if !validator.IsJailed() {
 			// TODO: due to this condition this message is almost, if not always, skipped !
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "validator is not jailed"), nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "validator is not jailed"), nil, nil, nil
 		}
 
 		consAddr, err := validator.GetConsAddr()
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to get validator consensus key"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to get validator consensus key"), nil, nil, err
 		}
 		info, found := k.GetValidatorSigningInfo(ctx, consAddr)
 		if !found {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to find validator signing info"), nil, nil // skip
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to find validator signing info"), nil, nil, nil // skip
 		}
 
 		selfDel := sk.Delegation(ctx, simAccount.Address, validator.GetOperator())
 		if selfDel == nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "self delegation is nil"), nil, nil // skip
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "self delegation is nil"), nil, nil, nil // skip
 		}
 
 		account := ak.GetAccount(ctx, sdk.AccAddress(validator.GetOperator()))
@@ -84,7 +84,7 @@ func SimulateMsgUnjail(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Kee
 		feeCoins := spendable.FilterDenoms([]string{sdk.DefaultBondDenom})
 		fees, err := simtypes.RandomFees(r, ctx, feeCoins)
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to generate fees"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgUnjail, "unable to generate fees"), nil, nil, err
 		}
 
 		msg := types.NewMsgUnjail(validator.GetOperator())
@@ -101,7 +101,7 @@ func SimulateMsgUnjail(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Kee
 			simAccount.PrivKey,
 		)
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate mock tx"), nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate mock tx"), nil, nil, err
 		}
 
 		gasInfo, res, err := app.Deliver(txGen.TxEncoder(), tx)
@@ -115,23 +115,23 @@ func SimulateMsgUnjail(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Kee
 			validator.TokensFromShares(selfDel.GetShares()).TruncateInt().LT(validator.GetMinSelfDelegation()) {
 			if res != nil && err == nil {
 				if info.Tombstoned {
-					return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, errors.New("validator should not have been unjailed if validator tombstoned")
+					return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, res, errors.New("validator should not have been unjailed if validator tombstoned")
 				}
 				if ctx.BlockHeader().Time.Before(info.JailedUntil) {
-					return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, errors.New("validator unjailed while validator still in jail period")
+					return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, res, errors.New("validator unjailed while validator still in jail period")
 				}
 				if validator.TokensFromShares(selfDel.GetShares()).TruncateInt().LT(validator.GetMinSelfDelegation()) {
-					return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, errors.New("validator unjailed even though self-delegation too low")
+					return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, res, errors.New("validator unjailed even though self-delegation too low")
 				}
 			}
 			// msg failed as expected
-			return simtypes.NewOperationMsg(msg, false, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
+			return simtypes.NewOperationMsg(msg, false, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil, nil
 		}
 
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, errors.New(res.Log)
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to deliver tx"), nil, nil, errors.New(res.Log)
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, res, nil
 	}
 }

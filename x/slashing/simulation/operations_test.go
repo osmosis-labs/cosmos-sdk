@@ -40,7 +40,7 @@ func TestWeightedOperations(t *testing.T) {
 
 	weightesOps := simulation.WeightedOperations(appParams, cdc, app.AccountKeeper, app.BankKeeper, app.SlashingKeeper, app.StakingKeeper)
 	for i, w := range weightesOps {
-		operationMsg, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
+		operationMsg, _, _, _ := w.Op()(r, app.BaseApp, ctx, accs, ctx.ChainID())
 		// the following checks are very much dependent from the ordering of the output given
 		// by WeightedOperations. if the ordering in WeightedOperations changes some tests
 		// will fail
@@ -90,7 +90,7 @@ func TestSimulateMsgUnjail(t *testing.T) {
 
 	// execute operation
 	op := simulation.SimulateMsgUnjail(app.AccountKeeper, app.BankKeeper, app.SlashingKeeper, app.StakingKeeper)
-	operationMsg, futureOperations, err := op(r, app.BaseApp, ctx, accounts, "")
+	operationMsg, futureOperations, _, err := op(r, app.BaseApp, ctx, accounts, "")
 	require.NoError(t, err)
 
 	var msg types.MsgUnjail

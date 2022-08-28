@@ -88,12 +88,12 @@ func WeightedOperations(
 func SimulateMsgGrant(ak authz.AccountKeeper, bk authz.BankKeeper, _ keeper.Keeper) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
 		granter, _ := simtypes.RandomAcc(r, accs)
 		grantee, _ := simtypes.RandomAcc(r, accs)
 
 		if granter.Address.Equals(grantee.Address) {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, "granter and grantee are same"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, "granter and grantee are same"), nil, nil, nil
 		}
 
 		granterAcc := ak.GetAccount(ctx, granter.Address)
@@ -101,18 +101,18 @@ func SimulateMsgGrant(ak authz.AccountKeeper, bk authz.BankKeeper, _ keeper.Keep
 		feeCoins := spendableCoins.FilterDenoms([]string{sdk.DefaultBondDenom})
 		fees, err := simtypes.RandomFees(r, ctx, feeCoins)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, err.Error()), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, err.Error()), nil, nil, err
 		}
 
 		spendLimit := spendableCoins.Sub(fees)
 		if spendLimit == nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, "spend limit is nil"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, "spend limit is nil"), nil, nil, nil
 		}
 
 		expiration := ctx.BlockTime().AddDate(1, 0, 0)
 		msg, err := authz.NewMsgGrant(granter.Address, grantee.Address, generateRandomAuthorization(r, spendLimit), expiration)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, err.Error()), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, err.Error()), nil, nil, err
 		}
 		txCfg := simappparams.MakeTestEncodingConfig().TxConfig
 		tx, err := helpers.GenTx(
@@ -126,14 +126,14 @@ func SimulateMsgGrant(ak authz.AccountKeeper, bk authz.BankKeeper, _ keeper.Keep
 			granter.PrivKey,
 		)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, "unable to generate mock tx"), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgGrant, "unable to generate mock tx"), nil, nil, err
 		}
 
-		gasInfo, _, err := app.Deliver(txCfg.TxEncoder(), tx)
+		gasInfo, result, err := app.Deliver(txCfg.TxEncoder(), tx)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, sdk.MsgTypeURL(msg), "unable to deliver tx"), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, sdk.MsgTypeURL(msg), "unable to deliver tx"), nil, nil, err
 		}
-		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, err
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, err
 	}
 }
 
@@ -149,7 +149,7 @@ func generateRandomAuthorization(r *rand.Rand, spendLimit sdk.Coins) authz.Autho
 func SimulateMsgRevoke(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
 		var granterAddr, granteeAddr sdk.AccAddress
 		var grant authz.Grant
 		hasGrant := false
@@ -163,19 +163,19 @@ func SimulateMsgRevoke(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Kee
 		})
 
 		if !hasGrant {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "no grants"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "no grants"), nil, nil, nil
 		}
 
 		granterAcc, ok := simtypes.FindAccount(accs, granterAddr)
 		if !ok {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "account not found"), nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "account not found")
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "account not found"), nil, nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "account not found")
 		}
 
 		spendableCoins := bk.SpendableCoins(ctx, granterAddr)
 		feeCoins := spendableCoins.FilterDenoms([]string{sdk.DefaultBondDenom})
 		fees, err := simtypes.RandomFees(r, ctx, feeCoins)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "fee error"), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "fee error"), nil, nil, err
 		}
 
 		a := grant.GetAuthorization()
@@ -193,15 +193,15 @@ func SimulateMsgRevoke(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Kee
 			granterAcc.PrivKey,
 		)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, err.Error()), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, err.Error()), nil, nil, err
 		}
 
-		gasInfo, _, err := app.Deliver(txCfg.TxEncoder(), tx)
+		gasInfo, result, err := app.Deliver(txCfg.TxEncoder(), tx)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "unable to deliver tx"), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "unable to deliver tx"), nil, nil, err
 		}
 
-		return simtypes.NewOperationMsg(&msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
+		return simtypes.NewOperationMsg(&msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, nil
 	}
 }
 
@@ -209,7 +209,7 @@ func SimulateMsgRevoke(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Kee
 func SimulateMsgExec(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Keeper, cdc cdctypes.AnyUnpacker) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
 		hasGrant := false
 		var targetGrant authz.Grant
 		var granterAddr sdk.AccAddress
@@ -223,16 +223,16 @@ func SimulateMsgExec(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Keepe
 		})
 
 		if !hasGrant {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "no grant found"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "no grant found"), nil, nil, nil
 		}
 
 		grantee, ok := simtypes.FindAccount(accs, granteeAddr)
 		if !ok {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "Account not found"), nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "grantee account not found")
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "Account not found"), nil, nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "grantee account not found")
 		}
 
 		if _, ok := simtypes.FindAccount(accs, granterAddr); !ok {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "Account not found"), nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "granter account not found")
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgRevoke, "Account not found"), nil, nil, sdkerrors.Wrapf(sdkerrors.ErrNotFound, "granter account not found")
 		}
 
 		granterspendableCoins := bk.SpendableCoins(ctx, granterAddr)
@@ -240,26 +240,26 @@ func SimulateMsgExec(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Keepe
 
 		// Check send_enabled status of each sent coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, nil, nil
 		}
 
 		msg := []sdk.Msg{banktype.NewMsgSend(granterAddr, granteeAddr, coins)}
 		sendAuth, ok := targetGrant.GetAuthorization().(*banktype.SendAuthorization)
 		if !ok {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "not a send authorization"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "not a send authorization"), nil, nil, nil
 		}
 
 		if !sendAuth.SpendLimit.IsAllGTE(coins) || !coins.DenomsSubsetOf(sendAuth.SpendLimit) {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "over spend limit"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "over spend limit"), nil, nil, nil
 		}
 
 		res, err := sendAuth.Accept(ctx, msg[0])
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, nil, err
 		}
 
 		if !res.Accept {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "expired or invalid grant"), nil, nil
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "expired or invalid grant"), nil, nil, nil
 		}
 
 		msgExec := authz.NewMsgExec(granteeAddr, msg)
@@ -267,7 +267,7 @@ func SimulateMsgExec(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Keepe
 		feeCoins := granteeSpendableCoins.FilterDenoms([]string{sdk.DefaultBondDenom})
 		fees, err := simtypes.RandomFees(r, ctx, feeCoins)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "fee error"), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "fee error"), nil, &sdk.Result{}, err
 		}
 		txCfg := simappparams.MakeTestEncodingConfig().TxConfig
 		granteeAcc := ak.GetAccount(ctx, granteeAddr)
@@ -283,18 +283,18 @@ func SimulateMsgExec(ak authz.AccountKeeper, bk authz.BankKeeper, k keeper.Keepe
 			grantee.PrivKey,
 		)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, nil, err
 		}
 
-		gasInfo, _, err := app.Deliver(txCfg.TxEncoder(), tx)
+		gasInfo, result, err := app.Deliver(txCfg.TxEncoder(), tx)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, err.Error()), nil, nil, err
 		}
 
 		err = msgExec.UnpackInterfaces(cdc)
 		if err != nil {
-			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "unmarshal error"), nil, err
+			return simtypes.NoOpMsg(authz.ModuleName, TypeMsgExec, "unmarshal error"), nil, nil, err
 		}
-		return simtypes.NewOperationMsg(&msgExec, true, "success", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
+		return simtypes.NewOperationMsg(&msgExec, true, "success", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, nil
 	}
 }
