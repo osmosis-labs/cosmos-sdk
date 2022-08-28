@@ -62,22 +62,22 @@ func WeightedOperations(
 func SimulateMsgGrantAllowance(ak feegrant.AccountKeeper, bk feegrant.BankKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, sdk.Result, error) {
 		granter, _ := simtypes.RandomAcc(r, accs)
 		grantee, _ := simtypes.RandomAcc(r, accs)
 		if grantee.Address.String() == granter.Address.String() {
-			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, "grantee and granter cannot be same"), nil, nil, nil
+			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, "grantee and granter cannot be same"), nil, sdk.Result{}, nil
 		}
 
 		if f, _ := k.GetAllowance(ctx, granter.Address, grantee.Address); f != nil {
-			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, "fee allowance exists"), nil, nil, nil
+			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, "fee allowance exists"), nil, sdk.Result{}, nil
 		}
 
 		account := ak.GetAccount(ctx, granter.Address)
 
 		spendableCoins := bk.SpendableCoins(ctx, account.GetAddress())
 		if spendableCoins.Empty() {
-			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, "unable to grant empty coins as SpendLimit"), nil, nil, nil
+			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, "unable to grant empty coins as SpendLimit"), nil, sdk.Result{}, nil
 		}
 
 		oneYear := ctx.BlockTime().AddDate(1, 0, 0)
@@ -87,7 +87,7 @@ func SimulateMsgGrantAllowance(ak feegrant.AccountKeeper, bk feegrant.BankKeeper
 		}, granter.Address, grantee.Address)
 
 		if err != nil {
-			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, err.Error()), nil, nil, err
+			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgGrantAllowance, err.Error()), nil, sdk.Result{}, err
 		}
 
 		txCtx := simulation.OperationInput{
@@ -113,7 +113,7 @@ func SimulateMsgGrantAllowance(ak feegrant.AccountKeeper, bk feegrant.BankKeeper
 func SimulateMsgRevokeAllowance(ak feegrant.AccountKeeper, bk feegrant.BankKeeper, k keeper.Keeper) simtypes.Operation {
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context, accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, sdk.Result, error) {
 
 		hasGrant := false
 		var granterAddr sdk.AccAddress
@@ -135,12 +135,12 @@ func SimulateMsgRevokeAllowance(ak feegrant.AccountKeeper, bk feegrant.BankKeepe
 		})
 
 		if !hasGrant {
-			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgRevokeAllowance, "no grants"), nil, nil, nil
+			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgRevokeAllowance, "no grants"), nil, sdk.Result{}, nil
 		}
 		granter, ok := simtypes.FindAccount(accs, granterAddr)
 
 		if !ok {
-			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgRevokeAllowance, "Account not found"), nil, nil, nil
+			return simtypes.NoOpMsg(feegrant.ModuleName, TypeMsgRevokeAllowance, "Account not found"), nil, sdk.Result{}, nil
 		}
 
 		account := ak.GetAccount(ctx, granter.Address)

@@ -78,7 +78,7 @@ type OperationInput struct {
 }
 
 // GenAndDeliverTxWithRandFees generates a transaction with a random fee and delivers it.
-func GenAndDeliverTxWithRandFees(txCtx OperationInput) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
+func GenAndDeliverTxWithRandFees(txCtx OperationInput) (simtypes.OperationMsg, []simtypes.FutureOperation, sdk.Result, error) {
 	account := txCtx.AccountKeeper.GetAccount(txCtx.Context, txCtx.SimAccount.Address)
 	spendable := txCtx.Bankkeeper.SpendableCoins(txCtx.Context, account.GetAddress())
 
@@ -87,19 +87,19 @@ func GenAndDeliverTxWithRandFees(txCtx OperationInput) (simtypes.OperationMsg, [
 
 	coins, hasNeg := spendable.SafeSub(txCtx.CoinsSpentInMsg)
 	if hasNeg {
-		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "message doesn't leave room for fees"), nil, nil, err
+		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "message doesn't leave room for fees"), nil, sdk.Result{}, err
 	}
 
 	spendableFeeCoins := coins.FilterDenoms([]string{sdk.DefaultBondDenom})
 	fees, err = simtypes.RandomFees(txCtx.R, txCtx.Context, spendableFeeCoins)
 	if err != nil {
-		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to generate fees"), nil, nil, err
+		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to generate fees"), nil, sdk.Result{}, err
 	}
 	return GenAndDeliverTx(txCtx, fees)
 }
 
 // GenAndDeliverTx generates a transactions and delivers it.
-func GenAndDeliverTx(txCtx OperationInput, fees sdk.Coins) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
+func GenAndDeliverTx(txCtx OperationInput, fees sdk.Coins) (simtypes.OperationMsg, []simtypes.FutureOperation, sdk.Result, error) {
 	account := txCtx.AccountKeeper.GetAccount(txCtx.Context, txCtx.SimAccount.Address)
 	tx, err := helpers.GenTx(
 		txCtx.TxGen,
@@ -113,14 +113,14 @@ func GenAndDeliverTx(txCtx OperationInput, fees sdk.Coins) (simtypes.OperationMs
 	)
 
 	if err != nil {
-		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to generate mock tx"), nil, nil, err
+		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to generate mock tx"), nil, sdk.Result{}, err
 	}
 
 	gasInfo, result, err := txCtx.App.Deliver(txCtx.TxGen.TxEncoder(), tx)
 	if err != nil {
-		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to deliver tx"), nil, nil, err
+		return simtypes.NoOpMsg(txCtx.ModuleName, txCtx.MsgType, "unable to deliver tx"), nil, sdk.Result{}, err
 	}
 
-	return simtypes.NewOperationMsg(txCtx.Msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, txCtx.Cdc), nil, result, nil
+	return simtypes.NewOperationMsg(txCtx.Msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, txCtx.Cdc), nil, *result, nil
 
 }

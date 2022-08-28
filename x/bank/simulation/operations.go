@@ -47,26 +47,26 @@ func SimulateMsgSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Operatio
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
 		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, sdk.Result, error) {
 		from, to, coins, skip := randomSendFields(r, ctx, accs, bk, ak)
 
 		// Check send_enabled status of each coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, sdk.Result{}, nil
 		}
 
 		if skip {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "skip all transfers"), nil, nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, "skip all transfers"), nil, sdk.Result{}, nil
 		}
 
 		msg := types.NewMsgSend(from.Address, to.Address, coins)
 
 		gasInfo, result, err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []cryptotypes.PrivKey{from.PrivKey})
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, sdk.Result{}, err
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, *result, nil
 	}
 }
 
@@ -76,7 +76,7 @@ func SimulateMsgSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keeper, mo
 	return func(
 		r *rand.Rand, app *baseapp.BaseApp, ctx sdk.Context,
 		accs []simtypes.Account, chainID string,
-	) (simtypes.OperationMsg, []simtypes.FutureOperation, *sdk.Result, error) {
+	) (simtypes.OperationMsg, []simtypes.FutureOperation, sdk.Result, error) {
 		from := accs[0]
 
 		to := getModuleAccounts(ak, ctx, moduleAccCount)[0]
@@ -86,17 +86,17 @@ func SimulateMsgSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keeper, mo
 
 		// Check send_enabled status of each coin denom
 		if err := bk.IsSendEnabledCoins(ctx, coins...); err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, nil, nil
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgSend, err.Error()), nil, sdk.Result{}, nil
 		}
 
 		msg := types.NewMsgSend(from.Address, to.Address, coins)
 
 		gasInfo, result, err := sendMsgSend(r, app, bk, ak, msg, ctx, chainID, []cryptotypes.PrivKey{from.PrivKey})
 		if err != nil {
-			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, nil, err
+			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, sdk.Result{}, err
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, result, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, *result, nil
 	}
 }
 
