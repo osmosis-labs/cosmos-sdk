@@ -65,10 +65,10 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	// done after the deliver state and context have been set as it's persisted
 	// to state.
 	if req.ConsensusParams != nil {
-		// When InitChain is called, the app version should either be absent and determined by the application
-		// or set to 0. Panic if it's not.
-		if req.ConsensusParams.Version != nil && req.ConsensusParams.Version.AppVersion != initialAppVersion {
-			panic(AppVersionError{Actual: req.ConsensusParams.Version.AppVersion, Initial: initialAppVersion})
+		// When InitChain is called, the app version should either be absent and
+		// determined by the application or set to 0. Panic if it's not.
+		if req.ConsensusParams.Version != nil && req.ConsensusParams.Version.App != initialAppVersion {
+			panic(AppVersionError{Actual: req.ConsensusParams.Version.App, Initial: initialAppVersion})
 		}
 
 		app.StoreConsensusParams(app.deliverState.ctx, req.ConsensusParams)
@@ -144,12 +144,6 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 		LastBlockHeight:  lastCommitID.Version,
 		LastBlockAppHash: lastCommitID.Hash,
 	}
-}
-
-// SetOption implements the ABCI interface.
-func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOption) {
-	// TODO: Implement!
-	return
 }
 
 // FilterPeerByAddrPort filters peers by address/port.
@@ -247,6 +241,18 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	}
 
 	return res
+}
+
+// ProcessProposal implements the ability for the application to verify and/or modify transactions in a block proposal.
+func (app *BaseApp) PrepareProposal(req abci.RequestPrepareProposal) abci.ResponsePrepareProposal {
+	// treated as a noop until app side mempool is implemented
+	return abci.ResponsePrepareProposal{Txs: req.Txs}
+}
+
+// ProcessProposal implements the ability for the application to verify transactions in a block proposal, and decide if they should accept the block or not.
+func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) abci.ResponseProcessProposal {
+	// accept all proposed blocks until app side mempool is implemented
+	return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_ACCEPT}
 }
 
 // CheckTx implements the ABCI interface and executes a tx in CheckTx mode. In
