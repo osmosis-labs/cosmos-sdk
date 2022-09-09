@@ -5,11 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/types/query"
-
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -18,11 +13,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 const (
@@ -534,15 +532,15 @@ func (suite *IntegrationTestSuite) TestMsgSendEvents() {
 	}
 	event1.Attributes = append(
 		event1.Attributes,
-		abci.EventAttribute{Key: []byte(types.AttributeKeyRecipient), Value: []byte(addr2.String())},
+		abci.EventAttribute{Key: types.AttributeKeyRecipient, Value: addr2.String()},
 	)
 	event1.Attributes = append(
 		event1.Attributes,
-		abci.EventAttribute{Key: []byte(types.AttributeKeySender), Value: []byte(addr.String())},
+		abci.EventAttribute{Key: types.AttributeKeySender, Value: addr.String()},
 	)
 	event1.Attributes = append(
 		event1.Attributes,
-		abci.EventAttribute{Key: []byte(sdk.AttributeKeyAmount), Value: []byte(newCoins.String())},
+		abci.EventAttribute{Key: sdk.AttributeKeyAmount, Value: newCoins.String()},
 	)
 
 	event2 := sdk.Event{
@@ -551,7 +549,7 @@ func (suite *IntegrationTestSuite) TestMsgSendEvents() {
 	}
 	event2.Attributes = append(
 		event2.Attributes,
-		abci.EventAttribute{Key: []byte(types.AttributeKeySender), Value: []byte(addr.String())},
+		abci.EventAttribute{Key: types.AttributeKeySender, Value: addr.String()},
 	)
 
 	// events are shifted due to the funding account events
