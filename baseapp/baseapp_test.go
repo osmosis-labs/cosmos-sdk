@@ -644,7 +644,7 @@ func TestInitChain_AppVersionSetToZero(t *testing.T) {
 
 	consensusParams := app.GetConsensusParams(app.checkState.ctx)
 
-	require.Equal(t, expectedAppVersion, consensusParams.Version.AppVersion)
+	require.Equal(t, expectedAppVersion, consensusParams.Version.App)
 }
 
 func TestInitChain_NonZeroAppVersionInRequestPanic(t *testing.T) {
