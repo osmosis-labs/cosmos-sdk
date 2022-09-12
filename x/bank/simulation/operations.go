@@ -242,12 +242,12 @@ func SimulateMsgMultiSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Ope
 			Inputs:  inputs,
 			Outputs: outputs,
 		}
-		err := sendMsgMultiSend(r, app, bk, ak, msg, ctx, chainID, privs)
+		gasInfo, err := sendMsgMultiSend(r, app, bk, ak, msg, ctx, chainID, privs)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, err
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
 	}
 }
 
@@ -309,12 +309,12 @@ func SimulateMsgMultiSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keepe
 			Inputs:  inputs,
 			Outputs: outputs,
 		}
-		err := sendMsgMultiSend(r, app, bk, ak, msg, ctx, chainID, privs)
+		gasInfo, err := sendMsgMultiSend(r, app, bk, ak, msg, ctx, chainID, privs)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, err
 		}
 
-		return simtypes.NewOperationMsg(msg, true, "", nil), nil, nil
+		return simtypes.NewOperationMsg(msg, true, "", gasInfo.GasWanted, gasInfo.GasUsed, nil), nil, nil
 	}
 }
 
@@ -323,7 +323,7 @@ func SimulateMsgMultiSendToModuleAccount(ak types.AccountKeeper, bk keeper.Keepe
 func sendMsgMultiSend(
 	r *rand.Rand, app *baseapp.BaseApp, bk keeper.Keeper, ak types.AccountKeeper,
 	msg *types.MsgMultiSend, ctx sdk.Context, chainID string, privkeys []cryptotypes.PrivKey,
-) error {
+) (sdk.GasInfo, error) {
 
 	accountNumbers := make([]uint64, len(msg.Inputs))
 	sequenceNumbers := make([]uint64, len(msg.Inputs))
@@ -357,7 +357,7 @@ func sendMsgMultiSend(
 		feeCoins := coins.FilterDenoms([]string{sdk.DefaultBondDenom})
 		fees, err = simtypes.RandomFees(r, ctx, feeCoins)
 		if err != nil {
-			return err
+			return sdk.GasInfo{}, err
 		}
 	}
 
@@ -373,15 +373,15 @@ func sendMsgMultiSend(
 		privkeys...,
 	)
 	if err != nil {
-		return err
+		return sdk.GasInfo{}, err
 	}
 
-	_, _, err = app.Deliver(txGen.TxEncoder(), tx)
+	gasInfo, _, err := app.Deliver(txGen.TxEncoder(), tx)
 	if err != nil {
-		return err
+		return sdk.GasInfo{}, err
 	}
 
-	return nil
+	return gasInfo, nil
 }
 
 // randomSendFields returns the sender and recipient simulation accounts as well
