@@ -39,7 +39,6 @@ type BaseSendKeeper struct {
 	ak         types.AccountKeeper
 	storeKey   sdk.StoreKey
 	paramSpace paramtypes.Subspace
-	hooks      types.BankHooks
 
 	// list of addresses that are restricted from receiving transactions
 	blockedAddrs map[string]bool
@@ -59,17 +58,6 @@ func NewBaseSendKeeper(
 	}
 }
 
-// Set the bank hooks
-func (k *BaseSendKeeper) SetHooks(bh types.BankHooks) *BaseSendKeeper {
-	if k.hooks != nil {
-		panic("cannot set bank hooks twice")
-	}
-
-	k.hooks = bh
-
-	return k
-}
-
 // GetParams returns the total set of bank parameters.
 func (k BaseSendKeeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSpace.GetParamSet(ctx, &params)
@@ -84,13 +72,7 @@ func (k BaseSendKeeper) SetParams(ctx sdk.Context, params types.Params) {
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	// call the BeforeSend hooks
-	err := k.BeforeSend(ctx, fromAddr, toAddr, amt)
-	if err != nil {
-		return err
-	}
-
-	err = k.subUnlockedCoins(ctx, fromAddr, amt)
+	err := k.subUnlockedCoins(ctx, fromAddr, amt)
 	if err != nil {
 		return err
 	}
@@ -134,12 +116,7 @@ func (k BaseSendKeeper) SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, 
 	}
 
 	totalAmt := sdk.Coins{}
-	for i, amt := range amts {
-		// make sure to trigger the BeforeSend hooks for all the sends that are about to occur
-		err := k.BeforeSend(ctx, fromAddr, toAddrs[i], amts[i])
-		if err != nil {
-			return err
-		}
+	for _, amt := range amts {
 		totalAmt = sdk.Coins.Add(totalAmt, amt...)
 	}
 
