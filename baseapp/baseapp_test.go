@@ -413,9 +413,9 @@ func TestLoadVersionPruning(t *testing.T) {
 		lastCommitID = sdk.CommitID{Version: i, Hash: res.Data}
 	}
 
-	for _, v := range []int64{1, 2, 3, 4} {
+	for _, v := range []int64{1, 2, 4} {
 		_, err = app.cms.CacheMultiStoreWithVersion(v)
-		require.NoError(t, err)
+		require.Error(t, err)
 	}
 
 	for _, v := range []int64{3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14} {

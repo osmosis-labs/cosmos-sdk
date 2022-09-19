@@ -22,15 +22,15 @@ type Manager struct {
 	snapshotInterval uint64
 	// Although pruneHeights happen in the same goroutine with the normal execution,
 	// we sync access to them to avoid soundness issues in the future if concurrency pattern changes.
-	pruneHeightsMx         sync.Mutex
-	pruneHeights           []int64
+	pruneHeightsMx sync.Mutex
+	pruneHeights   []int64
 	// Snapshots are taken in a separate goroutine from the regular execution
 	// and can be delivered asynchrounously via HandleHeightSnapshot.
-	// Therefore, we sync access to pruneSnapshotHeights with this mutex. 
+	// Therefore, we sync access to pruneSnapshotHeights with this mutex.
 	pruneSnapshotHeightsMx sync.Mutex
 	// These are the heights that are multiples of snapshotInterval and kept for state sync snapshots.
 	// The heights are added to this list to be pruned when a snapshot is complete.
-	pruneSnapshotHeights   *list.List
+	pruneSnapshotHeights *list.List
 }
 
 // NegativeHeightsError is returned when a negative height is provided to the manager.
@@ -135,7 +135,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 
 	if int64(m.opts.KeepRecent) < previousHeight {
 		pruneHeight := previousHeight - int64(m.opts.KeepRecent)
-		// We consider this height to be pruned iff:
+		// We consider this height to be pruned if:
 		//
 		// - snapshotInterval is zero as that means that all heights should be pruned.
 		// - snapshotInterval % (height - KeepRecent) != 0 as that means the height is not
@@ -162,7 +162,7 @@ func (m *Manager) HandleHeightSnapshot(height int64) {
 
 	m.pruneSnapshotHeightsMx.Lock()
 	defer m.pruneSnapshotHeightsMx.Unlock()
-	
+
 	m.logger.Debug("HandleHeightSnapshot", "height", height)
 	m.pruneSnapshotHeights.PushBack(height)
 
@@ -178,6 +178,10 @@ func (m *Manager) SetSnapshotInterval(snapshotInterval uint64) {
 }
 
 // ShouldPruneAtHeight return true if the given height should be pruned, false otherwise
+// Certain height is determinted to be pruned if all of the condition below are met
+// - pruning interval is greater than 0
+// - pruning option is not prune nothing
+// - current height mod pruning interval is 0
 func (m *Manager) ShouldPruneAtHeight(height int64) bool {
 	return m.opts.Interval > 0 && m.opts.GetPruningStrategy() != types.PruningNothing && height%int64(m.opts.Interval) == 0
 }

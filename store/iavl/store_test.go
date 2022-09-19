@@ -3,8 +3,9 @@ package iavl
 import (
 	crand "crypto/rand"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 
@@ -120,7 +121,7 @@ func TestGetImmutable(t *testing.T) {
 	require.Nil(t, err)
 
 	_, err = store.GetImmutable(cID.Version + 1)
-	require.NoError(t, err)
+	require.Error(t, err)
 
 	newStore, err := store.GetImmutable(cID.Version - 1)
 	require.NoError(t, err)
