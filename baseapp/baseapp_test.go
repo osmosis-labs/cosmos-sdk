@@ -412,7 +412,7 @@ func TestLoadVersionPruning(t *testing.T) {
 		res := app.Commit()
 		lastCommitID = sdk.CommitID{Version: i, Hash: res.Data}
 	}
-
+// Ensure that load version returns an error for every pruned version
 	for _, v := range []int64{1, 2, 4} {
 		_, err = app.cms.CacheMultiStoreWithVersion(v)
 		require.Error(t, err)
