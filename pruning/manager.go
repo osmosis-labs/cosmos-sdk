@@ -135,7 +135,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 
 	if int64(m.opts.KeepRecent) < previousHeight {
 		pruneHeight := previousHeight - int64(m.opts.KeepRecent)
-		// We consider this height to be pruned if:
+		// We consider this height to be pruned iff:
 		//
 		// - snapshotInterval is zero as that means that all heights should be pruned.
 		// - snapshotInterval % (height - KeepRecent) != 0 as that means the height is not
