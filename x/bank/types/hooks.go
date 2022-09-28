@@ -13,14 +13,10 @@ func NewMultiBankHooks(hooks ...BankHooks) MultiBankHooks {
 }
 
 // TrackBeforeSend runs the TrackBeforeSend hooks in order for each BankHook in a MultiBankHooks struct
-func (h MultiBankHooks) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
+func (h MultiBankHooks) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	for i := range h {
-		err := h[i].TrackBeforeSend(ctx, from, to, amount)
-		if err != nil {
-			return err
-		}
+		h[i].TrackBeforeSend(ctx, from, to, amount)
 	}
-	return nil
 }
 
 // BlockBeforeSend runs the BlockBeforeSend hooks in order for each BankHook in a MultiBankHooks struct

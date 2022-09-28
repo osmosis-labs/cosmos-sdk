@@ -22,6 +22,8 @@ type MockBankHooksReceiver struct{}
 
 // Mock BlockBeforeSend bank hook that doesn't allow the sending of exactly 100 coins of any denom.
 func (h *MockBankHooksReceiver) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
+	fmt.Println("====len")
+	fmt.Println(len(amount))
 	for _, coin := range amount {
 		if coin.Amount.Equal(sdk.NewInt(100)) {
 			return fmt.Errorf("not allowed; expected %v, got: %v", 100, coin.Amount)
@@ -31,15 +33,17 @@ func (h *MockBankHooksReceiver) BlockBeforeSend(ctx sdk.Context, from, to sdk.Ac
 	return nil
 }
 
+// variable for counting `TrackBeforeSend`
+var countTrackBeforeSend = 0
+var expNextCount = 1
+
 // Mock TrackBeforeSend bank hook that doesn't allow the sending of exactly 50 coins of any denom.
-func (h *MockBankHooksReceiver) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
+func (h *MockBankHooksReceiver) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	for _, coin := range amount {
 		if coin.Amount.Equal(sdk.NewInt(50)) {
-			return fmt.Errorf("not allowed; expected %v, got: %v", 100, coin.Amount)
+			countTrackBeforeSend += 1
 		}
 	}
-
-	return nil
 }
 
 func TestHooks(t *testing.T) {
@@ -51,7 +55,7 @@ func TestHooks(t *testing.T) {
 
 	// create a valid send amount which is 1 coin, and an invalidSendAmount which is 100 coins
 	validSendAmount := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), sdk.NewInt(1)))
-	invalidTrackSendAmount := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), sdk.NewInt(50)))
+	triggerTrackSendAmount := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), sdk.NewInt(50)))
 	invalidBlockSendAmount := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), sdk.NewInt(100)))
 
 	// setup our mock bank hooks receiver that prevents the send of 100 coins
@@ -68,8 +72,10 @@ func TestHooks(t *testing.T) {
 	require.NoError(t, err)
 
 	// try sending an invalidSendAmount and it should not work
-	err = app.BankKeeper.SendCoins(ctx, addrs[0], addrs[1], invalidTrackSendAmount)
-	require.Error(t, err)
+	err = app.BankKeeper.SendCoins(ctx, addrs[0], addrs[1], triggerTrackSendAmount)
+
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// try sending an invalidSendAmount and it should not work
 	err = app.BankKeeper.SendCoins(ctx, addrs[0], addrs[1], invalidBlockSendAmount)
@@ -79,24 +85,27 @@ func TestHooks(t *testing.T) {
 	err = app.BankKeeper.SendManyCoins(ctx, addrs[0], []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{invalidBlockSendAmount, validSendAmount})
 	require.Error(t, err)
 
-	err = app.BankKeeper.SendManyCoins(ctx, addrs[0], []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{invalidTrackSendAmount, validSendAmount})
-	require.Error(t, err)
+	err = app.BankKeeper.SendManyCoins(ctx, addrs[0], []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{triggerTrackSendAmount, validSendAmount})
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// make sure that account to module doesn't bypass hook
 	err = app.BankKeeper.SendCoinsFromAccountToModule(ctx, addrs[0], stakingtypes.BondedPoolName, validSendAmount)
 	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromAccountToModule(ctx, addrs[0], stakingtypes.BondedPoolName, invalidBlockSendAmount)
 	require.Error(t, err)
-	err = app.BankKeeper.SendCoinsFromAccountToModule(ctx, addrs[0], stakingtypes.BondedPoolName, invalidTrackSendAmount)
-	require.Error(t, err)
+	err = app.BankKeeper.SendCoinsFromAccountToModule(ctx, addrs[0], stakingtypes.BondedPoolName, triggerTrackSendAmount)
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// make sure that module to account doesn't bypass hook
 	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, stakingtypes.BondedPoolName, addrs[0], validSendAmount)
 	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, stakingtypes.BondedPoolName, addrs[0], invalidBlockSendAmount)
 	require.Error(t, err)
-	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, stakingtypes.BondedPoolName, addrs[0], invalidTrackSendAmount)
-	require.Error(t, err)
+	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, stakingtypes.BondedPoolName, addrs[0], triggerTrackSendAmount)
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// make sure that module to module doesn't bypass hook
 	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, stakingtypes.BondedPoolName, stakingtypes.NotBondedPoolName, validSendAmount)
@@ -104,30 +113,34 @@ func TestHooks(t *testing.T) {
 	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, stakingtypes.BondedPoolName, stakingtypes.NotBondedPoolName, invalidBlockSendAmount)
 	// there should be no error since module to module does not call block before send hooks
 	require.NoError(t, err)
-	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, stakingtypes.BondedPoolName, stakingtypes.NotBondedPoolName, invalidTrackSendAmount)
-	require.Error(t, err)
+	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, stakingtypes.BondedPoolName, stakingtypes.NotBondedPoolName, triggerTrackSendAmount)
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// make sure that module to many accounts doesn't bypass hook
 	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{validSendAmount, validSendAmount})
 	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{validSendAmount, invalidBlockSendAmount})
 	require.Error(t, err)
-	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{validSendAmount, invalidTrackSendAmount})
-	require.Error(t, err)
+	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addrs[0], addrs[1]}, []sdk.Coins{validSendAmount, triggerTrackSendAmount})
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// make sure that DelegateCoins doesn't bypass the hook
 	err = app.BankKeeper.DelegateCoins(ctx, addrs[0], app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), validSendAmount)
 	require.NoError(t, err)
 	err = app.BankKeeper.DelegateCoins(ctx, addrs[0], app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), invalidBlockSendAmount)
 	require.Error(t, err)
-	err = app.BankKeeper.DelegateCoins(ctx, addrs[0], app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), invalidTrackSendAmount)
-	require.Error(t, err)
+	err = app.BankKeeper.DelegateCoins(ctx, addrs[0], app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), triggerTrackSendAmount)
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 
 	// make sure that UndelegateCoins doesn't bypass the hook
 	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], validSendAmount)
 	require.NoError(t, err)
 	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], invalidBlockSendAmount)
 	require.Error(t, err)
-	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], invalidTrackSendAmount)
-	require.Error(t, err)
+	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addrs[0], triggerTrackSendAmount)
+	require.Equal(t, countTrackBeforeSend, expNextCount)
+	expNextCount++
 }

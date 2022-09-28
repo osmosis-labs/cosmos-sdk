@@ -9,11 +9,10 @@ import (
 var _ types.BankHooks = BaseSendKeeper{}
 
 // TrackbeforeSend executes the TrackBeforeSend hook if registered.
-func (k BaseSendKeeper) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
+func (k BaseSendKeeper) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	if k.hooks != nil {
-		return k.hooks.TrackBeforeSend(ctx, from, to, amount)
+		k.hooks.TrackBeforeSend(ctx, from, to, amount)
 	}
-	return nil
 }
 
 // BlockBeforeSend executes the BlockBeforeSend hook if registered.

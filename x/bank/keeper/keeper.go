@@ -184,11 +184,9 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 	}
 
 	// call the TrackBeforeSend hooks and the BlockBeforeSend hooks
-	err := k.TrackBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
-	if err != nil {
-		return err
-	}
-	err = k.BlockBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
+	k.TrackBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
+
+	err := k.BlockBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
 	if err != nil {
 		return err
 	}
@@ -242,11 +240,9 @@ func (k BaseKeeper) UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAdd
 	}
 
 	// call the TrackBeforeSend hooks and the BlockBeforeSend hooks
-	err := k.TrackBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
-	if err != nil {
-		return err
-	}
-	err = k.BlockBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
+	k.TrackBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
+
+	err := k.BlockBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
 	if err != nil {
 		return err
 	}
