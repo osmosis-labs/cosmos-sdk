@@ -243,7 +243,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	return res
 }
 
-// ProcessProposal implements the ability for the application to verify and/or modify transactions in a block proposal.
+// PrepareProposal implements the ability for the application to verify and/or modify transactions in a block proposal.
 func (app *BaseApp) PrepareProposal(req abci.RequestPrepareProposal) abci.ResponsePrepareProposal {
 	// treated as a noop until app side mempool is implemented
 	return abci.ResponsePrepareProposal{Txs: req.Txs}
