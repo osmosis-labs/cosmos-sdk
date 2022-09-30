@@ -22,8 +22,6 @@ type MockBankHooksReceiver struct{}
 
 // Mock BlockBeforeSend bank hook that doesn't allow the sending of exactly 100 coins of any denom.
 func (h *MockBankHooksReceiver) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
-	fmt.Println("====len")
-	fmt.Println(len(amount))
 	for _, coin := range amount {
 		if coin.Amount.Equal(sdk.NewInt(100)) {
 			return fmt.Errorf("not allowed; expected %v, got: %v", 100, coin.Amount)
@@ -34,8 +32,10 @@ func (h *MockBankHooksReceiver) BlockBeforeSend(ctx sdk.Context, from, to sdk.Ac
 }
 
 // variable for counting `TrackBeforeSend`
-var countTrackBeforeSend = 0
-var expNextCount = 1
+var (
+	countTrackBeforeSend = 0
+	expNextCount         = 1
+)
 
 // Mock TrackBeforeSend bank hook that doesn't allow the sending of exactly 50 coins of any denom.
 func (h *MockBankHooksReceiver) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
