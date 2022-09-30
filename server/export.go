@@ -28,7 +28,7 @@ const (
 func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
-		Short: "Export state to JSON",
+		Short: "Export state to JSON test",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverCtx := GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
