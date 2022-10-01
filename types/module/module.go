@@ -342,10 +342,12 @@ func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec, modulesToE
 	genesisData := make(map[string]json.RawMessage)
 	if modulesToExport != nil {
 		for _, moduleName := range modulesToExport {
+			fmt.Printf("%v CZAR1", moduleName)
 			genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
 		}
 	} else {
 		for _, moduleName := range m.OrderExportGenesis {
+			fmt.Printf("%v CZAR2", moduleName)
 			genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
 		}
 	}

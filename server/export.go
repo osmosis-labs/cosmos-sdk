@@ -28,7 +28,7 @@ const (
 func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
-		Short: "Export state to JSON",
+		Short: "Export state to JSON test",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverCtx := GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
@@ -69,6 +69,8 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			forZeroHeight, _ := cmd.Flags().GetBool(FlagForZeroHeight)
 			jailAllowedAddrs, _ := cmd.Flags().GetStringSlice(FlagJailAllowedAddrs)
 			modulesToExport, _ := cmd.Flags().GetStringSlice(FlagModulesToExport)
+
+			fmt.Printf("ADAM")
 
 			exported, err := appExporter(serverCtx.Logger, db, traceWriter, height, forZeroHeight, jailAllowedAddrs, serverCtx.Viper, modulesToExport)
 			if err != nil {
