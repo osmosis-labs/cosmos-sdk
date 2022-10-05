@@ -20,6 +20,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {
+	RegisterProtoLocallyIfNotRegistered()
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgSubmitProposal{},
 		&MsgVote{},
