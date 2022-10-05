@@ -89,6 +89,7 @@ func (k BaseSendKeeper) SendCoinsWithoutBlockHook(ctx sdk.Context, fromAddr sdk.
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
+	// BlockBeforeSend hook should always be called before the TrackBeforeSend hook.
 	err := k.BlockBeforeSend(ctx, fromAddr, toAddr, amt)
 	if err != nil {
 		return err
