@@ -813,6 +813,31 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 	if !ok {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "multistore doesn't support queries"))
 	}
+	fmt.Printf("ADAM TESTING")
+
+	if path[1] == "test" {
+		res := queryable.Query(req)
+
+		commitInfo, err := app.cms.GetCommitInfoFromDb(res.Height)
+		if err != nil {
+			return sdkerrors.QueryResult(err)
+		}
+		fmt.Printf("ADAM TEST %v \n", commitInfo)
+		responseValue, _ := commitInfo.Marshal()
+
+		// response := app.ListSnapshots(abci.RequestListSnapshots{})
+
+		// responseValue, err = json.Marshal(response)
+		// if err != nil {
+		// 	sdkerrors.QueryResult(sdkerrors.Wrap(err, fmt.Sprintf("failed to marshal list snapshots response %v", response)))
+		// }
+
+		return abci.ResponseQuery{
+			Codespace: sdkerrors.RootCodespace,
+			Height:    req.Height,
+			Value:     responseValue,
+		}
+	}
 
 	req.Path = "/" + strings.Join(path[1:], "/")
 

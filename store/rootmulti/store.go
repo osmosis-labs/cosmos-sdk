@@ -207,7 +207,7 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	// load old data if we are not version 0
 	if ver != 0 {
 		var err error
-		cInfo, err = rs.getCommitInfoFromDb(ver)
+		cInfo, err = rs.GetCommitInfoFromDb(ver)
 		if err != nil {
 			return err
 		}
@@ -625,7 +625,7 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "proof is unexpectedly empty; ensure height has not been pruned"))
 	}
 
-	commitInfo, err := rs.getCommitInfoFromDb(res.Height)
+	commitInfo, err := rs.GetCommitInfoFromDb(res.Height)
 	if err != nil {
 		return sdkerrors.QueryResult(err)
 	}
@@ -983,7 +983,7 @@ func (rs *Store) flushLastCommitInfo(cInfo *types.CommitInfo) {
 }
 
 // Gets commitInfo from disk.
-func (rs *Store) getCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
+func (rs *Store) GetCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
 
 	bz, err := rs.db.Get([]byte(cInfoKey))
@@ -1025,7 +1025,7 @@ func (rs *Store) GetAppVersion() (uint64, error) {
 }
 
 func (rs *Store) doProofsQuery(req abci.RequestQuery) abci.ResponseQuery {
-	commitInfo, err := rs.getCommitInfoFromDb(req.Height)
+	commitInfo, err := rs.GetCommitInfoFromDb(req.Height)
 	if err != nil {
 		return sdkerrors.QueryResult(err)
 	}
