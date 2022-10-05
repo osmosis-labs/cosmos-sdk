@@ -1,8 +1,12 @@
 package types
 
 import (
+	"sync"
+
 	proto "github.com/gogo/protobuf/proto"
 )
+
+var protoInterfaceMtx = sync.Mutex{}
 
 // This is a very gross hack, to register gov proto in global variables, for SDK tests.
 // Normally every proto file registers their proto files in a global index.
@@ -13,6 +17,9 @@ import (
 // So we call this within SDK test helpers, which will register the global variables
 // to this repo, if not already done. (Which would happen in Osmosis init)
 func RegisterProtoLocallyIfNotRegistered() {
+	protoInterfaceMtx.Lock()
+	defer protoInterfaceMtx.Unlock()
+
 	registeredMsg := proto.MessageType("cosmos.gov.v1beta1.GenesisState")
 	if registeredMsg == nil {
 		proto.RegisterType((*GenesisState)(nil), "cosmos.gov.v1beta1.GenesisState")
