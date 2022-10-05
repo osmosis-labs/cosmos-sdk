@@ -34,6 +34,24 @@ func RegisterProtoLocallyIfNotRegistered() {
 		proto.RegisterFile("cosmos/gov/v1beta1/tx.proto", fileDescriptor_3c053992595e3dce)
 	}
 
+	registeredMsg = proto.MessageType("cosmos.gov.v1beta1.WeightedVoteOption")
+	if registeredMsg == nil {
+		proto.RegisterEnum("cosmos.gov.v1beta1.VoteOption", VoteOption_name, VoteOption_value)
+		proto.RegisterEnum("cosmos.gov.v1beta1.ProposalStatus", ProposalStatus_name, ProposalStatus_value)
+		proto.RegisterType((*WeightedVoteOption)(nil), "cosmos.gov.v1beta1.WeightedVoteOption")
+		proto.RegisterType((*TextProposal)(nil), "cosmos.gov.v1beta1.TextProposal")
+		proto.RegisterType((*Deposit)(nil), "cosmos.gov.v1beta1.Deposit")
+		proto.RegisterType((*Proposal)(nil), "cosmos.gov.v1beta1.Proposal")
+		proto.RegisterType((*TallyResult)(nil), "cosmos.gov.v1beta1.TallyResult")
+		proto.RegisterType((*Vote)(nil), "cosmos.gov.v1beta1.Vote")
+		proto.RegisterType((*DepositParams)(nil), "cosmos.gov.v1beta1.DepositParams")
+		proto.RegisterType((*VotingParams)(nil), "cosmos.gov.v1beta1.VotingParams")
+		proto.RegisterType((*TallyParams)(nil), "cosmos.gov.v1beta1.TallyParams")
+		proto.RegisterType((*ProposalVotingPeriod)(nil), "cosmos.gov.v1beta1.ProposalVotingPeriod")
+
+		proto.RegisterFile("cosmos/gov/v1beta1/gov.proto", fileDescriptor_6e82113c1a9a4b7c)
+	}
+
 	registeredMsg = proto.MessageType("cosmos.gov.v1beta1.QueryProposalRequest")
 	if registeredMsg == nil {
 		proto.RegisterType((*QueryProposalRequest)(nil), "cosmos.gov.v1beta1.QueryProposalRequest")
