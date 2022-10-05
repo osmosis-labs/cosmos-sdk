@@ -817,26 +817,26 @@ func (m *QueryTallyResultResponse) GetTally() TallyResult {
 	return TallyResult{}
 }
 
-func init() {
-	proto.RegisterType((*QueryProposalRequest)(nil), "cosmos.gov.v1beta1.QueryProposalRequest")
-	proto.RegisterType((*QueryProposalResponse)(nil), "cosmos.gov.v1beta1.QueryProposalResponse")
-	proto.RegisterType((*QueryProposalsRequest)(nil), "cosmos.gov.v1beta1.QueryProposalsRequest")
-	proto.RegisterType((*QueryProposalsResponse)(nil), "cosmos.gov.v1beta1.QueryProposalsResponse")
-	proto.RegisterType((*QueryVoteRequest)(nil), "cosmos.gov.v1beta1.QueryVoteRequest")
-	proto.RegisterType((*QueryVoteResponse)(nil), "cosmos.gov.v1beta1.QueryVoteResponse")
-	proto.RegisterType((*QueryVotesRequest)(nil), "cosmos.gov.v1beta1.QueryVotesRequest")
-	proto.RegisterType((*QueryVotesResponse)(nil), "cosmos.gov.v1beta1.QueryVotesResponse")
-	proto.RegisterType((*QueryParamsRequest)(nil), "cosmos.gov.v1beta1.QueryParamsRequest")
-	proto.RegisterType((*QueryParamsResponse)(nil), "cosmos.gov.v1beta1.QueryParamsResponse")
-	proto.RegisterType((*QueryDepositRequest)(nil), "cosmos.gov.v1beta1.QueryDepositRequest")
-	proto.RegisterType((*QueryDepositResponse)(nil), "cosmos.gov.v1beta1.QueryDepositResponse")
-	proto.RegisterType((*QueryDepositsRequest)(nil), "cosmos.gov.v1beta1.QueryDepositsRequest")
-	proto.RegisterType((*QueryDepositsResponse)(nil), "cosmos.gov.v1beta1.QueryDepositsResponse")
-	proto.RegisterType((*QueryTallyResultRequest)(nil), "cosmos.gov.v1beta1.QueryTallyResultRequest")
-	proto.RegisterType((*QueryTallyResultResponse)(nil), "cosmos.gov.v1beta1.QueryTallyResultResponse")
-}
+// func init() {
+// 	proto.RegisterType((*QueryProposalRequest)(nil), "cosmos.gov.v1beta1.QueryProposalRequest")
+// 	proto.RegisterType((*QueryProposalResponse)(nil), "cosmos.gov.v1beta1.QueryProposalResponse")
+// 	proto.RegisterType((*QueryProposalsRequest)(nil), "cosmos.gov.v1beta1.QueryProposalsRequest")
+// 	proto.RegisterType((*QueryProposalsResponse)(nil), "cosmos.gov.v1beta1.QueryProposalsResponse")
+// 	proto.RegisterType((*QueryVoteRequest)(nil), "cosmos.gov.v1beta1.QueryVoteRequest")
+// 	proto.RegisterType((*QueryVoteResponse)(nil), "cosmos.gov.v1beta1.QueryVoteResponse")
+// 	proto.RegisterType((*QueryVotesRequest)(nil), "cosmos.gov.v1beta1.QueryVotesRequest")
+// 	proto.RegisterType((*QueryVotesResponse)(nil), "cosmos.gov.v1beta1.QueryVotesResponse")
+// 	proto.RegisterType((*QueryParamsRequest)(nil), "cosmos.gov.v1beta1.QueryParamsRequest")
+// 	proto.RegisterType((*QueryParamsResponse)(nil), "cosmos.gov.v1beta1.QueryParamsResponse")
+// 	proto.RegisterType((*QueryDepositRequest)(nil), "cosmos.gov.v1beta1.QueryDepositRequest")
+// 	proto.RegisterType((*QueryDepositResponse)(nil), "cosmos.gov.v1beta1.QueryDepositResponse")
+// 	proto.RegisterType((*QueryDepositsRequest)(nil), "cosmos.gov.v1beta1.QueryDepositsRequest")
+// 	proto.RegisterType((*QueryDepositsResponse)(nil), "cosmos.gov.v1beta1.QueryDepositsResponse")
+// 	proto.RegisterType((*QueryTallyResultRequest)(nil), "cosmos.gov.v1beta1.QueryTallyResultRequest")
+// 	proto.RegisterType((*QueryTallyResultResponse)(nil), "cosmos.gov.v1beta1.QueryTallyResultResponse")
+// }
 
-func init() { proto.RegisterFile("cosmos/gov/v1beta1/query.proto", fileDescriptor_e35c0d133e91c0a2) }
+// func init() { proto.RegisterFile("cosmos/gov/v1beta1/query.proto", fileDescriptor_e35c0d133e91c0a2) }
 
 var fileDescriptor_e35c0d133e91c0a2 = []byte{
 	// 963 bytes of a gzipped FileDescriptorProto
