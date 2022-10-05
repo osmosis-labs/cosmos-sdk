@@ -123,11 +123,11 @@ func (m *GenesisState) GetTallyParams() TallyParams {
 	return TallyParams{}
 }
 
-func init() {
-	proto.RegisterType((*GenesisState)(nil), "cosmos.gov.v1beta1.GenesisState")
-}
+// func init() {
+// 	proto.RegisterType((*GenesisState)(nil), "cosmos.gov.v1beta1.GenesisState")
+// }
 
-func init() { proto.RegisterFile("cosmos/gov/v1beta1/genesis.proto", fileDescriptor_43cd825e0fa7a627) }
+// func init() { proto.RegisterFile("cosmos/gov/v1beta1/genesis.proto", fileDescriptor_43cd825e0fa7a627) }
 
 var fileDescriptor_43cd825e0fa7a627 = []byte{
 	// 430 bytes of a gzipped FileDescriptorProto

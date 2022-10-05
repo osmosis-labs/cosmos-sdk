@@ -24,9 +24,11 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 func startInProcess(cfg Config, val *Validator) error {
+	govtypes.RegisterProtoLocallyIfNotRegistered()
 	logger := val.Ctx.Logger
 	tmCfg := val.Ctx.Config
 	tmCfg.Instrumentation.Prometheus = false

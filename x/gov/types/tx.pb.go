@@ -350,18 +350,18 @@ func (m *MsgDepositResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgDepositResponse proto.InternalMessageInfo
 
-func init() {
-	proto.RegisterType((*MsgSubmitProposal)(nil), "cosmos.gov.v1beta1.MsgSubmitProposal")
-	proto.RegisterType((*MsgSubmitProposalResponse)(nil), "cosmos.gov.v1beta1.MsgSubmitProposalResponse")
-	proto.RegisterType((*MsgVote)(nil), "cosmos.gov.v1beta1.MsgVote")
-	proto.RegisterType((*MsgVoteResponse)(nil), "cosmos.gov.v1beta1.MsgVoteResponse")
-	proto.RegisterType((*MsgVoteWeighted)(nil), "cosmos.gov.v1beta1.MsgVoteWeighted")
-	proto.RegisterType((*MsgVoteWeightedResponse)(nil), "cosmos.gov.v1beta1.MsgVoteWeightedResponse")
-	proto.RegisterType((*MsgDeposit)(nil), "cosmos.gov.v1beta1.MsgDeposit")
-	proto.RegisterType((*MsgDepositResponse)(nil), "cosmos.gov.v1beta1.MsgDepositResponse")
-}
+// func init() {
+// 	proto.RegisterType((*MsgSubmitProposal)(nil), "cosmos.gov.v1beta1.MsgSubmitProposal")
+// 	proto.RegisterType((*MsgSubmitProposalResponse)(nil), "cosmos.gov.v1beta1.MsgSubmitProposalResponse")
+// 	proto.RegisterType((*MsgVote)(nil), "cosmos.gov.v1beta1.MsgVote")
+// 	proto.RegisterType((*MsgVoteResponse)(nil), "cosmos.gov.v1beta1.MsgVoteResponse")
+// 	proto.RegisterType((*MsgVoteWeighted)(nil), "cosmos.gov.v1beta1.MsgVoteWeighted")
+// 	proto.RegisterType((*MsgVoteWeightedResponse)(nil), "cosmos.gov.v1beta1.MsgVoteWeightedResponse")
+// 	proto.RegisterType((*MsgDeposit)(nil), "cosmos.gov.v1beta1.MsgDeposit")
+// 	proto.RegisterType((*MsgDepositResponse)(nil), "cosmos.gov.v1beta1.MsgDepositResponse")
+// }
 
-func init() { proto.RegisterFile("cosmos/gov/v1beta1/tx.proto", fileDescriptor_3c053992595e3dce) }
+// func init() { proto.RegisterFile("cosmos/gov/v1beta1/tx.proto", fileDescriptor_3c053992595e3dce) }
 
 var fileDescriptor_3c053992595e3dce = []byte{
 	// 685 bytes of a gzipped FileDescriptorProto
