@@ -813,46 +813,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 	if !ok {
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "multistore doesn't support queries"))
 	}
-	fmt.Printf("ADAM TESTING")
-
-	if path[1] == "test" {
-		res := queryable.Query(req)
-		res.Height = req.Height
-
-		commitInfo, err := app.cms.GetCommitInfoFromDb(res.Height)
-		fmt.Printf("ADAM HEIGHT %v \n", res.Height)
-		fmt.Printf("ADAM ERR %v \n", err)
-		fmt.Printf("ADAM TEST %v \n", commitInfo)
-		if err != nil {
-			return sdkerrors.QueryResult(err)
-		}
-
-		sort.Slice(commitInfo.StoreInfos, func(i, j int) bool {
-			return commitInfo.StoreInfos[i].Name < commitInfo.StoreInfos[j].Name
-		})
-
-		bz, err := codec.ProtoMarshalJSON(commitInfo, app.interfaceRegistry)
-		if err != nil {
-			return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to JSON encode simulation response"))
-		}
-		fmt.Printf("ADAM TEST %v \n", commitInfo)
-		//responseValue, _ := commitInfo.Marshal()
-
-		// response := app.ListSnapshots(abci.RequestListSnapshots{})
-
-		// responseValue, err = json.Marshal(response)
-		// if err != nil {
-		// 	sdkerrors.QueryResult(sdkerrors.Wrap(err, fmt.Sprintf("failed to marshal list snapshots response %v", response)))
-		// }
-
-		return abci.ResponseQuery{
-			Codespace: sdkerrors.RootCodespace,
-			Height:    req.Height,
-			Value:     bz,
-		}
-	}
-
-	req.Path = "/" + strings.Join(path[1:], "/")
 
 	if req.Height <= 1 && req.Prove {
 		return sdkerrors.QueryResult(
@@ -866,7 +826,32 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 	resp := queryable.Query(req)
 	resp.Height = req.Height
 
+	if path[1] == "hashes" {
+		commitInfo, err := app.cms.GetCommitInfoFromDb(resp.Height)
+
+		if err != nil {
+			return sdkerrors.QueryResult(err)
+		}
+
+		// sort the commitInfo, otherwise it returns in a different order every height
+		sort.Slice(commitInfo.StoreInfos, func(i, j int) bool {
+			return commitInfo.StoreInfos[i].Name < commitInfo.StoreInfos[j].Name
+		})
+
+		bz, err := codec.ProtoMarshalJSON(commitInfo, app.interfaceRegistry)
+		if err != nil {
+			return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to JSON encode simulation response"))
+		}
+
+		return abci.ResponseQuery{
+			Codespace: sdkerrors.RootCodespace,
+			Height:    req.Height,
+			Value:     bz,
+		}
+	}
+
 	return resp
+
 }
 
 func handleQueryP2P(app *BaseApp, path []string) abci.ResponseQuery {
