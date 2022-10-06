@@ -822,6 +822,7 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 			),
 		)
 	}
+	req.Path = "/" + strings.Join(path[1:], "/")
 
 	resp := queryable.Query(req)
 	resp.Height = req.Height
