@@ -826,8 +826,12 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 		if err != nil {
 			return sdkerrors.QueryResult(err)
 		}
+		bz, err := codec.ProtoMarshalJSON(commitInfo, app.interfaceRegistry)
+		if err != nil {
+			return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to JSON encode simulation response"))
+		}
 		fmt.Printf("ADAM TEST %v \n", commitInfo)
-		responseValue, _ := commitInfo.Marshal()
+		//responseValue, _ := commitInfo.Marshal()
 
 		// response := app.ListSnapshots(abci.RequestListSnapshots{})
 
@@ -839,7 +843,7 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 		return abci.ResponseQuery{
 			Codespace: sdkerrors.RootCodespace,
 			Height:    req.Height,
-			Value:     responseValue,
+			Value:     bz,
 		}
 	}
 
