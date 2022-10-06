@@ -817,6 +817,7 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 
 	if path[1] == "test" {
 		res := queryable.Query(req)
+		res.Height = req.Height
 
 		commitInfo, err := app.cms.GetCommitInfoFromDb(res.Height)
 		fmt.Printf("ADAM HEIGHT %v \n", res.Height)
