@@ -814,6 +814,8 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 		return sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "multistore doesn't support queries"))
 	}
 
+	req.Path = "/" + strings.Join(path[1:], "/")
+
 	if req.Height <= 1 && req.Prove {
 		return sdkerrors.QueryResult(
 			sdkerrors.Wrap(
@@ -822,7 +824,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 			),
 		)
 	}
-	req.Path = "/" + strings.Join(path[1:], "/")
 
 	resp := queryable.Query(req)
 	resp.Height = req.Height
