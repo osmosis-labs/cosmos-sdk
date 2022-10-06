@@ -849,7 +849,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 			Value:     bz,
 		}
 	}
-
 	return resp
 
 }
