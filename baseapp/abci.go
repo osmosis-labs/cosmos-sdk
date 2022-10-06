@@ -819,6 +819,9 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 		res := queryable.Query(req)
 
 		commitInfo, err := app.cms.GetCommitInfoFromDb(res.Height)
+		fmt.Printf("ADAM HEIGHT %v \n", res.Height)
+		fmt.Printf("ADAM ERR %v \n", err)
+		fmt.Printf("ADAM TEST %v \n", commitInfo)
 		if err != nil {
 			return sdkerrors.QueryResult(err)
 		}
