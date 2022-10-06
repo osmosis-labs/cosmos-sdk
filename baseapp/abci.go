@@ -826,6 +826,11 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 		if err != nil {
 			return sdkerrors.QueryResult(err)
 		}
+
+		sort.Slice(commitInfo.StoreInfos, func(i, j int) bool {
+			return commitInfo.StoreInfos[i].Name < commitInfo.StoreInfos[j].Name
+		})
+
 		bz, err := codec.ProtoMarshalJSON(commitInfo, app.interfaceRegistry)
 		if err != nil {
 			return sdkerrors.QueryResult(sdkerrors.Wrap(err, "failed to JSON encode simulation response"))
