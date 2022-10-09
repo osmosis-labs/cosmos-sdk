@@ -829,7 +829,7 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 	resp.Height = req.Height
 
 	if path[1] == "hashes" {
-		commitInfo, err := app.cms.GetCommitInfoFromDb(resp.Height)
+		commitInfo, err := app.cms.GetCommitInfoFromDB(resp.Height)
 		if err != nil {
 			return sdkerrors.QueryResult(err)
 		}

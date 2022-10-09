@@ -165,7 +165,7 @@ type CommitMultiStore interface {
 	GetCommitKVStore(key StoreKey) CommitKVStore
 
 	// Panics on a nil version.
-	GetCommitInfoFromDb(ver int64) (*CommitInfo, error)
+	GetCommitInfoFromDB(ver int64) (*CommitInfo, error)
 
 	// Load the latest persisted version. Called once after all calls to
 	// Mount*Store() are complete.
