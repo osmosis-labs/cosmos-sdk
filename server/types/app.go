@@ -48,10 +48,13 @@ type (
 
 		// RegisterTxService registers the gRPC Query service for tx (such as tx
 		// simulation, fetching txs by hash...).
-		RegisterTxService(clientCtx client.Context)
+		RegisterTxService(client.Context)
 
 		// RegisterTendermintService registers the gRPC Query service for tendermint queries.
-		RegisterTendermintService(clientCtx client.Context)
+		RegisterTendermintService(client.Context)
+
+		// RegisterNodeService registers the node gRPC Query service.
+		RegisterNodeService(client.Context)
 	}
 
 	// AppCreator is a function that allows us to lazily initialize an
