@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 	upgrade "github.com/cosmos/cosmos-sdk/x/upgrade/exported"
 )
@@ -57,7 +58,8 @@ type BaseApp struct { // nolint: maligned
 	grpcQueryRouter   *GRPCQueryRouter     // router for redirecting gRPC query calls
 	msgServiceRouter  *MsgServiceRouter    // router for redirecting Msg service messages
 	interfaceRegistry types.InterfaceRegistry
-	txDecoder         sdk.TxDecoder // unmarshal []byte into sdk.Tx
+	txDecoder         sdk.TxDecoder   // unmarshal []byte into sdk.Tx
+	mempool           mempool.Mempool // application-side mempool
 
 	anteHandler    sdk.AnteHandler  // ante handler for fee and auth
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
@@ -504,7 +506,7 @@ func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
 		// previous commit). The height we're expecting is the initial height.
 		expectedHeight = app.initialHeight
 	} else {
-		// This case can means two things:
+		// This case can mean two things:
 		// - either there was already a previous commit in the store, in which
 		// case we increment the version from there,
 		// - or there was no previous commit, and initial version was not set,
@@ -535,7 +537,7 @@ func validateBasicTxMsgs(msgs []sdk.Msg) error {
 	return nil
 }
 
-// Returns the applications's deliverState if app is in runTxModeDeliver,
+// Returns the application's deliverState if app is in runTxModeDeliver,
 // otherwise it returns the application's checkstate.
 func (app *BaseApp) getState(mode runTxMode) *state {
 	if mode == runTxModeDeliver {
@@ -593,7 +595,7 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Context, txBytes []byte) (sdk.Context
 func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, result *sdk.Result, anteEvents []abci.Event, err error) {
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
-	// meter so we initialize upfront.
+	// meter, so we initialize upfront.
 	var gasWanted uint64
 
 	ctx := app.getContextForTx(mode, txBytes)
@@ -614,8 +616,9 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	}()
 
 	blockGasConsumed := false
-	// consumeBlockGas makes sure block gas is consumed at most once. It must happen after
-	// tx processing, and must be execute even if tx processing fails. Hence we use trick with `defer`
+	// consumeBlockGas makes sure block gas is consumed at most once. It must
+	// happen after tx processing, and must be executed even if tx processing fails.
+	// Hence, we use trick with `defer`.
 	consumeBlockGas := func() {
 		if !blockGasConsumed {
 			blockGasConsumed = true
@@ -682,6 +685,13 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 
 		msCache.Write()
 		anteEvents = events.ToABCIEvents()
+	}
+
+	// add the tx to the application's mempool
+	if mode == runTxModeCheck && app.mempool != nil {
+		if err = app.mempool.Insert(ctx, tx.(mempool.Tx)); err != nil {
+			return gInfo, nil, anteEvents, err
+		}
 	}
 
 	// Create a new Context based off of the existing Context with a MultiStore branch
