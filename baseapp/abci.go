@@ -25,6 +25,7 @@ import (
 )
 
 const initialAppVersion = 0
+const StoreInfoPath = "info"
 
 type AppVersionError struct {
 	Actual  uint64
@@ -808,7 +809,6 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) abci.Res
 }
 
 func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {
-	const storeInfoPath = "info"
 	// "/store" prefix for store queries
 	queryable, ok := app.cms.(sdk.Queryable)
 	if !ok {
@@ -829,7 +829,7 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 	resp := queryable.Query(req)
 	resp.Height = req.Height
 
-	if path[1] == storeInfoPath {
+	if path[1] == StoreInfoPath {
 		commitInfo, err := app.cms.GetCommitInfoFromDB(resp.Height)
 		if err != nil {
 			return sdkerrors.QueryResult(err)
