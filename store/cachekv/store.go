@@ -270,6 +270,22 @@ func findEndIndex(strL []string, endQ string) int {
 	return -1
 }
 
+//nolint
+func findStartEndIndex(strL []string, startStr, endStr string) (int, int) {
+	// Now find the values within the domain
+	//  [start, end)
+	startIndex := findStartIndex(strL, startStr)
+	endIndex := findEndIndex(strL, endStr)
+
+	if endIndex < 0 {
+		endIndex = len(strL) - 1
+	}
+	if startIndex < 0 {
+		startIndex = 0
+	}
+	return startIndex, endIndex
+}
+
 type sortState int
 
 const (

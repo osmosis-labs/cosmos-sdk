@@ -131,6 +131,51 @@ type BaseApp struct { // nolint: maligned
 
 var _ upgrade.AppVersionManager = (*BaseApp)(nil)
 
+type appStore struct {
+	db          dbm.DB               // common DB backend
+	cms         sdk.CommitMultiStore // Main (uncached) state
+	storeLoader StoreLoader          // function to handle store loading, may be overridden with SetStoreLoader()
+
+	// an inter-block write-through cache provided to the context during deliverState
+	interBlockCache sdk.MultiStorePersistentCache
+
+	fauxMerkleMode bool // if true, IAVL MountStores uses MountStoresDB for simulation speed.
+}
+
+type moduleRouter struct {
+	router           sdk.Router        // handle any kind of message
+	queryRouter      sdk.QueryRouter   // router for redirecting query calls
+	grpcQueryRouter  *GRPCQueryRouter  // router for redirecting gRPC query calls
+	msgServiceRouter *MsgServiceRouter // router for redirecting Msg service messages
+}
+
+type abciData struct {
+	initChainer  sdk.InitChainer  // initialize state with validators and state blob
+	beginBlocker sdk.BeginBlocker // logic to run before any txs
+	endBlocker   sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
+
+	// absent validators from begin block
+	voteInfos []abci.VoteInfo
+}
+
+type baseappVersions struct {
+	// application's version string
+	version string
+
+	// application's protocol version that increments on every upgrade
+	// if BaseApp is passed to the upgrade keeper's NewKeeper method.
+	appVersion uint64
+}
+
+// should really get handled in some db struct
+// which then has a sub-item, persistence fields
+type snapshotData struct {
+	// manages snapshots, i.e. dumps of app state at certain intervals
+	snapshotManager    *snapshots.Manager
+	snapshotInterval   uint64 // block interval between state sync snapshots
+	snapshotKeepRecent uint32 // recent state sync snapshots to keep
+}
+
 // NewBaseApp returns a reference to an initialized BaseApp. It accepts a
 // variadic number of option functions, which act on the BaseApp to set
 // configuration choices.

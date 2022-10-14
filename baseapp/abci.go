@@ -152,24 +152,6 @@ func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOp
 	return
 }
 
-// FilterPeerByAddrPort filters peers by address/port.
-func (app *BaseApp) FilterPeerByAddrPort(info string) abci.ResponseQuery {
-	if app.addrPeerFilter != nil {
-		return app.addrPeerFilter(info)
-	}
-
-	return abci.ResponseQuery{}
-}
-
-// FilterPeerByID filters peers by node ID.
-func (app *BaseApp) FilterPeerByID(info string) abci.ResponseQuery {
-	if app.idPeerFilter != nil {
-		return app.idPeerFilter(info)
-	}
-
-	return abci.ResponseQuery{}
-}
-
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "begin_block")
@@ -825,35 +807,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 
 	resp := queryable.Query(req)
 	resp.Height = req.Height
-
-	return resp
-}
-
-func handleQueryP2P(app *BaseApp, path []string) abci.ResponseQuery {
-	// "/p2p" prefix for p2p queries
-	if len(path) < 4 {
-		return sdkerrors.QueryResultWithDebug(
-			sdkerrors.Wrap(
-				sdkerrors.ErrUnknownRequest, "path should be p2p filter <addr|id> <parameter>",
-			), app.trace)
-	}
-
-	var resp abci.ResponseQuery
-
-	cmd, typ, arg := path[1], path[2], path[3]
-	switch cmd {
-	case "filter":
-		switch typ {
-		case "addr":
-			resp = app.FilterPeerByAddrPort(arg)
-
-		case "id":
-			resp = app.FilterPeerByID(arg)
-		}
-
-	default:
-		resp = sdkerrors.QueryResultWithDebug(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "expected second parameter to be 'filter'"), app.trace)
-	}
 
 	return resp
 }
