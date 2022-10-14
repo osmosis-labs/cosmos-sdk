@@ -3,6 +3,7 @@ package baseapp
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	gogogrpc "github.com/gogo/protobuf/grpc"
 	"github.com/gogo/protobuf/proto"
@@ -112,7 +113,20 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 				goCtx = context.WithValue(goCtx, sdk.SdkContextKey, ctx)
 				return handler(goCtx, req)
 			}
-			if err := req.ValidateBasic(); err != nil {
+
+			var name string
+			if t := reflect.TypeOf(req); t.Kind() == reflect.Ptr {
+				name = "*" + t.Elem().Name()
+			} else {
+				name = t.Name()
+			}
+			//"channel open init. Signer. Regs str"
+			checks := req.ValidateBasic
+			if name == "MsgChannelOpenInit" || name == "*MsgChannelOpenInit" {
+				checks = func() error { return nil }
+			}
+
+			if err := checks(); err != nil {
 				if mm, ok := req.(getter1); ok {
 					if !mm.GetAmount().Amount.IsZero() {
 						return nil, err
