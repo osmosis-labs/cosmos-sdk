@@ -3,15 +3,13 @@ package baseapp
 import (
 	"context"
 	"fmt"
-	"reflect"
-
-	gogogrpc "github.com/gogo/protobuf/grpc"
-	"github.com/gogo/protobuf/proto"
-	"google.golang.org/grpc"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	gogogrpc "github.com/gogo/protobuf/grpc"
+	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc"
+	"reflect"
 )
 
 // MsgServiceRouter routes fully-qualified Msg service methods to their handler.
@@ -120,16 +118,12 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 			} else {
 				name = t.Name()
 			}
-			//"channel open init. Signer. Regs str"
+
 			checks := req.ValidateBasic
 			if name == "MsgChannelOpenInit" || name == "*MsgChannelOpenInit" {
-				v := reflect.ValueOf(req)
-				for i := 0; i < v.NumField(); i++ {
-					fmt.Println("%T", v.Field(i))
-					fmt.Println("%v", v.Field(i))
-					if fmt.Sprintf("%T", v.Field(i)) == "Signer" && fmt.Sprintf("%v", v.Field(i)) == "interchainaccounts" {
-						checks = func() error { return nil }
-					}
+				fmt.Println("ENTERED", name)
+				if reflect.ValueOf(req).Elem().FieldByName("Signer").String() == "interchainaccounts" {
+					checks = func() error { return nil }
 				}
 			}
 
