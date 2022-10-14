@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -15,15 +16,17 @@ import (
 // TODO: Implement a tool to check for gas growth. For now,
 // we must increase this across the board for longer runs to work
 const (
-	DefaultGenTxGas uint64 = 2000000
-	SimAppChainID          = "simulation-app"
+	DefaultGenTxGas = 2000000
+	SimAppChainID   = "simulation-app"
 )
 
 // GenTx generates a signed mock transaction.
-func GenTx(r *rand.Rand, gen client.TxConfig, msgs []sdk.Msg, feeAmt sdk.Coins, gas uint64, chainID string, accNums, accSeqs []uint64, priv ...cryptotypes.PrivKey) (sdk.Tx, error) {
+func GenTx(gen client.TxConfig, msgs []sdk.Msg, feeAmt sdk.Coins, gas uint64, chainID string, accNums, accSeqs []uint64, priv ...cryptotypes.PrivKey) (sdk.Tx, error) {
 	sigs := make([]signing.SignatureV2, len(priv))
 
 	// create a random length memo
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	memo := simulation.RandStringOfLength(r, simulation.RandIntBetween(r, 0, 100))
 
 	signMode := gen.SignModeHandler().DefaultMode()
