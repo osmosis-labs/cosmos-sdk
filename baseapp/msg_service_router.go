@@ -123,7 +123,14 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 			//"channel open init. Signer. Regs str"
 			checks := req.ValidateBasic
 			if name == "MsgChannelOpenInit" || name == "*MsgChannelOpenInit" {
-				checks = func() error { return nil }
+				v := reflect.ValueOf(req)
+				for i := 0; i < v.NumField(); i++ {
+					fmt.Println("%T", v.Field(i))
+					fmt.Println("%v", v.Field(i))
+					if fmt.Sprintf("%T", v.Field(i)) == "Signer" && fmt.Sprintf("%v", v.Field(i)) == "interchainaccounts" {
+						checks = func() error { return nil }
+					}
+				}
 			}
 
 			if err := checks(); err != nil {
