@@ -121,7 +121,6 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 
 			checks := req.ValidateBasic
 			if name == "MsgChannelOpenInit" || name == "*MsgChannelOpenInit" {
-				fmt.Println("ENTERED", name)
 				if reflect.ValueOf(req).Elem().FieldByName("Signer").String() == "interchainaccounts" {
 					checks = func() error { return nil }
 				}
