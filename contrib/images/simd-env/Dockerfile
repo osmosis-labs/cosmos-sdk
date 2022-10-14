@@ -1,6 +1,7 @@
 FROM golang:1.17-alpine AS build
 RUN apk add build-base git linux-headers
 WORKDIR /work
+COPY ics23/go.mod ics23/go.sum work/
 COPY go.mod go.sum /work/
 # COPY db/go.mod db/go.sum /work/db/
 RUN go mod download
