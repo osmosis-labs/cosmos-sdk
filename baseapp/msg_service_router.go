@@ -112,6 +112,23 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 				goCtx = context.WithValue(goCtx, sdk.SdkContextKey, ctx)
 				return handler(goCtx, req)
 			}
+			if err := req.ValidateBasic(); err != nil {
+				if mm, ok := req.(getter1); ok {
+					if !mm.GetAmount().Amount.IsZero() {
+						return nil, err
+					}
+				} else if mm, ok := req.(getter2); ok {
+					if !mm.GetTokenIn().Amount.IsZero() {
+						return nil, err
+					}
+				} else if mm, ok := req.(getter3); ok {
+					if !mm.GetTokenOut().Amount.IsZero() {
+						return nil, err
+					}
+				} else {
+					return nil, err
+				}
+			}
 			// Call the method handler from the service description with the handler object.
 			// We don't do any decoding here because the decoding was already done.
 			res, err := methodHandler(handler, sdk.WrapSDKContext(ctx), noopDecoder, interceptor)
@@ -137,4 +154,16 @@ func (msr *MsgServiceRouter) SetInterfaceRegistry(interfaceRegistry codectypes.I
 func noopDecoder(_ interface{}) error { return nil }
 func noopInterceptor(_ context.Context, _ interface{}, _ *grpc.UnaryServerInfo, _ grpc.UnaryHandler) (interface{}, error) {
 	return nil, nil
+}
+
+type getter1 interface {
+	GetAmount() sdk.Coin
+}
+
+type getter2 interface {
+	GetTokenIn() sdk.Coin
+}
+
+type getter3 interface {
+	GetTokenOut() sdk.Coin
 }
