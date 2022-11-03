@@ -60,13 +60,19 @@ func TestLoadStore(t *testing.T) {
 	store := UnsafeNewStore(tree)
 
 	// Create non-pruned height H
-	require.True(t, tree.Set([]byte("hello"), []byte("hallo")))
+	updated, err := tree.Set([]byte("hello"), []byte("hallo"))
+
+	require.True(t, updated)
+	require.NoError(t, err)
 	hash, verH, err := tree.SaveVersion()
 	cIDH := types.CommitID{Version: verH, Hash: hash}
 	require.Nil(t, err)
 
 	// Create pruned height Hp
-	require.True(t, tree.Set([]byte("hello"), []byte("hola")))
+	updated, err = tree.Set([]byte("hello"), []byte("hola"))
+
+	require.True(t, updated)
+	require.NoError(t, err)
 	hash, verHp, err := tree.SaveVersion()
 	cIDHp := types.CommitID{Version: verHp, Hash: hash}
 	require.Nil(t, err)
@@ -74,7 +80,10 @@ func TestLoadStore(t *testing.T) {
 	// TODO: Prune this height
 
 	// Create current height Hc
-	require.True(t, tree.Set([]byte("hello"), []byte("ciao")))
+	updated, err = tree.Set([]byte("hello"), []byte("ciao"))
+
+	require.True(t, updated)
+	require.NoError(t, err)
 	hash, verHc, err := tree.SaveVersion()
 	cIDHc := types.CommitID{Version: verHc, Hash: hash}
 	require.Nil(t, err)
@@ -115,7 +124,9 @@ func TestGetImmutable(t *testing.T) {
 	tree, cID := newAlohaTree(t, db)
 	store := UnsafeNewStore(tree)
 
-	require.True(t, tree.Set([]byte("hello"), []byte("adios")))
+	updated, err := tree.Set([]byte("hello"), []byte("adios"))
+	require.True(t, updated)
+	require.NoError(t, err)
 	hash, ver, err := tree.SaveVersion()
 	cID = types.CommitID{Version: ver, Hash: hash}
 	require.Nil(t, err)
