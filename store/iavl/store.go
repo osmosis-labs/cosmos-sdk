@@ -170,6 +170,11 @@ func (st *Store) VersionExists(version int64) bool {
 	return st.tree.VersionExists(version)
 }
 
+// GetAllVersions returns all versions in the iavl tree
+func (st *Store) GetAllVersions() []int {
+	return st.tree.AvailableVersions()
+}
+
 // Implements Store.
 func (st *Store) GetStoreType() types.StoreType {
 	return types.StoreTypeIAVL
@@ -228,6 +233,12 @@ func (st *Store) Delete(key []byte) {
 // happen in a single batch with a single commit.
 func (st *Store) DeleteVersions(versions ...int64) error {
 	return st.tree.DeleteVersions(versions...)
+}
+
+// LoadVersionForOverwriting attempts to load a tree at a previously committed
+// version, or the latest version below it. Any versions greater than targetVersion will be deleted.
+func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
+	return st.tree.LoadVersionForOverwriting(targetVersion)
 }
 
 // Implements types.KVStore.
