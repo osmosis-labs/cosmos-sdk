@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/pkg/profile"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"google.golang.org/grpc/codes"
@@ -156,6 +157,10 @@ func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOp
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "begin_block")
 
+	// app.memProfileStop = profile.Start(profile.MemProfile, profile.ProfilePath(fmt.Sprintf("/root/profiles/%d", req.Header.Height)))
+	// app.cpuProfileStop = profile.Start(profile.CPUProfile, profile.ProfilePath(fmt.Sprintf("/root/profiles/%d", req.Header.Height)))
+	app.traceStop = profile.Start(profile.TraceProfile, profile.ProfilePath(fmt.Sprintf("/root/profiles/%d", req.Header.Height)))
+
 	if app.cms.TracingEnabled() {
 		app.cms.SetTracingContext(sdk.TraceContext(
 			map[string]interface{}{"blockHeight": req.Header.Height},
@@ -214,6 +219,9 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
 	defer telemetry.MeasureSince(time.Now(), "abci", "end_block")
+	// defer app.memProfileStop.Stop()
+	// defer app.cpuProfileStop.Stop()
+	defer app.traceStop.Stop()
 
 	if app.deliverState.ms.TracingEnabled() {
 		app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
