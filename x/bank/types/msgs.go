@@ -15,6 +15,7 @@ const (
 var _ sdk.Msg = &MsgSend{}
 
 // NewMsgSend - construct a msg to send coins from one account to another.
+//
 //nolint:interfacer
 func NewMsgSend(fromAddr, toAddr sdk.AccAddress, amount sdk.Coins) *MsgSend {
 	return &MsgSend{FromAddress: fromAddr.String(), ToAddress: toAddr.String(), Amount: amount}
@@ -126,6 +127,7 @@ func (in Input) ValidateBasic() error {
 }
 
 // NewInput - create a transaction input, used with MsgMultiSend
+//
 //nolint:interfacer
 func NewInput(addr sdk.AccAddress, coins sdk.Coins) Input {
 	return Input{
@@ -153,6 +155,7 @@ func (out Output) ValidateBasic() error {
 }
 
 // NewOutput - create a transaction output, used with MsgMultiSend
+//
 //nolint:interfacer
 func NewOutput(addr sdk.AccAddress, coins sdk.Coins) Output {
 	return Output{
@@ -162,16 +165,26 @@ func NewOutput(addr sdk.AccAddress, coins sdk.Coins) Output {
 }
 
 // ValidateInputsOutputs validates that each respective input and output is
-// valid and that the sum of inputs is equal to the sum of outputs.
+// valid and that the sum of inputs is equal to the sum of outputs. It also
+// ensures there is only a single sending account.
 func ValidateInputsOutputs(inputs []Input, outputs []Output) error {
 	var totalIn, totalOut sdk.Coins
 
+	senders := make(map[string]struct{}, len(inputs))
+
 	for _, in := range inputs {
+		senders[in.Address] = struct{}{}
+
 		if err := in.ValidateBasic(); err != nil {
 			return err
 		}
 
 		totalIn = totalIn.Add(in.Coins...)
+	}
+
+	// ensure there is only a single sending account
+	if len(senders) != 1 {
+		return sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only a single sending account is allowed")
 	}
 
 	for _, out := range outputs {
