@@ -250,9 +250,12 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// Send defines a method for sending coins from one account to another account.
+	// Send defines a method for sending coins from one account to another
+	// account.
 	Send(ctx context.Context, in *MsgSend, opts ...grpc.CallOption) (*MsgSendResponse, error)
-	// MultiSend defines a method for sending coins from some accounts to other accounts.
+	// MultiSend defines a method for sending coins from a single account to
+	// multiple accounts. It can be seen as a single message representation of
+	// multiple individual MsgSend messages.
 	MultiSend(ctx context.Context, in *MsgMultiSend, opts ...grpc.CallOption) (*MsgMultiSendResponse, error)
 }
 
@@ -284,9 +287,12 @@ func (c *msgClient) MultiSend(ctx context.Context, in *MsgMultiSend, opts ...grp
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// Send defines a method for sending coins from one account to another account.
+	// Send defines a method for sending coins from one account to another
+	// account.
 	Send(context.Context, *MsgSend) (*MsgSendResponse, error)
-	// MultiSend defines a method for sending coins from some accounts to other accounts.
+	// MultiSend defines a method for sending coins from a single account to
+	// multiple accounts. It can be seen as a single message representation of
+	// multiple individual MsgSend messages.
 	MultiSend(context.Context, *MsgMultiSend) (*MsgMultiSendResponse, error)
 }
 
