@@ -170,22 +170,16 @@ func NewOutput(addr sdk.AccAddress, coins sdk.Coins) Output {
 func ValidateInputsOutputs(inputs []Input, outputs []Output) error {
 	var totalIn, totalOut sdk.Coins
 
-	senders := make(map[string]struct{}, len(inputs))
-
-	for _, in := range inputs {
-		senders[in.Address] = struct{}{}
-
-		if err := in.ValidateBasic(); err != nil {
-			return err
-		}
-
-		totalIn = totalIn.Add(in.Coins...)
+	// ensure there is only a single sending account and thus a single input
+	if len(inputs) != 1 {
+		return sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only a single sending account (input) is allowed")
 	}
 
-	// ensure there is only a single sending account
-	if len(senders) != 1 {
-		return sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "only a single sending account is allowed")
+	if err := inputs[0].ValidateBasic(); err != nil {
+		return err
 	}
+
+	totalIn = totalIn.Add(inputs[0].Coins...)
 
 	for _, out := range outputs {
 		if err := out.ValidateBasic(); err != nil {

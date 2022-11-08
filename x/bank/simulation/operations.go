@@ -178,33 +178,25 @@ func SimulateMsgMultiSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Ope
 		accs []simtypes.Account, chainID string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 
-		// random number of inputs/outputs between [1, 3]
-		inputs := make([]types.Input, r.Intn(3)+1)
+		// random number of outputs between [1, 3]
 		outputs := make([]types.Output, r.Intn(3)+1)
 
 		// generate random input fields, ignore to address
-		from, _, coins, skip := randomSendFields(r, ctx, accs, bk, ak)
+		from, _, inputCoins, skip := randomSendFields(r, ctx, accs, bk, ak)
 		if skip {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMultiSend, "skip all transfers"), nil, nil
 		}
 
 		privKeys := []cryptotypes.PrivKey{from.PrivKey}
-		numIns := int64(len(inputs))
-
-		var totalSentCoins sdk.Coins
-		for i := range inputs {
-			var inputCoins sdk.Coins
-			for _, c := range coins {
-				inputCoins = inputCoins.Add(sdk.NewCoin(c.Denom, c.Amount.QuoRaw(numIns)))
-			}
-
-			// set next input and accumulate total sent coins
-			inputs[i] = types.NewInput(from.Address, inputCoins)
-			totalSentCoins = totalSentCoins.Add(inputCoins...)
+		inputs := []types.Input{
+			types.NewInput(from.Address, inputCoins),
 		}
 
+		var totalSentCoins sdk.Coins
+		totalSentCoins = totalSentCoins.Add(inputCoins...)
+
 		// check send_enabled status of each sent coin denom
-		if err := bk.IsSendEnabledCoins(ctx, totalSentCoins...); err != nil {
+		if err := bk.IsSendEnabledCoins(ctx, inputCoins...); err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMultiSend, err.Error()), nil, nil
 		}
 
