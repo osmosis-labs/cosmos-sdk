@@ -59,8 +59,7 @@ var (
 	}
 	multiSendMsg3 = &types.MsgMultiSend{
 		Inputs: []types.Input{
-			types.NewInput(addr1, coins),
-			types.NewInput(addr1, coins),
+			types.NewInput(addr1, coins.Add(coins...)),
 		},
 		Outputs: []types.Output{
 			types.NewOutput(addr2, coins),
