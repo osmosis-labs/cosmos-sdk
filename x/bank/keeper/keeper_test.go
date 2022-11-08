@@ -2,13 +2,9 @@ package keeper_test
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
-
-	"github.com/cosmos/cosmos-sdk/types/query"
-
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -18,11 +14,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 const (
@@ -399,8 +398,7 @@ func (suite *IntegrationTestSuite) TestInputOutputCoins() {
 	app.AccountKeeper.SetAccount(ctx, acc3)
 
 	inputs := []types.Input{
-		{Address: addr1.String(), Coins: sdk.NewCoins(newFooCoin(30), newBarCoin(10))},
-		{Address: addr1.String(), Coins: sdk.NewCoins(newFooCoin(30), newBarCoin(10))},
+		{Address: addr1.String(), Coins: sdk.NewCoins(newFooCoin(60), newBarCoin(20))},
 	}
 	outputs := []types.Output{
 		{Address: addr2.String(), Coins: sdk.NewCoins(newFooCoin(30), newBarCoin(10))},
@@ -409,11 +407,9 @@ func (suite *IntegrationTestSuite) TestInputOutputCoins() {
 
 	suite.Require().Error(app.BankKeeper.InputOutputCoins(ctx, inputs, []types.Output{}))
 	suite.Require().Error(app.BankKeeper.InputOutputCoins(ctx, inputs, outputs))
-
 	suite.Require().NoError(simapp.FundAccount(app.BankKeeper, ctx, addr1, balances))
 
 	insufficientInputs := []types.Input{
-		{Address: addr1.String(), Coins: sdk.NewCoins(newFooCoin(300), newBarCoin(100))},
 		{Address: addr1.String(), Coins: sdk.NewCoins(newFooCoin(300), newBarCoin(100))},
 	}
 	insufficientOutputs := []types.Output{
@@ -663,8 +659,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 	newCoins := sdk.NewCoins(sdk.NewInt64Coin(fooDenom, 50))
 	newCoins2 := sdk.NewCoins(sdk.NewInt64Coin(barDenom, 100))
 	inputs := []types.Input{
-		{Address: addr.String(), Coins: newCoins},
-		{Address: addr.String(), Coins: newCoins2},
+		{Address: addr.String(), Coins: newCoins.Add(newCoins2...)},
 	}
 	outputs := []types.Output{
 		{Address: addr3.String(), Coins: newCoins},
@@ -681,7 +676,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 	suite.Require().Error(app.BankKeeper.InputOutputCoins(ctx, inputs, outputs))
 
 	events = ctx.EventManager().ABCIEvents()
-	suite.Require().Equal(8, len(events)) // 7 events because account funding causes extra minting + coin_spent + coin_recv events
+	suite.Require().Equal(6, len(events)) // 7 events because account funding causes extra minting + coin_spent + coin_recv events
 
 	event1 := sdk.Event{
 		Type:       sdk.EventTypeMessage,
@@ -691,7 +686,6 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 		event1.Attributes,
 		abci.EventAttribute{Key: []byte(types.AttributeKeySender), Value: []byte(addr.String())},
 	)
-	suite.Require().Equal(abci.Event(event1), events[7])
 
 	// Set addr's coins and addr2's coins
 	suite.Require().NoError(simapp.FundAccount(app.BankKeeper, ctx, addr, sdk.NewCoins(sdk.NewInt64Coin(fooDenom, 50))))
@@ -703,7 +697,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 	suite.Require().NoError(app.BankKeeper.InputOutputCoins(ctx, inputs, outputs))
 
 	events = ctx.EventManager().ABCIEvents()
-	suite.Require().Equal(28, len(events)) // 25 due to account funding + coin_spent + coin_recv events
+	suite.Require().Equal(24, len(events)) // 25 due to account funding + coin_spent + coin_recv events
 
 	event2 := sdk.Event{
 		Type:       sdk.EventTypeMessage,
@@ -737,11 +731,17 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 		abci.EventAttribute{Key: []byte(sdk.AttributeKeyAmount), Value: []byte(newCoins2.String())},
 	)
 
-	// events are shifted due to the funding account events
-	suite.Require().Equal(abci.Event(event1), events[21])
-	suite.Require().Equal(abci.Event(event2), events[23])
-	suite.Require().Equal(abci.Event(event3), events[25])
-	suite.Require().Equal(abci.Event(event4), events[27])
+	for _, eventA := range []sdk.Event{event1, event2, event3, event4} {
+		var matched bool
+		for _, eventB := range events {
+			if reflect.DeepEqual(abci.Event(eventA), eventB) {
+				matched = true
+				break
+			}
+		}
+
+		suite.Require().True(matched)
+	}
 }
 
 func (suite *IntegrationTestSuite) TestSpendableCoins() {

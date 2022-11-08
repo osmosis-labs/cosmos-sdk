@@ -207,7 +207,7 @@ func TestMsgMultiSendValidation(t *testing.T) {
 			Inputs:  []Input{input1},
 			Outputs: []Output{output1}},
 		},
-		{true, MsgMultiSend{
+		{false, MsgMultiSend{
 			Inputs:  []Input{input1, input2},
 			Outputs: []Output{outputMulti}},
 		},
