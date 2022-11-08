@@ -182,38 +182,28 @@ func SimulateMsgMultiSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Ope
 		inputs := make([]types.Input, r.Intn(3)+1)
 		outputs := make([]types.Output, r.Intn(3)+1)
 
-		// collect signer privKeys
-		privs := make([]cryptotypes.PrivKey, len(inputs))
+		// generate random input fields, ignore to address
+		from, _, coins, skip := randomSendFields(r, ctx, accs, bk, ak)
+		if skip {
+			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMultiSend, "skip all transfers"), nil, nil
+		}
 
-		// use map to check if address already exists as input
-		usedAddrs := make(map[string]bool)
+		privKeys := []cryptotypes.PrivKey{from.PrivKey}
+		numIns := int64(len(inputs))
 
 		var totalSentCoins sdk.Coins
 		for i := range inputs {
-			// generate random input fields, ignore to address
-			from, _, coins, skip := randomSendFields(r, ctx, accs, bk, ak)
-
-			// make sure account is fresh and not used in previous input
-			for usedAddrs[from.Address.String()] {
-				from, _, coins, skip = randomSendFields(r, ctx, accs, bk, ak)
+			var inputCoins sdk.Coins
+			for _, c := range coins {
+				inputCoins = inputCoins.Add(sdk.NewCoin(c.Denom, c.Amount.QuoRaw(numIns)))
 			}
-
-			if skip {
-				return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMultiSend, "skip all transfers"), nil, nil
-			}
-
-			// set input address in used address map
-			usedAddrs[from.Address.String()] = true
-
-			// set signer privkey
-			privs[i] = from.PrivKey
 
 			// set next input and accumulate total sent coins
-			inputs[i] = types.NewInput(from.Address, coins)
-			totalSentCoins = totalSentCoins.Add(coins...)
+			inputs[i] = types.NewInput(from.Address, inputCoins)
+			totalSentCoins = totalSentCoins.Add(inputCoins...)
 		}
 
-		// Check send_enabled status of each sent coin denom
+		// check send_enabled status of each sent coin denom
 		if err := bk.IsSendEnabledCoins(ctx, totalSentCoins...); err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, types.TypeMsgMultiSend, err.Error()), nil, nil
 		}
@@ -236,7 +226,6 @@ func SimulateMsgMultiSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Ope
 		}
 
 		// remove any output that has no coins
-
 		for i := 0; i < len(outputs); {
 			if outputs[i].Coins.Empty() {
 				outputs[i] = outputs[len(outputs)-1]
@@ -252,7 +241,7 @@ func SimulateMsgMultiSend(ak types.AccountKeeper, bk keeper.Keeper) simtypes.Ope
 			Outputs: outputs,
 		}
 
-		gasInfo, err := sendMsgMultiSend(r, app, bk, ak, msg, ctx, chainID, privs)
+		gasInfo, err := sendMsgMultiSend(r, app, bk, ak, msg, ctx, chainID, privKeys)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "invalid transfers"), nil, err
 		}
