@@ -60,7 +60,7 @@ var (
 	multiSendMsg3 = &types.MsgMultiSend{
 		Inputs: []types.Input{
 			types.NewInput(addr1, coins),
-			types.NewInput(addr4, coins),
+			types.NewInput(addr1, coins),
 		},
 		Outputs: []types.Output{
 			types.NewOutput(addr2, coins),
@@ -249,9 +249,7 @@ func TestMsgMultiSendMultipleInOut(t *testing.T) {
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	require.NoError(t, simapp.FundAccount(app.BankKeeper, ctx, addr1, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 42))))
-
 	require.NoError(t, simapp.FundAccount(app.BankKeeper, ctx, addr2, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 42))))
-
 	require.NoError(t, simapp.FundAccount(app.BankKeeper, ctx, addr4, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 42))))
 
 	app.Commit()
@@ -263,10 +261,10 @@ func TestMsgMultiSendMultipleInOut(t *testing.T) {
 			accSeqs:    []uint64{0, 0},
 			expSimPass: true,
 			expPass:    true,
-			privKeys:   []cryptotypes.PrivKey{priv1, priv4},
+			privKeys:   []cryptotypes.PrivKey{priv1},
 			expectedBalances: []expectedBalance{
-				{addr1, sdk.Coins{sdk.NewInt64Coin("foocoin", 32)}},
-				{addr4, sdk.Coins{sdk.NewInt64Coin("foocoin", 32)}},
+				{addr1, sdk.Coins{sdk.NewInt64Coin("foocoin", 22)}},
+				{addr4, sdk.Coins{sdk.NewInt64Coin("foocoin", 42)}},
 				{addr2, sdk.Coins{sdk.NewInt64Coin("foocoin", 52)}},
 				{addr3, sdk.Coins{sdk.NewInt64Coin("foocoin", 10)}},
 			},
