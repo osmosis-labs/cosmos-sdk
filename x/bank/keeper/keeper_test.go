@@ -664,7 +664,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 	newCoins2 := sdk.NewCoins(sdk.NewInt64Coin(barDenom, 100))
 	inputs := []types.Input{
 		{Address: addr.String(), Coins: newCoins},
-		{Address: addr2.String(), Coins: newCoins2},
+		{Address: addr.String(), Coins: newCoins2},
 	}
 	outputs := []types.Output{
 		{Address: addr3.String(), Coins: newCoins},
@@ -697,7 +697,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 	suite.Require().NoError(simapp.FundAccount(app.BankKeeper, ctx, addr, sdk.NewCoins(sdk.NewInt64Coin(fooDenom, 50))))
 	newCoins = sdk.NewCoins(sdk.NewInt64Coin(fooDenom, 50))
 
-	suite.Require().NoError(simapp.FundAccount(app.BankKeeper, ctx, addr2, sdk.NewCoins(sdk.NewInt64Coin(barDenom, 100))))
+	suite.Require().NoError(simapp.FundAccount(app.BankKeeper, ctx, addr, sdk.NewCoins(sdk.NewInt64Coin(barDenom, 100))))
 	newCoins2 = sdk.NewCoins(sdk.NewInt64Coin(barDenom, 100))
 
 	suite.Require().NoError(app.BankKeeper.InputOutputCoins(ctx, inputs, outputs))
@@ -711,7 +711,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 	}
 	event2.Attributes = append(
 		event2.Attributes,
-		abci.EventAttribute{Key: []byte(types.AttributeKeySender), Value: []byte(addr2.String())},
+		abci.EventAttribute{Key: []byte(types.AttributeKeySender), Value: []byte(addr.String())},
 	)
 	event3 := sdk.Event{
 		Type:       types.EventTypeTransfer,
@@ -736,6 +736,7 @@ func (suite *IntegrationTestSuite) TestMsgMultiSendEvents() {
 		event4.Attributes,
 		abci.EventAttribute{Key: []byte(sdk.AttributeKeyAmount), Value: []byte(newCoins2.String())},
 	)
+
 	// events are shifted due to the funding account events
 	suite.Require().Equal(abci.Event(event1), events[21])
 	suite.Require().Equal(abci.Event(event2), events[23])
