@@ -47,11 +47,17 @@ var (
 	sendMsg1 = types.NewMsgSend(addr1, addr2, coins)
 
 	multiSendMsg1 = &types.MsgMultiSend{
-		Inputs:  []types.Input{types.NewInput(addr1, coins)},
-		Outputs: []types.Output{types.NewOutput(addr2, coins)},
+		Inputs: []types.Input{
+			types.NewInput(addr1, coins),
+		},
+		Outputs: []types.Output{
+			types.NewOutput(addr2, coins),
+		},
 	}
 	multiSendMsg2 = &types.MsgMultiSend{
-		Inputs: []types.Input{types.NewInput(addr1, coins)},
+		Inputs: []types.Input{
+			types.NewInput(addr1, coins),
+		},
 		Outputs: []types.Output{
 			types.NewOutput(addr2, halfCoins),
 			types.NewOutput(addr3, halfCoins),
