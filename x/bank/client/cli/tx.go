@@ -68,7 +68,7 @@ ignored as it is implied from [from_key_or_address].`,
 // NewMultiSendTxCmd returns a CLI command handler for creating a MsgSend transaction.
 func NewMultiSendTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "send [from_key_or_address] [to_address_csv] [amount_csv]",
+		Use: "multisend [from_key_or_address] [to_address_csv] [amount_csv]",
 		Short: `Send funds from one account to many other accounts. Note, the'--from' flag is
 ignored as it is implied from [from_key_or_address].`,
 		Args: cobra.ExactArgs(3),
