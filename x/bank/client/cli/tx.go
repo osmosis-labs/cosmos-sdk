@@ -97,6 +97,7 @@ ignored as it is implied from [from_key_or_address].`,
 
 			input := types.Input{
 				Address: clientCtx.GetFromAddress().String(),
+				Coins:   coins,
 			}
 			outputs := []types.Output{}
 
