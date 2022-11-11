@@ -109,7 +109,7 @@ ignored as it is implied from [from_key_or_address].`,
 				}
 				for _, coin := range coins {
 					fmt.Printf("%v coin \n", coin)
-					coinsCombined.Add(coin)
+					coinsCombined = coinsCombined.Add(coin)
 				}
 				outputs = append(outputs, types.Output{
 					Address: toAddressesArray[i],
