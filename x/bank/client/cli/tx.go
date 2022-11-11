@@ -40,16 +40,15 @@ ignored as it is implied from [from_key_or_address].`,
 			cmd.Flags().Set(flags.FlagFrom, args[0])
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
-				fmt.Printf("TEST1\n")
+
 				return err
 			}
 
 			coins, err := sdk.ParseCoinsNormalized(args[2])
 			if err != nil {
-				fmt.Printf("TEST2\n")
+
 				return err
 			}
-			fmt.Printf("%v TEST3\n", coins)
 
 			msg := &types.MsgSend{
 				FromAddress: clientCtx.GetFromAddress().String(),
@@ -57,7 +56,7 @@ ignored as it is implied from [from_key_or_address].`,
 				Amount:      coins,
 			}
 			if err := msg.ValidateBasic(); err != nil {
-				fmt.Printf("TEST4\n")
+
 				return err
 			}
 
@@ -81,13 +80,16 @@ ignored as it is implied from [from_key_or_address].`,
 			cmd.Flags().Set(flags.FlagFrom, args[0])
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
+				fmt.Printf("TEST1\n")
 				return err
 			}
 
 			coins, err := sdk.ParseCoinsNormalized(args[2])
 			if err != nil {
+				fmt.Printf("TEST2\n")
 				return err
 			}
+			fmt.Printf("%v TEST3\n", coins)
 
 			toAddresses := args[1]
 
@@ -110,6 +112,7 @@ ignored as it is implied from [from_key_or_address].`,
 				Outputs: outputs,
 			}
 			if err := msg.ValidateBasic(); err != nil {
+				fmt.Printf("TEST4\n")
 				return err
 			}
 
