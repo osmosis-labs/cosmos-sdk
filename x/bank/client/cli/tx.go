@@ -108,6 +108,7 @@ ignored as it is implied from [from_key_or_address].`,
 					return err
 				}
 				for _, coin := range coins {
+					fmt.Printf("%v coin \n", coin)
 					coinsCombined.Add(coin)
 				}
 				outputs = append(outputs, types.Output{
@@ -120,6 +121,7 @@ ignored as it is implied from [from_key_or_address].`,
 				Address: clientCtx.GetFromAddress().String(),
 				Coins:   coinsCombined,
 			}
+			fmt.Printf("%v coinsCombined \n", coinsCombined)
 
 			msg := &types.MsgMultiSend{
 				Inputs:  []types.Input{input},
