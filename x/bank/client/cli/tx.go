@@ -84,12 +84,12 @@ ignored as it is implied from [from_key_or_address].`,
 				return err
 			}
 
-			coins, err := sdk.ParseCoinsNormalized(args[2])
+			coinsCombined, err := sdk.ParseCoinsNormalized(args[2])
 			if err != nil {
 				fmt.Printf("TEST2\n")
 				return err
 			}
-			fmt.Printf("%v TEST3\n", coins)
+			fmt.Printf("%v TEST3\n", coinsCombined)
 
 			toAddresses := args[1]
 
@@ -97,14 +97,22 @@ ignored as it is implied from [from_key_or_address].`,
 
 			input := types.Input{
 				Address: clientCtx.GetFromAddress().String(),
-				Coins:   coins,
+				Coins:   coinsCombined,
 			}
 			outputs := []types.Output{}
 
-			for i, coin := range coins {
+			coinsString := args[2]
+
+			coinsStringArray := strings.Split(coinsString, ",")
+
+			for i, coinString := range coinsStringArray {
+				coins, err := sdk.ParseCoinsNormalized(coinString)
+				if err != nil {
+					return err
+				}
 				outputs = append(outputs, types.Output{
 					Address: toAddressesArray[i],
-					Coins:   sdk.NewCoins(coin),
+					Coins:   coins,
 				})
 			}
 
