@@ -680,10 +680,11 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		gInfo = sdk.GasInfo{GasWanted: gasWanted, GasUsed: ctx.GasMeter().GasConsumed()}
 	}()
 
-	blockGasConsumed := false
-	// consumeBlockGas makes sure block gas is consumed at most once. It must
-	// happen after tx processing, and must be executed even if tx processing fails.
-	// Hence, we use trick with `defer`.
+	var blockGasConsumed bool
+
+	// Note, consumeBlockGas makes sure block gas is consumed at most once. It
+	// must happen after tx processing, and must be executed even if tx processing
+	// fails. Hence, we use trick with `defer`.
 	consumeBlockGas := func() {
 		if !blockGasConsumed {
 			blockGasConsumed = true
@@ -752,10 +753,15 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		anteEvents = events.ToABCIEvents()
 	}
 
-	// add the tx to the application's mempool
-	if mode == runTxModeCheck && app.mempool != nil {
-		if err = app.mempool.Insert(ctx, tx.(mempool.Tx)); err != nil {
+	if mode == runTxModeCheck {
+		err = app.mempool.Insert(ctx, tx)
+		if err != nil {
 			return gInfo, nil, anteEvents, err
+		}
+	} else if mode == runTxModeDeliver {
+		err = app.mempool.Remove(tx)
+		if err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
+			return gInfo, nil, anteEvents, fmt.Errorf("failed to remove tx from mempool: %w", err)
 		}
 	}
 
@@ -771,7 +777,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	if err == nil {
 		// Run optional postHandlers.
 		//
-		// Note: If the postHandler fails, we also revert the runMsgs state!
+		// Note: If the postHandler fails, we also revert the runMsgs state.
 		if app.postHandler != nil {
 			newCtx, err := app.postHandler(runMsgCtx, tx, mode == runTxModeSimulate)
 			if err != nil {
@@ -786,11 +792,11 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 			consumeBlockGas()
 
 			msCache.Write()
+		}
 
-			if len(anteEvents) > 0 {
-				// append the events in the order of occurrence
-				result.Events = append(anteEvents, result.Events...)
-			}
+		if len(anteEvents) > 0 && (mode == runTxModeDeliver || mode == runTxModeSimulate) {
+			// append the events in the order of occurrence
+			result.Events = append(anteEvents, result.Events...)
 		}
 	}
 
