@@ -915,7 +915,7 @@ func (app *BaseApp) DefaultPrepareProposal() sdk.PrepareProposalHandler {
 
 			// NOTE: runTx was already run in CheckTx which calls mempool.Insert so ideally everything in the pool
 			// should be valid. But some mempool implementations may insert invalid txs, so we check again.
-			_, _, _, _, err = app.runTx(runTxPrepareProposal, bz)
+			_, _, _, err = app.runTx(runTxPrepareProposal, bz)
 			if err != nil {
 				err := app.mempool.Remove(memTx)
 				if err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
@@ -957,7 +957,7 @@ func (app *BaseApp) DefaultProcessProposal() sdk.ProcessProposalHandler {
 				return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_REJECT}
 			}
 
-			_, _, _, _, err = app.runTx(runTxProcessProposal, txBytes)
+			_, _, _, err = app.runTx(runTxProcessProposal, txBytes)
 			if err != nil {
 				return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_REJECT}
 			}
