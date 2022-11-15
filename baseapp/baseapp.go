@@ -1,6 +1,7 @@
 package baseapp
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -64,7 +65,9 @@ type BaseApp struct { // nolint: maligned
 	txEncoder         sdk.TxEncoder   // marshal sdk.Tx into []byte
 	mempool           mempool.Mempool // application-side mempool
 
-	anteHandler     sdk.AnteHandler            // ante handler for fee and auth
+	anteHandler sdk.AnteHandler // ante handler for fee and auth
+	postHandler sdk.AnteHandler // post handler, optional, e.g. for tips
+
 	initChainer     sdk.InitChainer            // initialize state with validators and state blob
 	prepareProposal sdk.PrepareProposalHandler // the handler which runs on ABCI PrepareProposal
 	processProposal sdk.ProcessProposalHandler // the handler which runs on ABCI ProcessProposal
@@ -765,15 +768,29 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	// and we're in DeliverTx. Note, runMsgs will never return a reference to a
 	// Result if any single message fails or does not have a registered Handler.
 	result, err = app.runMsgs(runMsgCtx, msgs, mode)
-	if err == nil && mode == runTxModeDeliver {
-		// When block gas exceeds, it'll panic and won't commit the cached store.
-		consumeBlockGas()
+	if err == nil {
+		// Run optional postHandlers.
+		//
+		// Note: If the postHandler fails, we also revert the runMsgs state!
+		if app.postHandler != nil {
+			newCtx, err := app.postHandler(runMsgCtx, tx, mode == runTxModeSimulate)
+			if err != nil {
+				return gInfo, nil, nil, err
+			}
 
-		msCache.Write()
+			result.Events = append(result.Events, newCtx.EventManager().ABCIEvents()...)
+		}
 
-		if len(anteEvents) > 0 {
-			// append the events in the order of occurrence
-			result.Events = append(anteEvents, result.Events...)
+		if mode == runTxModeDeliver {
+			// When block gas exceeds, it'll panic and won't commit the cached store.
+			consumeBlockGas()
+
+			msCache.Write()
+
+			if len(anteEvents) > 0 {
+				// append the events in the order of occurrence
+				result.Events = append(anteEvents, result.Events...)
+			}
 		}
 	}
 
@@ -858,13 +875,74 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 	}, nil
 }
 
-// DefaultProcessProposal returns the default implementation for processing an ABCI proposal.
+// DefaultPrepareProposal returns the default implementation for processing an
+// ABCI proposal. The application's mempool is enumerated and all valid
+// transactions are added to the proposal.  Transactions are valid if they:
+//
+// 1) Successfully encode to bytes.
+// 2) Are valid (i.e. pass runTx, AnteHandler only)
+//
+// Enumeration is halted once RequestPrepareProposal.MaxBytes of transactions is
+// reached or the mempool is exhausted.
+//
+// Note that step (2) is identical to the validation step performed in
+// DefaultProcessProposal. It is very important that the same validation logic
+// is used in both steps, and applications must ensure that this is the case in
+// non-default handlers.
+func (app *BaseApp) DefaultPrepareProposal() sdk.PrepareProposalHandler {
+	return func(ctx sdk.Context, req abci.RequestPrepareProposal) abci.ResponsePrepareProposal {
+		var (
+			txsBytes  [][]byte
+			byteCount int64
+		)
+
+		iterator := app.mempool.Select(ctx, req.Txs)
+		for iterator != nil {
+			memTx := iterator.Tx()
+
+			bz, err := app.txEncoder(memTx)
+			if err != nil {
+				panic(err)
+			}
+
+			txSize := int64(len(bz))
+
+			// NOTE: runTx was already run in CheckTx which calls mempool.Insert so ideally everything in the pool
+			// should be valid. But some mempool implementations may insert invalid txs, so we check again.
+			_, _, _, _, err = app.runTx(runTxPrepareProposal, bz)
+			if err != nil {
+				err := app.mempool.Remove(memTx)
+				if err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
+					panic(err)
+				}
+				iterator = iterator.Next()
+				continue
+			} else if byteCount += txSize; byteCount <= req.MaxTxBytes {
+				txsBytes = append(txsBytes, bz)
+			} else {
+				break
+			}
+
+			iterator = iterator.Next()
+		}
+
+		return abci.ResponsePrepareProposal{Txs: txsBytes}
+	}
+}
+
+// DefaultProcessProposal returns the default implementation for processing an
+// ABCI proposal.
+//
 // Every transaction in the proposal must pass 2 conditions:
 //
 // 1. The transaction bytes must decode to a valid transaction.
 // 2. The transaction must be valid (i.e. pass runTx, AnteHandler only)
 //
 // If any transaction fails to pass either condition, the proposal is rejected.
+// Note that step (2) is identical to the validation step performed in
+// DefaultPrepareProposal. It is very important that the same validation logic
+// is used in both steps, and applications must ensure that this is the case in
+// non-default handlers.
 func (app *BaseApp) DefaultProcessProposal() sdk.ProcessProposalHandler {
 	return func(ctx sdk.Context, req abci.RequestProcessProposal) abci.ResponseProcessProposal {
 		for _, txBytes := range req.Txs {
@@ -878,6 +956,7 @@ func (app *BaseApp) DefaultProcessProposal() sdk.ProcessProposalHandler {
 				return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_REJECT}
 			}
 		}
+
 		return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_ACCEPT}
 	}
 }

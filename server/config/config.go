@@ -150,6 +150,10 @@ type GRPCConfig struct {
 	// MaxSendMsgSize defines the max message size in bytes the server can send.
 	// The default value is math.MaxInt32.
 	MaxSendMsgSize int `mapstructure:"max-send-msg-size"`
+
+	// Concurrency defines if node queries should be done in parallel.
+	// The default value is false
+	Concurrency bool `mapstructure:"concurrency"`
 }
 
 // GRPCWebConfig defines configuration for the gRPC-web server.
@@ -245,6 +249,7 @@ func DefaultConfig() *Config {
 			Address:        DefaultGRPCAddress,
 			MaxRecvMsgSize: DefaultGRPCMaxRecvMsgSize,
 			MaxSendMsgSize: DefaultGRPCMaxSendMsgSize,
+			Concurrency:    false,
 		},
 		Rosetta: RosettaConfig{
 			Enable:     false,
@@ -266,11 +271,18 @@ func DefaultConfig() *Config {
 }
 
 // GetConfig returns a fully parsed Config object.
-func GetConfig(v *viper.Viper) Config {
-	globalLabelsRaw := v.Get("telemetry.global-labels").([]interface{})
+func GetConfig(v *viper.Viper) (Config, error) {
+	globalLabelsRaw, ok := v.Get("telemetry.global-labels").([]interface{})
+	if !ok {
+		return Config{}, fmt.Errorf("failed to parse global-labels config")
+	}
+
 	globalLabels := make([][]string, 0, len(globalLabelsRaw))
-	for _, glr := range globalLabelsRaw {
-		labelsRaw := glr.([]interface{})
+	for idx, glr := range globalLabelsRaw {
+		labelsRaw, ok := glr.([]interface{})
+		if !ok {
+			return Config{}, fmt.Errorf("failed to parse global label number %d from config", idx)
+		}
 		if len(labelsRaw) == 2 {
 			globalLabels = append(globalLabels, []string{labelsRaw[0].(string), labelsRaw[1].(string)})
 		}
@@ -321,6 +333,7 @@ func GetConfig(v *viper.Viper) Config {
 			Address:        v.GetString("grpc.address"),
 			MaxRecvMsgSize: v.GetInt("grpc.max-recv-msg-size"),
 			MaxSendMsgSize: v.GetInt("grpc.max-send-msg-size"),
+			Concurrency:    v.GetBool("grpc.concurrency"),
 		},
 		GRPCWeb: GRPCWebConfig{
 			Enable:           v.GetBool("grpc-web.enable"),
@@ -331,7 +344,7 @@ func GetConfig(v *viper.Viper) Config {
 			SnapshotInterval:   v.GetUint64("state-sync.snapshot-interval"),
 			SnapshotKeepRecent: v.GetUint32("state-sync.snapshot-keep-recent"),
 		},
-	}
+	}, nil
 }
 
 // ValidateBasic returns an error if min-gas-prices field is empty in BaseConfig. Otherwise, it returns nil.
