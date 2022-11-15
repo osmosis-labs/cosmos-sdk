@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"testing"
 	"time"
@@ -317,7 +318,7 @@ func TestAddr(addr string, bech string) (sdk.AccAddress, error) {
 // CheckBalance checks the balance of an account.
 func CheckBalance(t *testing.T, app *SimApp, addr sdk.AccAddress, balances sdk.Coins) {
 	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	require.True(t, balances.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
+	require.Equal(t, balances.String(), app.BankKeeper.GetAllBalances(ctxCheck, addr).String())
 }
 
 // SignCheckDeliver checks a generated signed transaction and simulates a
@@ -330,6 +331,7 @@ func SignCheckDeliver(
 ) (sdk.GasInfo, *sdk.Result, error) {
 
 	tx, err := helpers.GenTx(
+		rand.New(rand.NewSource(time.Now().UnixNano())),
 		txCfg,
 		msgs,
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)},
@@ -380,6 +382,7 @@ func GenSequenceOfTxs(txGen client.TxConfig, msgs []sdk.Msg, accNums []uint64, i
 	var err error
 	for i := 0; i < numToGenerate; i++ {
 		txs[i], err = helpers.GenTx(
+			rand.New(rand.NewSource(time.Now().UnixNano())),
 			txGen,
 			msgs,
 			sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)},
