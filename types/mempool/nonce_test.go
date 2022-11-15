@@ -188,8 +188,7 @@ func (s *MempoolTestSuite) TestTxOrder() {
 			// create test txs and insert into mempool
 			for i, ts := range tt.txs {
 				tx := testTx{id: i, priority: int64(ts.p), nonce: uint64(ts.n), address: ts.a}
-				c := ctx.WithPriority(tx.priority)
-				err := pool.Insert(c, tx)
+				err := pool.Insert(ctx, tx)
 				require.NoError(t, err)
 			}
 
