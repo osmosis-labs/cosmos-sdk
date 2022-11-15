@@ -76,6 +76,21 @@ func SetSnapshot(snapshotStore *snapshots.Store, opts snapshottypes.SnapshotOpti
 	return func(app *BaseApp) { app.SetSnapshot(snapshotStore, opts) }
 }
 
+// SetPrepareProposal sets the PrepareProposal handler on the BaseApp.
+func SetPrepareProposal(handler sdk.PrepareProposalHandler) func(*BaseApp) {
+	return func(app *BaseApp) { app.SetPrepareProposal(handler) }
+}
+
+// SetProcessProposal sets the ProcessProposal handler on the BaseApp.
+func SetProcessProposal(handler sdk.ProcessProposalHandler) func(*BaseApp) {
+	return func(app *BaseApp) { app.SetProcessProposal(handler) }
+}
+
+// SetMempool sets the mempool on BaseApp.
+func SetMempool(mempool mempool.Mempool) func(*BaseApp) {
+	return func(app *BaseApp) { app.SetMempool(mempool) }
+}
+
 func (app *BaseApp) SetName(name string) {
 	if app.sealed {
 		panic("SetName() on sealed BaseApp")
@@ -246,4 +261,32 @@ func (app *BaseApp) SetMempool(m mempool.Mempool) {
 	}
 
 	app.mempool = m
+}
+
+// SetTxEncoder sets the TxEncoder if it wasn't provided in the BaseApp
+// constructor.
+func (app *BaseApp) SetTxEncoder(txEncoder sdk.TxEncoder) {
+	if app.sealed {
+		panic("SetTxEncoder() on sealed BaseApp")
+	}
+
+	app.txEncoder = txEncoder
+}
+
+// SetPrepareProposal sets the prepare proposal function for the BaseApp.
+func (app *BaseApp) SetPrepareProposal(handler sdk.PrepareProposalHandler) {
+	if app.sealed {
+		panic("SetPrepareProposal() on sealed BaseApp")
+	}
+
+	app.prepareProposal = handler
+}
+
+// SetProcessProposal sets the process proposal function for the BaseApp.
+func (app *BaseApp) SetProcessProposal(handler sdk.ProcessProposalHandler) {
+	if app.sealed {
+		panic("SetProcessProposal() on sealed BaseApp")
+	}
+
+	app.processProposal = handler
 }
