@@ -39,7 +39,7 @@ func (t testPubKey) Equals(key cryptotypes.PubKey) bool { panic("implement me") 
 
 func (t testPubKey) Type() string { panic("implement me") }
 
-func (msg *kvstoreTx) GetSignaturesV2() (res []txsigning.SignatureV2, err error) {
+func (msg kvstoreTx) GetSignaturesV2() (res []txsigning.SignatureV2, err error) {
 	res = append(res, txsigning.SignatureV2{
 		PubKey:   testPubKey{address: msg.address},
 		Data:     nil,
@@ -53,22 +53,22 @@ func (msg *kvstoreTx) VerifySignature(msgByte []byte, sig []byte) bool {
 	panic("implement me")
 }
 
-func (msg *kvstoreTx) Address() cryptotypes.Address {
+func (msg kvstoreTx) Address() cryptotypes.Address {
 	panic("implement me")
 }
 
-func (msg *kvstoreTx) Bytes() []byte {
+func (msg kvstoreTx) Bytes() []byte {
 	panic("implement me")
 }
 
-func (msg *kvstoreTx) Equals(key cryptotypes.PubKey) bool {
+func (msg kvstoreTx) Equals(key cryptotypes.PubKey) bool {
 	panic("implement me")
 }
 
 // dummy implementation of proto.Message
-func (msg *kvstoreTx) Reset()         {}
-func (msg *kvstoreTx) String() string { return "TODO" }
-func (msg *kvstoreTx) ProtoMessage()  {}
+func (msg kvstoreTx) Reset()         {}
+func (msg kvstoreTx) String() string { return "TODO" }
+func (msg kvstoreTx) ProtoMessage()  {}
 
 var (
 	_ sdk.Tx                  = &kvstoreTx{}
@@ -87,28 +87,28 @@ func NewTx(key, value string, accAddress sdk.AccAddress) *kvstoreTx {
 	}
 }
 
-func (tx *kvstoreTx) Type() string {
+func (tx kvstoreTx) Type() string {
 	return "kvstore_tx"
 }
 
-func (tx *kvstoreTx) GetMsgs() []sdk.Msg {
-	return []sdk.Msg{tx}
+func (tx kvstoreTx) GetMsgs() []sdk.Msg {
+	return []sdk.Msg{&tx}
 }
 
-func (tx *kvstoreTx) GetSignBytes() []byte {
+func (tx kvstoreTx) GetSignBytes() []byte {
 	return tx.bytes
 }
 
 // Should the app be calling this? Or only handlers?
-func (tx *kvstoreTx) ValidateBasic() error {
+func (tx kvstoreTx) ValidateBasic() error {
 	return nil
 }
 
-func (tx *kvstoreTx) GetSigners() []sdk.AccAddress {
+func (tx kvstoreTx) GetSigners() []sdk.AccAddress {
 	return nil
 }
 
-func (tx *kvstoreTx) GetPubKeys() ([]cryptotypes.PubKey, error) { panic("GetPubKeys not implemented") }
+func (tx kvstoreTx) GetPubKeys() ([]cryptotypes.PubKey, error) { panic("GetPubKeys not implemented") }
 
 // takes raw transaction bytes and decodes them into an sdk.Tx. An sdk.Tx has
 // all the signatures and can be used to authenticate.
