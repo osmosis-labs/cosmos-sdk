@@ -28,6 +28,8 @@ const (
 	runTxModeReCheck                   // Recheck a (pending) transaction after a commit
 	runTxModeSimulate                  // Simulate a transaction
 	runTxModeDeliver                   // Deliver a transaction
+	runTxPrepareProposal
+	runTxProcessProposal
 )
 
 var (
@@ -59,15 +61,18 @@ type BaseApp struct { // nolint: maligned
 	msgServiceRouter  *MsgServiceRouter    // router for redirecting Msg service messages
 	interfaceRegistry types.InterfaceRegistry
 	txDecoder         sdk.TxDecoder   // unmarshal []byte into sdk.Tx
+	txEncoder         sdk.TxEncoder   // marshal sdk.Tx into []byte
 	mempool           mempool.Mempool // application-side mempool
 
-	anteHandler    sdk.AnteHandler  // ante handler for fee and auth
-	initChainer    sdk.InitChainer  // initialize state with validators and state blob
-	beginBlocker   sdk.BeginBlocker // logic to run before any txs
-	endBlocker     sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
-	addrPeerFilter sdk.PeerFilter   // filter peers by address and port
-	idPeerFilter   sdk.PeerFilter   // filter peers by node ID
-	fauxMerkleMode bool             // if true, IAVL MountStores uses MountStoresDB for simulation speed.
+	anteHandler     sdk.AnteHandler            // ante handler for fee and auth
+	initChainer     sdk.InitChainer            // initialize state with validators and state blob
+	prepareProposal sdk.PrepareProposalHandler // the handler which runs on ABCI PrepareProposal
+	processProposal sdk.ProcessProposalHandler // the handler which runs on ABCI ProcessProposal
+	beginBlocker    sdk.BeginBlocker           // logic to run before any txs
+	endBlocker      sdk.EndBlocker             // logic to run after all txs, and to determine valset changes
+	addrPeerFilter  sdk.PeerFilter             // filter peers by address and port
+	idPeerFilter    sdk.PeerFilter             // filter peers by node ID
+	fauxMerkleMode  bool                       // if true, IAVL MountStores uses MountStoresDB for simulation speed.
 
 	// manages snapshots, i.e. dumps of app state at certain intervals
 	snapshotManager *snapshots.Manager
@@ -76,8 +81,10 @@ type BaseApp struct { // nolint: maligned
 	//
 	// checkState is set on InitChain and reset on Commit
 	// deliverState is set on InitChain and BeginBlock and set to nil on Commit
-	checkState   *state // for CheckTx
-	deliverState *state // for DeliverTx
+	checkState           *state // for CheckTx
+	deliverState         *state // for DeliverTx
+	processProposalState *state // for ProcessProposal
+	prepareProposalState *state // for PrepareProposal
 
 	// an inter-block write-through cache provided to the context during deliverState
 	interBlockCache sdk.MultiStorePersistentCache
@@ -157,6 +164,18 @@ func NewBaseApp(
 
 	for _, option := range options {
 		option(app)
+	}
+
+	if app.mempool == nil {
+		app.SetMempool(mempool.NewNonceMempool())
+	}
+
+	if app.prepareProposal == nil {
+		app.SetPrepareProposal(app.DefaultPrepareProposal())
+	}
+
+	if app.processProposal == nil {
+		app.SetProcessProposal(app.DefaultProcessProposal())
 	}
 
 	if app.interBlockCache != nil {
@@ -308,8 +327,16 @@ func (app *BaseApp) init() error {
 		panic("cannot call initFromMainStore: baseapp already sealed")
 	}
 
-	// needed for the export command which inits from store but never calls initchain
-	app.setCheckState(tmproto.Header{})
+	emptyHeader := tmproto.Header{}
+
+	// Needed for the export command which inits from store but never calls
+	// InitChain.
+	app.setCheckState(emptyHeader)
+
+	// Needed for ABCI Replay Blocks mode which calls Prepare/Process proposal
+	// (InitChain is not called).
+	app.setPrepareProposalState(emptyHeader)
+	app.setProcessProposalState(emptyHeader)
 
 	appVersion, err := app.GetAppVersion()
 	if err != nil {
@@ -319,6 +346,7 @@ func (app *BaseApp) init() error {
 	if err := app.SetAppVersion(appVersion); err != nil {
 		return err
 	}
+
 	app.Seal()
 
 	rms, ok := app.cms.(*rootmulti.Store)
@@ -379,6 +407,28 @@ func (app *BaseApp) Seal() { app.sealed = true }
 
 // IsSealed returns true if the BaseApp is sealed and false otherwise.
 func (app *BaseApp) IsSealed() bool { return app.sealed }
+
+// setPrepareProposalState sets the BaseApp's prepareProposalState with a
+// branched multi-store (i.e. a CacheMultiStore) and a new Context with the
+// same multi-store branch, and provided header. It is set on InitChain and Commit.
+func (app *BaseApp) setPrepareProposalState(header tmproto.Header) {
+	ms := app.cms.CacheMultiStore()
+	app.prepareProposalState = &state{
+		ms:  ms,
+		ctx: sdk.NewContext(ms, header, false, app.logger),
+	}
+}
+
+// setProcessProposalState sets the BaseApp's processProposalState with a
+// branched multi-store (i.e. a CacheMultiStore) and a new Context with the
+// same multi-store branch, and provided header. It is set on InitChain and Commit.
+func (app *BaseApp) setProcessProposalState(header tmproto.Header) {
+	ms := app.cms.CacheMultiStore()
+	app.processProposalState = &state{
+		ms:  ms,
+		ctx: sdk.NewContext(ms, header, false, app.logger),
+	}
+}
 
 // setCheckState sets the BaseApp's checkState with a branched multi-store
 // (i.e. a CacheMultiStore) and a new Context with the same multi-store branch,
@@ -540,20 +590,32 @@ func validateBasicTxMsgs(msgs []sdk.Msg) error {
 // Returns the application's deliverState if app is in runTxModeDeliver,
 // otherwise it returns the application's checkstate.
 func (app *BaseApp) getState(mode runTxMode) *state {
-	if mode == runTxModeDeliver {
+	switch mode {
+	case runTxModeDeliver:
 		return app.deliverState
-	}
 
-	return app.checkState
+	case runTxPrepareProposal:
+		return app.prepareProposalState
+
+	case runTxProcessProposal:
+		return app.processProposalState
+
+	default:
+		return app.checkState
+	}
 }
 
 // retrieve the context for the tx w/ txBytes and other memoized values.
 func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) sdk.Context {
-	ctx := app.getState(mode).ctx.
-		WithTxBytes(txBytes).
-		WithVoteInfos(app.voteInfos)
+	modeState := app.getState(mode)
+	if modeState == nil {
+		panic(fmt.Sprintf("state is nil for mode %v", mode))
+	}
 
-	ctx = ctx.WithConsensusParams(app.GetConsensusParams(ctx))
+	ctx := modeState.ctx.
+		WithTxBytes(txBytes).
+		WithVoteInfos(app.voteInfos).
+		WithConsensusParams(app.GetConsensusParams(modeState.ctx))
 
 	if mode == runTxModeReCheck {
 		ctx = ctx.WithIsReCheckTx(true)
@@ -794,4 +856,28 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 		Log:    strings.TrimSpace(msgLogs.String()),
 		Events: events.ToABCIEvents(),
 	}, nil
+}
+
+// DefaultProcessProposal returns the default implementation for processing an ABCI proposal.
+// Every transaction in the proposal must pass 2 conditions:
+//
+// 1. The transaction bytes must decode to a valid transaction.
+// 2. The transaction must be valid (i.e. pass runTx, AnteHandler only)
+//
+// If any transaction fails to pass either condition, the proposal is rejected.
+func (app *BaseApp) DefaultProcessProposal() sdk.ProcessProposalHandler {
+	return func(ctx sdk.Context, req abci.RequestProcessProposal) abci.ResponseProcessProposal {
+		for _, txBytes := range req.Txs {
+			_, err := app.txDecoder(txBytes)
+			if err != nil {
+				return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_REJECT}
+			}
+
+			_, _, _, _, err = app.runTx(runTxProcessProposal, txBytes)
+			if err != nil {
+				return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_REJECT}
+			}
+		}
+		return abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_ACCEPT}
+	}
 }
