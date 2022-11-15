@@ -1,12 +1,16 @@
 package mock
 
 import (
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/tendermint/tendermint/types"
+
+	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 )
 
 // TestInitApp makes sure we can initialize this thing without an error
@@ -53,7 +57,11 @@ func TestDeliverTx(t *testing.T) {
 
 	key := "my-special-key"
 	value := "top-secret-data!!"
-	tx := NewTx(key, value)
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomAccounts := simtypes.RandomAccounts(r, 1)
+
+	tx := NewTx(key, value, randomAccounts[0].Address)
 	txBytes := tx.GetSignBytes()
 
 	header := tmproto.Header{
