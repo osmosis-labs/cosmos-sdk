@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
+	"github.com/cosmos/gogoproto/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/log"
@@ -80,7 +80,7 @@ func (c Context) ConsensusParams() *abci.ConsensusParams {
 
 // create a new context
 func NewContext(ms MultiStore, header tmproto.Header, isCheckTx bool, logger log.Logger) Context {
-	// https://github.com/gogo/protobuf/issues/519
+	// https://github.com/cosmos/gogoproto/issues/519
 	header.Time = header.Time.UTC()
 	return Context{
 		ctx:          context.Background(),
@@ -109,7 +109,7 @@ func (c Context) WithMultiStore(ms MultiStore) Context {
 
 // WithBlockHeader returns a Context with an updated tendermint block header in UTC time.
 func (c Context) WithBlockHeader(header tmproto.Header) Context {
-	// https://github.com/gogo/protobuf/issues/519
+	// https://github.com/cosmos/gogoproto/issues/519
 	header.Time = header.Time.UTC()
 	c.header = header
 	return c
@@ -127,7 +127,7 @@ func (c Context) WithHeaderHash(hash []byte) Context {
 // WithBlockTime returns a Context with an updated tendermint block header time in UTC time
 func (c Context) WithBlockTime(newTime time.Time) Context {
 	newHeader := c.BlockHeader()
-	// https://github.com/gogo/protobuf/issues/519
+	// https://github.com/cosmos/gogoproto/issues/519
 	newHeader.Time = newTime.UTC()
 	return c.WithBlockHeader(newHeader)
 }
@@ -229,9 +229,12 @@ func (c Context) IsZero() bool {
 
 // WithValue is deprecated, provided for backwards compatibility
 // Please use
-//     ctx = ctx.WithContext(context.WithValue(ctx.Context(), key, false))
+//
+//	ctx = ctx.WithContext(context.WithValue(ctx.Context(), key, false))
+//
 // instead of
-//     ctx = ctx.WithValue(key, false)
+//
+//	ctx = ctx.WithValue(key, false)
 func (c Context) WithValue(key, value interface{}) Context {
 	c.ctx = context.WithValue(c.ctx, key, value)
 	return c
@@ -239,9 +242,12 @@ func (c Context) WithValue(key, value interface{}) Context {
 
 // Value is deprecated, provided for backwards compatibility
 // Please use
-//     ctx.Context().Value(key)
+//
+//	ctx.Context().Value(key)
+//
 // instead of
-//     ctx.Value(key)
+//
+//	ctx.Value(key)
 func (c Context) Value(key interface{}) interface{} {
 	return c.ctx.Value(key)
 }
