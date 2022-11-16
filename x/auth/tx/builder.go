@@ -8,6 +8,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -35,6 +36,7 @@ var (
 	_ client.TxBuilder           = &wrapper{}
 	_ ante.HasExtensionOptionsTx = &wrapper{}
 	_ ExtensionOptionsTxBuilder  = &wrapper{}
+	_ mempool.Tx                 = &wrapper{}
 )
 
 // ExtensionOptionsTxBuilder defines a TxBuilder that can also set extensions.
@@ -62,6 +64,14 @@ func (w *wrapper) GetMsgs() []sdk.Msg {
 
 func (w *wrapper) ValidateBasic() error {
 	return w.tx.ValidateBasic()
+}
+
+func (w *wrapper) Size() int {
+	panic("not implemented")
+}
+
+func (w *wrapper) Hash() [32]byte {
+	panic("not implemented")
 }
 
 func (w *wrapper) getBodyBytes() []byte {
