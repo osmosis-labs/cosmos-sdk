@@ -112,7 +112,10 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 				goCtx = context.WithValue(goCtx, sdk.SdkContextKey, ctx)
 				return handler(goCtx, req)
 			}
+			ctx.Logger().Debug("(msg service router) beginning to execute the following Msg")
+			ctx.Logger().Debug(req.String())
 			if err := req.ValidateBasic(); err != nil {
+				ctx.Logger().Debug("(msg service router) Msg failed validate basic")
 				if mm, ok := req.(getter1); ok {
 					if !mm.GetAmount().Amount.IsZero() {
 						return nil, err
@@ -141,6 +144,7 @@ func (msr *MsgServiceRouter) RegisterService(sd *grpc.ServiceDesc, handler inter
 				return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "Expecting proto.Message, got %T", resMsg)
 			}
 
+			ctx.Logger().Debug("(msg service router) Finished executing msg")
 			return sdk.WrapServiceResult(ctx, resMsg, err)
 		}
 	}
