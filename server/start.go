@@ -42,6 +42,7 @@ const (
 	flagTransport          = "transport"
 	flagTraceStore         = "trace-store"
 	flagCPUProfile         = "cpu-profile"
+	flagSDKPprofAddr       = "pprof-address"
 	FlagMinGasPrices       = "minimum-gas-prices"
 	FlagHaltHeight         = "halt-height"
 	FlagHaltTime           = "halt-time"
@@ -147,6 +148,8 @@ which accepts a path for the resulting pprof file.
 	cmd.Flags().Uint64(FlagHaltTime, 0, "Minimum block time (in Unix seconds) at which to gracefully halt the chain and shutdown the node")
 	cmd.Flags().Bool(FlagInterBlockCache, true, "Enable inter-block caching")
 	cmd.Flags().String(flagCPUProfile, "", "Enable CPU profiling and write to the provided file")
+	cmd.Flags().String(flagSDKPprofAddr, "", "Enable SDK specific pprof server that starts independtly from Tendermint."+
+		"The format is <address>:<port>. Set to \"default\" for configuration of localhost:6061 to be applied.")
 	cmd.Flags().Bool(FlagTrace, false, "Provide full stack traces for errors in ABCI Log")
 	cmd.Flags().String(FlagPruning, pruningtypes.PruningOptionDefault, "Pruning strategy (default|nothing|everything|custom)")
 	cmd.Flags().Uint64(FlagPruningKeepRecent, 0, "Number of recent heights to keep on disk (ignored if pruning is not 'custom')")
@@ -213,6 +216,20 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 	cfg := ctx.Config
 	home := cfg.RootDir
 	var cpuProfileCleanup func()
+
+	if sdkPprofAddr := ctx.Viper.GetString(flagSDKPprofAddr); sdkPprofAddr != "" {
+		go func() {
+			if sdkPprofAddr == "default" {
+				sdkPprofAddr = "localhost:6061"
+			}
+			ctx.Logger.Info("Starting pprof server", "laddr", sdkPprofAddr)
+
+			err := http.ListenAndServe(sdkPprofAddr, nil)
+			if err != nil {
+				ctx.Logger.Error("pprof server error", "err", err)
+			}
+		}()
+	}
 
 	if cpuProfile := ctx.Viper.GetString(flagCPUProfile); cpuProfile != "" {
 		f, err := os.Create(cpuProfile)
