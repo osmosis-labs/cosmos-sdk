@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"reflect"
 	"sort"
@@ -169,6 +170,10 @@ func (store *Store) CacheWrapWithListeners(storeKey types.StoreKey, listeners []
 //----------------------------------------
 // Iteration
 
+var nextIteratorId int = 1
+var iteratorIdMap = map[types.Iterator]int{}
+var iteratorIdMtx = sync.Mutex{}
+
 // Iterator implements types.KVStore.
 func (store *Store) Iterator(start, end []byte) types.Iterator {
 	return store.iterator(start, end, true)
@@ -180,8 +185,11 @@ func (store *Store) ReverseIterator(start, end []byte) types.Iterator {
 }
 
 func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
+	expectedId := nextIteratorId
+	fmt.Printf("creating iterator with id %v\n", expectedId)
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
+	fmt.Printf("got past iterator lock with expected id %v, next iterator id %v\n", expectedId, nextIteratorId)
 
 	var parent, cache types.Iterator
 
@@ -194,7 +202,16 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	store.dirtyItems(start, end)
 	cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
 
-	return newCacheMergeIterator(parent, cache, ascending)
+	iter := newCacheMergeIterator(parent, cache, ascending)
+	setIteratorId(iter)
+	return iter
+}
+
+func setIteratorId(iter types.Iterator) {
+	iteratorIdMtx.Lock()
+	defer iteratorIdMtx.Unlock()
+	iteratorIdMap[iter] = nextIteratorId
+	nextIteratorId += 1
 }
 
 func findStartIndex(strL []string, startQ string) int {
