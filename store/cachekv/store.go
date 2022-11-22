@@ -221,6 +221,7 @@ func getIteratorIDOnClose(iter types.Iterator) {
 	defer iteratorIdMtx.Unlock()
 	id := iteratorIdMap[iter]
 	fmt.Printf("closing iterator w/ id %v\n", id)
+	iteratorIdMap[iter] = -id
 	printUnclosedIterators()
 }
 
