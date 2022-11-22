@@ -242,8 +242,8 @@ func setIteratorID(iter types.Iterator) {
 func printUnclosedIterators() {
 	unclosedIterators := []int{}
 	for _, value := range iteratorIdMap {
-		if value <= 0 {
-			unclosedIterators = append(unclosedIterators, -value)
+		if value >= 0 {
+			unclosedIterators = append(unclosedIterators, value)
 		}
 	}
 	sort.Ints(unclosedIterators)
