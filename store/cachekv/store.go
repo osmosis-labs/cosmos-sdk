@@ -58,10 +58,10 @@ func (store *Store) GetStoreType() types.StoreType {
 
 // Get implements types.KVStore.
 func (store *Store) Get(key []byte) (value []byte) {
-	fmt.Printf("Calling get key %s\n", hex.EncodeToString(key))
+	// fmt.Printf("Calling get key %s\n", hex.EncodeToString(key))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
-	fmt.Printf("Finish get key %s lock\n", hex.EncodeToString(key))
+	// fmt.Printf("Finish get key %s lock\n", hex.EncodeToString(key))
 
 	types.AssertValidKey(key)
 
