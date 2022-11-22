@@ -23,8 +23,8 @@ func newMemIterator(start, end []byte, items *dbm.MemDB, deleted map[string]stru
 	var iter types.Iterator
 	var err error
 
+	fmt.Println("Creating a memDb iterator")
 	if ascending {
-		fmt.Println("Creating a parent iterator")
 		iter, err = items.Iterator(start, end)
 	} else {
 		iter, err = items.ReverseIterator(start, end)

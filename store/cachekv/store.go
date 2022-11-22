@@ -202,6 +202,7 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 
 	var parent, cache types.Iterator
 
+	fmt.Println("Creating a parent iterator")
 	if ascending {
 		parent = store.parent.Iterator(start, end)
 	} else {
