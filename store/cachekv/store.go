@@ -221,6 +221,7 @@ func getIteratorIDOnClose(iter types.Iterator) {
 	defer iteratorIdMtx.Unlock()
 	id := iteratorIdMap[iter]
 	fmt.Printf("closing iterator w/ id %v\n", id)
+	printUnclosedIterators()
 }
 
 func setIteratorID(iter types.Iterator) {
@@ -229,6 +230,18 @@ func setIteratorID(iter types.Iterator) {
 	defer iteratorIdMtx.Unlock()
 	iteratorIdMap[iter] = nextIteratorId
 	nextIteratorId += 1
+	printUnclosedIterators()
+}
+
+func printUnclosedIterators() {
+	unclosedIterators := []int{}
+	for _, value := range iteratorIdMap {
+		if value <= 0 {
+			unclosedIterators = append(unclosedIterators, -value)
+		}
+	}
+	sort.Ints(unclosedIterators)
+	fmt.Printf("unclosed iterators %v \n", unclosedIterators)
 }
 
 func findStartIndex(strL []string, startQ string) int {

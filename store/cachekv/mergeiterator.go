@@ -152,6 +152,7 @@ func (iter *cacheMergeIterator) Value() []byte {
 
 // Close implements Iterator
 func (iter *cacheMergeIterator) Close() error {
+	getIteratorIDOnClose(iter)
 	if err := iter.parent.Close(); err != nil {
 		return err
 	}
