@@ -196,6 +196,7 @@ func (store *Store) ReverseIterator(start, end []byte) types.Iterator {
 func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	expectedId := nextIteratorId
 	fmt.Printf("calling lock for iterator creation, cur next id %v\n", expectedId)
+	fmt.Printf("current store mtx address %p", &store.mtx)
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
 	fmt.Printf("got past iterator lock with expected id %v, next iterator id %v\n", expectedId, nextIteratorId)
