@@ -402,6 +402,7 @@ func (store *Store) dirtyItems(start, end []byte) {
 			}
 		}
 	}
+	fmt.Printf("doing %v dirty items writes\n", len(unsorted))
 	store.clearUnsortedCacheSubset(unsorted)
 }
 
