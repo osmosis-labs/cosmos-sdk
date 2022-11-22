@@ -208,9 +208,13 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	} else {
 		parent = store.parent.ReverseIterator(start, end)
 	}
+	fmt.Println("Finished creating a parent iterator")
 
 	store.dirtyItems(start, end)
+
+	fmt.Println("Creating a mem iterator")
 	cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
+	fmt.Println("Finished creating a mem iterator")
 
 	iter := newCacheMergeIterator(parent, cache, ascending)
 	setIteratorID(iter)
