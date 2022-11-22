@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"reflect"
@@ -57,10 +58,10 @@ func (store *Store) GetStoreType() types.StoreType {
 
 // Get implements types.KVStore.
 func (store *Store) Get(key []byte) (value []byte) {
-	fmt.Printf("Calling get key %s\n", string(key))
+	fmt.Printf("Calling get key %s\n", hex.EncodeToString(key))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
-	fmt.Printf("Finish get key %s lock\n", string(key))
+	fmt.Printf("Finish get key %s lock\n", hex.EncodeToString(key))
 
 	types.AssertValidKey(key)
 
@@ -77,10 +78,10 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 // Set implements types.KVStore.
 func (store *Store) Set(key []byte, value []byte) {
-	fmt.Printf("Calling set key %s\n", string(key))
+	fmt.Printf("Calling set key %s\n", hex.EncodeToString(key))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
-	fmt.Printf("Finish set key %s lock\n", string(key))
+	fmt.Printf("Finish set key %s lock\n", hex.EncodeToString(key))
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
@@ -96,9 +97,11 @@ func (store *Store) Has(key []byte) bool {
 
 // Delete implements types.KVStore.
 func (store *Store) Delete(key []byte) {
+	fmt.Printf("Calling delete key %s\n", hex.EncodeToString(key))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "cachekv", "delete")
+	fmt.Printf("Finish delete key %s lock\n", hex.EncodeToString(key))
 
 	types.AssertValidKey(key)
 	store.setCacheValue(key, nil, true, true)
@@ -106,6 +109,8 @@ func (store *Store) Delete(key []byte) {
 
 // Implements Cachetypes.KVStore.
 func (store *Store) Write() {
+	fmt.Printf("Calling store.Write \n")
+
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "cachekv", "write")
@@ -190,7 +195,7 @@ func (store *Store) ReverseIterator(start, end []byte) types.Iterator {
 
 func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	expectedId := nextIteratorId
-	fmt.Printf("calling lock for iterator creation, cur next id %v, over range [%s, %s]\n", expectedId, string(start), string(end))
+	fmt.Printf("calling lock for iterator creation, cur next id %v\n", expectedId)
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
 	fmt.Printf("got past iterator lock with expected id %v, next iterator id %v\n", expectedId, nextIteratorId)
