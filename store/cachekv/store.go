@@ -203,11 +203,19 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	cache = newMemIterator(start, end, store.sortedCache, store.deleted, ascending)
 
 	iter := newCacheMergeIterator(parent, cache, ascending)
-	setIteratorId(iter)
+	setIteratorID(iter)
 	return iter
 }
 
-func setIteratorId(iter types.Iterator) {
+func getIteratorIDOnClose(iter types.Iterator) {
+	iteratorIdMtx.Lock()
+	defer iteratorIdMtx.Unlock()
+	id := iteratorIdMap[iter]
+	fmt.Printf("closing iterator w/ id %v\n", id)
+}
+
+func setIteratorID(iter types.Iterator) {
+	fmt.Println("incrementing iterator id")
 	iteratorIdMtx.Lock()
 	defer iteratorIdMtx.Unlock()
 	iteratorIdMap[iter] = nextIteratorId
