@@ -57,8 +57,10 @@ func (store *Store) GetStoreType() types.StoreType {
 
 // Get implements types.KVStore.
 func (store *Store) Get(key []byte) (value []byte) {
+	fmt.Printf("Calling get key %s\n", string(key))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
+	fmt.Printf("Finish get key %s lock\n", string(key))
 
 	types.AssertValidKey(key)
 
@@ -75,8 +77,10 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 // Set implements types.KVStore.
 func (store *Store) Set(key []byte, value []byte) {
+	fmt.Printf("Calling set key %s\n", string(key))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
+	fmt.Printf("Finish set key %s lock\n", string(key))
 
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
@@ -186,7 +190,7 @@ func (store *Store) ReverseIterator(start, end []byte) types.Iterator {
 
 func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 	expectedId := nextIteratorId
-	fmt.Printf("creating iterator with id %v\n", expectedId)
+	fmt.Printf("calling lock for iterator creation, cur next id %v, over range [%s, %s]\n", expectedId, string(start), string(end))
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
 	fmt.Printf("got past iterator lock with expected id %v, next iterator id %v\n", expectedId, nextIteratorId)
