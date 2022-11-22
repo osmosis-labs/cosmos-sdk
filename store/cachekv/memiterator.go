@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"fmt"
 
 	dbm "github.com/tendermint/tm-db"
 
@@ -23,6 +24,7 @@ func newMemIterator(start, end []byte, items *dbm.MemDB, deleted map[string]stru
 	var err error
 
 	if ascending {
+		fmt.Println("Creating a parent iterator")
 		iter, err = items.Iterator(start, end)
 	} else {
 		iter, err = items.ReverseIterator(start, end)
