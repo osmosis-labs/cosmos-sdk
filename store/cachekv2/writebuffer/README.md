@@ -1,11 +1,24 @@
 # Write Buffer
 
-This module implements a simple write buffer, satisfying the current cosmos iteration API.
-We make a btree map of KV pairs that we write to.
-All reads are reads off the write buffer, this has no notion of parents.
+This module implements a dead simple write buffer.
+This only buffers writes, and reads only go to this buffer.
+The goal of this is to only store delta's of whats written over.
+There is no notion of a "parent", beyond a function to allow writing the write buffer into any other store.
 
 There are no mutexes here, its up to a caller to set concurrency guidelines.
 The API for reads and writes here, use `key` represented as a string.
+
+This is NOT compatible with CacheKV store v1, or the existing store semantics.
+This is because the current design of the SDK allows iterator invalidation,
+a primary source of single threaded concurrency issues.
+(And in fact the straw that broke the camel's back triggering this rewrite)
+
+Issues are that namely during iterator creation you can:
+
+* Always mutate what your iterating over (no iter_mut vs iter separation)
+* Delete your current entry during an iterator call (because theres no DeleteRange API)
+* New writes & deletes (even into the range your iterating over), that just don't get added into your iterator
+    * The way this is designed, can also lead to deadlocks / result incorrectness if multiple iterators exist in parallel
 
 ## Restrictions
 

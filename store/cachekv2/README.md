@@ -13,9 +13,21 @@ The core goals the CacheKVStore seeks to solve are:
 We build this as two stores, one for "dirty write storage", and a second for read caching.
 We then make a default constructor that creates both.
 
+This is NOT compatible with CacheKV store v1, or the existing store semantics.
+This is because the current design of the SDK allows for (and actively abuses) iterator invalidation,
+a primary source of single threaded concurrency issues.
+(This is in fact the straw that broke the camel's back triggering this rewrite)
+
+Issues are that namely during iterator creation you can:
+
+* Always mutate what your iterating over (no iter_mut vs iter separation)
+* Delete your current entry during an iterator call (because theres no DeleteRange API)
+* New writes & deletes (even into the range your iterating over), that just don't get added into your iterator
+    * The way this is designed, can also lead to deadlocks / result incorrectness if multiple iterators exist in parallel
+
 ## Intended later changes
 
-API breaks are needed for these, but would like:
+More API breaks are needed for these, but would like:
 
 * Express separate cache retention policies for:
     * One-off read caching (e.g. only LRU cache for 1000 entries)
@@ -24,4 +36,4 @@ API breaks are needed for these, but would like:
 
 An SDK design choice that should happen is:
 
-* BeginBlock and EndBlock should not have the write buffer enabled, and should use a different cache for minimal LRU's on reads.
+* BeginBlock and EndBlock should not have the write buffer enabled, and should use a different cache for minimal LRU's on reads

@@ -69,6 +69,10 @@ func (wb *WriteBuffer) WriteTo(parent types.KVStore) {
 //----------------------------------------
 // Iteration
 
+//
+type wbIterator struct {
+}
+
 // Iterator implements types.KVStore.
 func (wb *WriteBuffer) Iterator(start, end []byte) types.Iterator {
 	var a types.Iterator
