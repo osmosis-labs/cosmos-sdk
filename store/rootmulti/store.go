@@ -49,6 +49,7 @@ type Store struct {
 	logger         log.Logger
 	lastCommitInfo *types.CommitInfo
 	pruningOpts    types.PruningOptions
+	iavlCacheSize  int
 	storesParams   map[types.StoreKey]storeParams
 	stores         map[types.StoreKey]types.CommitKVStore
 	keysByName     map[string]types.StoreKey
@@ -73,13 +74,14 @@ var (
 // LoadVersion must be called.
 func NewStore(db dbm.DB, logger log.Logger) *Store {
 	return &Store{
-		db:           db,
-		logger:       logger,
-		pruningOpts:  types.PruneNothing,
-		storesParams: make(map[types.StoreKey]storeParams),
-		stores:       make(map[types.StoreKey]types.CommitKVStore),
-		keysByName:   make(map[string]types.StoreKey),
-		pruneHeights: make([]int64, 0),
+		db:            db,
+		logger:        logger,
+		iavlCacheSize: iavl.DefaultIAVLCacheSize,
+		pruningOpts:   types.PruneNothing,
+		storesParams:  make(map[types.StoreKey]storeParams),
+		stores:        make(map[types.StoreKey]types.CommitKVStore),
+		keysByName:    make(map[string]types.StoreKey),
+		pruneHeights:  make([]int64, 0),
 	}
 }
 
@@ -93,6 +95,10 @@ func (rs *Store) GetPruning() types.PruningOptions {
 // LoadLatestVersion performs a no-op as the stores aren't mounted yet.
 func (rs *Store) SetPruning(pruningOpts types.PruningOptions) {
 	rs.pruningOpts = pruningOpts
+}
+
+func (rs *Store) SetIAVLCacheSize(cacheSize int) {
+	rs.iavlCacheSize = cacheSize
 }
 
 // SetLazyLoading sets if the iavl store should be loaded lazily or not
