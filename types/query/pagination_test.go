@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-kit/log"
 	"github.com/stretchr/testify/suite"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -217,7 +218,7 @@ func setupTest() (*simapp.SimApp, sdk.Context, codec.Marshaler) {
 	appCodec := app.AppCodec()
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger())
 
 	ms.LoadLatestVersion()
 

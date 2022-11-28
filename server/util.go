@@ -263,7 +263,7 @@ func AddCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator type
 
 	rootCmd.AddCommand(
 		startCmd,
-		UnsafeResetAllCmd(),
+		//		UnsafeResetAllCmd(),
 		flags.LineBreak,
 		tendermintCmd,
 		ExportCmd(appExport, defaultNodeHome),

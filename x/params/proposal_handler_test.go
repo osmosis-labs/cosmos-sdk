@@ -65,7 +65,7 @@ func newTestInput(t *testing.T) testInput {
 	proposal.RegisterLegacyAminoCodec(cdc)
 
 	db := dbm.NewMemDB()
-	cms := store.NewCommitMultiStore(db)
+	cms := store.NewCommitMultiStore(db, log.NewNopLogger())
 
 	keyParams := sdk.NewKVStoreKey("params")
 	tKeyParams := sdk.NewTransientStoreKey("transient_params")
