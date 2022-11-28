@@ -142,7 +142,7 @@ func NewBaseApp(
 		logger:           logger,
 		name:             name,
 		db:               db,
-		cms:              store.NewCommitMultiStore(db),
+		cms:              store.NewCommitMultiStore(db, logger),
 		storeLoader:      DefaultStoreLoader,
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),

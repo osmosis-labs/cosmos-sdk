@@ -28,7 +28,7 @@ func TestContextTestSuite(t *testing.T) {
 
 func (s *contextTestSuite) defaultContext(key types.StoreKey) types.Context {
 	db := dbm.NewMemDB()
-	cms := store.NewCommitMultiStore(db)
+	cms := store.NewCommitMultiStore(db, log.NewNopLogger())
 	cms.MountStoreWithDB(key, types.StoreTypeIAVL, db)
 	s.Require().NoError(cms.LoadLatestVersion())
 	ctx := types.NewContext(cms, tmproto.Header{}, false, log.NewNopLogger())
