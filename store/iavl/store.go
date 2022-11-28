@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 10000
+	DefaultIAVLCacheSize = 500000
 )
 
 var (
@@ -52,12 +52,14 @@ func LoadStore(db dbm.DB, logger log.Logger, key types.StoreKey, id types.Commit
 // provided DB. An error is returned if the version fails to load, or if called with a positive
 // version on an empty tree.
 func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, lazyLoading bool, initialVersion uint64, cacheSize int) (types.CommitKVStore, error) {
-	tree, err := iavl.NewMutableTreeWithOpts(db, cacheSize, &iavl.Options{InitialVersion: initialVersion})
+	tree, err := iavl.NewMutableTreeWithOpts(db, cacheSize, &iavl.Options{InitialVersion: initialVersion}, false)
 	if err != nil {
 		return nil, err
 	}
 
-	if tree.IsUpgradeable() && logger != nil {
+	isUpgradeable, err := tree.IsUpgradeable()
+
+	if isUpgradeable && logger != nil {
 		logger.Info(
 			"Upgrading IAVL storage for faster queries + execution on live state. This may take a while",
 			"store_key", key.String(),
@@ -135,9 +137,14 @@ func (st *Store) Commit() types.CommitID {
 
 // LastCommitID implements Committer.
 func (st *Store) LastCommitID() types.CommitID {
+	hash, err := st.tree.Hash()
+	if err != nil {
+		panic(err)
+	}
+
 	return types.CommitID{
 		Version: st.tree.Version(),
-		Hash:    st.tree.Hash(),
+		Hash:    hash,
 	}
 }
 
@@ -183,14 +190,21 @@ func (st *Store) Set(key, value []byte) {
 // Implements types.KVStore.
 func (st *Store) Get(key []byte) []byte {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "get")
-	_, value := st.tree.Get(key)
+	value, err := st.tree.Get(key)
+	if err != nil {
+		panic(err)
+	}
 	return value
 }
 
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool) {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "has")
-	return st.tree.Has(key)
+	exists, err := st.tree.Has(key)
+	if err != nil {
+		panic(err)
+	}
+	return exists
 }
 
 // Implements types.KVStore.
@@ -306,7 +320,11 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 			break
 		}
 
-		_, res.Value = tree.GetVersioned(key, res.Height)
+		var err error
+		res.Value, err = tree.GetVersioned(key, res.Height)
+		if err != nil {
+			panic(err)
+		}
 		if !req.Prove {
 			break
 		}
