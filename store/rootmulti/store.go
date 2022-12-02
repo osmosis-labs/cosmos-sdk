@@ -48,6 +48,8 @@ type storeParams struct {
 	initialVersion uint64
 }
 
+var _ types.CacheWrapper = types.CommitKVStore
+
 // Store is composed of many CommitStores. Name contrasts with
 // cacheMultiStore which is used for branching other MultiStores. It implements
 // the CommitMultiStore interface.
