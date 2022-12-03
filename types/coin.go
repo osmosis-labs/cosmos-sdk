@@ -197,10 +197,9 @@ func (coins Coins) String() string {
 	// Build the string with a string builder
 	var out strings.Builder
 	for _, coin := range coins[:len(coins)-1] {
-		out.WriteString(coin.String())
-		out.WriteByte(',')
+		fmt.Fprintf(&out, "%v%s,", coin.Amount, coin.Denom)
 	}
-	out.WriteString(coins[len(coins)-1].String())
+	fmt.Fprintf(&out, "%v%s", coins[len(coins)-1].Amount, coins[len(coins)-1].Denom)
 	return out.String()
 }
 
