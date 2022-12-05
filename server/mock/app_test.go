@@ -28,7 +28,7 @@ func TestInitApp(t *testing.T) {
 	appState, err := AppGenState(nil, types.GenesisDoc{}, nil)
 	require.NoError(t, err)
 
-	//TODO test validators in the init chain?
+	// TODO test validators in the init chain?
 	req := abci.RequestInitChain{
 		AppStateBytes: appState,
 	}
@@ -53,6 +53,7 @@ func TestDeliverTx(t *testing.T) {
 	if closer != nil {
 		defer closer()
 	}
+
 	require.NoError(t, err)
 
 	key := "my-special-key"
@@ -69,9 +70,12 @@ func TestDeliverTx(t *testing.T) {
 		Height:  1,
 	}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+
 	dres := app.DeliverTx(abci.RequestDeliverTx{Tx: txBytes})
 	require.Equal(t, uint32(0), dres.Code, dres.Log)
+
 	app.EndBlock(abci.RequestEndBlock{})
+
 	cres := app.Commit()
 	require.NotEmpty(t, cres.Data)
 
@@ -80,6 +84,7 @@ func TestDeliverTx(t *testing.T) {
 		Path: "/store/main/key",
 		Data: []byte(key),
 	}
+
 	qres := app.Query(query)
 	require.Equal(t, uint32(0), qres.Code, qres.Log)
 	require.Equal(t, []byte(value), qres.Value)
