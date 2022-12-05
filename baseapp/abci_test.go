@@ -2,10 +2,12 @@ package baseapp
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -16,6 +18,10 @@ import (
 	snaphotstestutil "github.com/cosmos/cosmos-sdk/testutil/snapshots"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+func defaultLogger() log.Logger {
+	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
+}
 
 func TestGetBlockRentionHeight(t *testing.T) {
 	logger := defaultLogger()

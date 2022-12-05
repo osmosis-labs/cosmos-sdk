@@ -141,7 +141,7 @@ func (app *BaseApp) SetDB(db dbm.DB) {
 
 func (app *BaseApp) SetCMS(cms store.CommitMultiStore) {
 	if app.sealed {
-		panic("SetEndBlocker() on sealed BaseApp")
+		panic("SetCMS() on sealed BaseApp")
 	}
 
 	app.cms = cms
@@ -261,6 +261,11 @@ func (app *BaseApp) SetMempool(m mempool.Mempool) {
 	}
 
 	app.mempool = m
+}
+
+// SetTxDecoder sets the TxDecoder if it wasn't provided in the BaseApp constructor.
+func (app *BaseApp) SetTxDecoder(txDecoder sdk.TxDecoder) {
+	app.txDecoder = txDecoder
 }
 
 // SetTxEncoder sets the TxEncoder if it wasn't provided in the BaseApp
