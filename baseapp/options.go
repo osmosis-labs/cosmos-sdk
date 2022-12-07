@@ -265,6 +265,10 @@ func (app *BaseApp) SetMempool(m mempool.Mempool) {
 
 // SetTxDecoder sets the TxDecoder if it wasn't provided in the BaseApp constructor.
 func (app *BaseApp) SetTxDecoder(txDecoder sdk.TxDecoder) {
+	if app.sealed {
+		panic("SetTxDecoder() on sealed BaseApp")
+	}
+
 	app.txDecoder = txDecoder
 }
 
