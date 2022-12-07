@@ -759,13 +759,11 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	}
 
 	if mode == runTxModeCheck {
-		err = app.mempool.Insert(ctx, tx)
-		if err != nil {
+		if err := app.mempool.Insert(ctx, tx); err != nil {
 			return gInfo, nil, anteEvents, err
 		}
 	} else if mode == runTxModeDeliver {
-		err = app.mempool.Remove(tx)
-		if err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
+		if err := app.mempool.Remove(tx); err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
 			return gInfo, nil, anteEvents, fmt.Errorf("failed to remove tx from mempool: %w", err)
 		}
 	}
@@ -888,10 +886,10 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 // DefaultPrepareProposal returns the default implementation for processing an
 // ABCI proposal. The application's mempool is enumerated and all valid
-// transactions are added to the proposal.  Transactions are valid if they:
+// transactions are added to the proposal. Transactions are valid if they:
 //
 // 1) Successfully encode to bytes.
-// 2) Are valid (i.e. pass runTx, AnteHandler only)
+// 2) Are valid (i.e. pass runTx, AnteHandler only).
 //
 // Enumeration is halted once RequestPrepareProposal.MaxBytes of transactions is
 // reached or the mempool is exhausted.
@@ -918,14 +916,15 @@ func (app *BaseApp) DefaultPrepareProposal() sdk.PrepareProposalHandler {
 
 			txSize := int64(len(bz))
 
-			// NOTE: runTx was already run in CheckTx which calls mempool.Insert so ideally everything in the pool
-			// should be valid. But some mempool implementations may insert invalid txs, so we check again.
+			// NOTE: Since runTx was already executed in CheckTx, which calls
+			// mempool.Insert, ideally everything in the pool should be valid.
+			// some mempool implementations may insert invalid txs, so we check again.
 			_, _, _, err = app.runTx(runTxPrepareProposal, bz)
 			if err != nil {
-				err := app.mempool.Remove(memTx)
-				if err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
+				if err := app.mempool.Remove(memTx); err != nil && !errors.Is(err, mempool.ErrTxNotFound) {
 					panic(err)
 				}
+
 				iterator = iterator.Next()
 				continue
 			} else if byteCount += txSize; byteCount <= req.MaxTxBytes {
@@ -947,7 +946,7 @@ func (app *BaseApp) DefaultPrepareProposal() sdk.PrepareProposalHandler {
 // Every transaction in the proposal must pass 2 conditions:
 //
 // 1. The transaction bytes must decode to a valid transaction.
-// 2. The transaction must be valid (i.e. pass runTx, AnteHandler only)
+// 2. The transaction must be valid (i.e. pass runTx, AnteHandler only).
 //
 // If any transaction fails to pass either condition, the proposal is rejected.
 // Note that step (2) is identical to the validation step performed in

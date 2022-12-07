@@ -204,6 +204,10 @@ func NewSimApp(
 	// baseAppOptions = append(baseAppOptions, baseapp.SetPrepareProposal(prepareProposalHandler))
 	// baseAppOptions = append(baseAppOptions, baseapp.SetProcessProposal(processProposalHandler))
 
+	baseAppOptions = append(baseAppOptions, baseapp.SetMempool(NoOpMempool{}))
+	baseAppOptions = append(baseAppOptions, baseapp.SetPrepareProposal(NoOpPrepareProposal()))
+	baseAppOptions = append(baseAppOptions, baseapp.SetProcessProposal(NoOpProcessProposal()))
+
 	bApp := baseapp.NewBaseApp(appName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
