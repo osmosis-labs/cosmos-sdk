@@ -90,10 +90,10 @@ func (s *IntegrationTestSuite) TearDownSuite() {
 func (s IntegrationTestSuite) TestSimulateTx_GRPC() {
 	val := s.network.Validators[0]
 	txBuilder := s.mkTxBuilder()
-	// Convert the txBuilder to a tx.Tx.
+
 	protoTx, err := txBuilderToProtoTx(txBuilder)
 	s.Require().NoError(err)
-	// Encode the txBuilder to txBytes.
+
 	txBytes, err := val.ClientCtx.TxConfig.TxEncoder()(txBuilder.GetTx())
 	s.Require().NoError(err)
 
@@ -141,10 +141,10 @@ func (s IntegrationTestSuite) TestSimulateTx_GRPC() {
 func (s IntegrationTestSuite) TestSimulateTx_GRPCGateway() {
 	val := s.network.Validators[0]
 	txBuilder := s.mkTxBuilder()
-	// Convert the txBuilder to a tx.Tx.
+
 	protoTx, err := txBuilderToProtoTx(txBuilder)
 	s.Require().NoError(err)
-	// Encode the txBuilder to txBytes.
+
 	txBytes, err := val.ClientCtx.TxConfig.TxEncoder()(txBuilder.GetTx())
 	s.Require().NoError(err)
 
@@ -163,17 +163,19 @@ func (s IntegrationTestSuite) TestSimulateTx_GRPCGateway() {
 		s.Run(tc.name, func() {
 			req, err := val.ClientCtx.Codec.MarshalJSON(tc.req)
 			s.Require().NoError(err)
+
 			res, err := rest.PostRequest(fmt.Sprintf("%s/cosmos/tx/v1beta1/simulate", val.APIAddress), "application/json", req)
 			s.Require().NoError(err)
+
 			if tc.expErr {
 				s.Require().Contains(string(res), tc.expErrMsg)
 			} else {
 				var result tx.SimulateResponse
 				err = val.ClientCtx.Codec.UnmarshalJSON(res, &result)
 				s.Require().NoError(err)
-				// Check the result and gas used are correct.
-				s.Require().Equal(len(result.GetResult().GetEvents()), 6) // 1 coin recv, 1 coin spent,1 transfer, 3 messages.
-				s.Require().True(result.GetGasInfo().GetGasUsed() > 0)    // Gas used sometimes change, just check it's not empty.
+
+				s.Require().Equal(len(result.GetResult().GetEvents()), 13)
+				s.Require().True(result.GetGasInfo().GetGasUsed() > 0) // Gas used sometimes change, just check it's not empty.
 			}
 		})
 	}
