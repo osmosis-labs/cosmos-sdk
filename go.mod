@@ -50,6 +50,7 @@ require (
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
+	pgregory.net/rapid v0.5.3
 )
 
 require (

@@ -29,21 +29,14 @@ type testPubKey struct {
 	address sdk.AccAddress
 }
 
-func (t testPubKey) Reset() { panic("not implemented") }
-
-func (t testPubKey) String() string { panic("not implemented") }
-
-func (t testPubKey) ProtoMessage() { panic("not implemented") }
-
-func (t testPubKey) Address() cryptotypes.Address { return t.address.Bytes() }
-
-func (t testPubKey) Bytes() []byte { panic("not implemented") }
-
+func (t testPubKey) Reset()                                      { panic("not implemented") }
+func (t testPubKey) String() string                              { panic("not implemented") }
+func (t testPubKey) ProtoMessage()                               { panic("not implemented") }
+func (t testPubKey) Address() cryptotypes.Address                { return t.address.Bytes() }
+func (t testPubKey) Bytes() []byte                               { panic("not implemented") }
 func (t testPubKey) VerifySignature(msg []byte, sig []byte) bool { panic("not implemented") }
-
-func (t testPubKey) Equals(key cryptotypes.PubKey) bool { panic("not implemented") }
-
-func (t testPubKey) Type() string { panic("not implemented") }
+func (t testPubKey) Equals(key cryptotypes.PubKey) bool          { panic("not implemented") }
+func (t testPubKey) Type() string                                { panic("not implemented") }
 
 // testTx is a dummy implementation of Tx used for testing.
 type testTx struct {
@@ -85,16 +78,11 @@ type sigErrTx struct {
 	getSigs func() ([]txsigning.SignatureV2, error)
 }
 
-func (_ sigErrTx) Size() int64 { return 0 }
-
-func (_ sigErrTx) GetMsgs() []sdk.Msg { return nil }
-
-func (_ sigErrTx) ValidateBasic() error { return nil }
-
-func (_ sigErrTx) GetSigners() []sdk.AccAddress { return nil }
-
-func (_ sigErrTx) GetPubKeys() ([]cryptotypes.PubKey, error) { return nil, nil }
-
+func (_ sigErrTx) Size() int64                                       { return 0 }
+func (_ sigErrTx) GetMsgs() []sdk.Msg                                { return nil }
+func (_ sigErrTx) ValidateBasic() error                              { return nil }
+func (_ sigErrTx) GetSigners() []sdk.AccAddress                      { return nil }
+func (_ sigErrTx) GetPubKeys() ([]cryptotypes.PubKey, error)         { return nil, nil }
 func (t sigErrTx) GetSignaturesV2() ([]txsigning.SignatureV2, error) { return t.getSigs() }
 
 type txSpec struct {
@@ -135,6 +123,7 @@ func (s *MempoolTestSuite) TestDefaultMempool() {
 	for i := 0; i < txCount; i++ {
 		acc := accounts[i%len(accounts)]
 		tx := testTx{
+			nonce:    0,
 			address:  acc.Address,
 			priority: rand.Int63(),
 		}
@@ -203,7 +192,7 @@ type MempoolTestSuite struct {
 
 func (s *MempoolTestSuite) resetMempool() {
 	s.iterations = 0
-	s.mempool = mempool.NewNonceMempool()
+	s.mempool = mempool.NewSenderNonceMempool()
 }
 
 func (s *MempoolTestSuite) SetupTest() {
