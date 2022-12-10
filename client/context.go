@@ -387,3 +387,7 @@ func NewKeyringFromBackend(ctx Context, backend string) (keyring.Keyring, error)
 
 	return keyring.New(sdk.KeyringServiceName(), backend, ctx.KeyringDir, ctx.Input, ctx.KeyringOptions...)
 }
+
+func (Context) GetAliases(denom string) {
+	
+}
