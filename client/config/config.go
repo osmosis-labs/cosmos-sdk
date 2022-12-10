@@ -98,5 +98,6 @@ func ReadFromClientConfig(ctx client.Context) (client.Context, error) {
 		WithClient(client).
 		WithBroadcastMode(conf.BroadcastMode)
 
+	ctx = ctx.WithAliases(conf.Aliases)
 	return ctx, nil
 }
