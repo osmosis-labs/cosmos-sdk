@@ -15,16 +15,19 @@ const (
 	output         = "text"
 	node           = "tcp://localhost:26657"
 	broadcastMode  = "sync"
-	aliases        = ""
+)
+
+var (
+	aliases = map[string]string{}
 )
 
 type ClientConfig struct {
-	ChainID        string `mapstructure:"chain-id" json:"chain-id"`
-	KeyringBackend string `mapstructure:"keyring-backend" json:"keyring-backend"`
-	Output         string `mapstructure:"output" json:"output"`
-	Node           string `mapstructure:"node" json:"node"`
-	BroadcastMode  string `mapstructure:"broadcast-mode" json:"broadcast-mode"`
-	Aliases        string `mapstructure:"aliases" json:"aliases"`
+	ChainID        string            `mapstructure:"chain-id" json:"chain-id"`
+	KeyringBackend string            `mapstructure:"keyring-backend" json:"keyring-backend"`
+	Output         string            `mapstructure:"output" json:"output"`
+	Node           string            `mapstructure:"node" json:"node"`
+	BroadcastMode  string            `mapstructure:"broadcast-mode" json:"broadcast-mode"`
+	Aliases        map[string]string `mapstructure:"aliases" json:"aliases"`
 }
 
 // defaultClientConfig returns the reference to ClientConfig with default values.
