@@ -384,6 +384,8 @@ if input key is empty, or input data contains empty key.
 ### Features
 
 * [\#8953](https://github.com/cosmos/cosmos-sdk/pull/8953) Add the `config` CLI subcommand back to the SDK, which saves client-side configuration in a `client.toml` file.
+* [\#396](https://github.com/osmosis-labs/cosmos-sdk/pull/396) Add a map to client.toml, which maps human readable denom names (ex: uatom) to their ibc denom versions
+
 
 ## [v0.42.4](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.42.4) - 2021-04-08
 
