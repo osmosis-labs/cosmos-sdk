@@ -394,6 +394,3 @@ func (ctx Context) WithAliases(aliases map[string]string) Context {
 	return ctx
 }
 
-func (Context) GetAliases(denom string) {
-
-}
