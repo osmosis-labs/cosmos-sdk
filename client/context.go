@@ -56,7 +56,7 @@ type Context struct {
 	NodeURI           string
 	FeeGranter        sdk.AccAddress
 	Viper             *viper.Viper
-	Aliases           map[string]string
+	IBCAliases        map[string]string
 
 	// TODO: Deprecated (remove).
 	LegacyAmino *codec.LegacyAmino
@@ -389,8 +389,7 @@ func NewKeyringFromBackend(ctx Context, backend string) (keyring.Keyring, error)
 	return keyring.New(sdk.KeyringServiceName(), backend, ctx.KeyringDir, ctx.Input, ctx.KeyringOptions...)
 }
 
-func (ctx Context) WithAliases(aliases map[string]string) Context {
-	ctx.Aliases = aliases
+func (ctx Context) WithIBCAliases(aliases map[string]string) Context {
+	ctx.IBCAliases = aliases
 	return ctx
 }
-

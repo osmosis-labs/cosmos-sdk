@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	aliases = map[string]string{}
+	ibcAliases = map[string]string{}
 )
 
 type ClientConfig struct {
@@ -27,12 +27,12 @@ type ClientConfig struct {
 	Output         string            `mapstructure:"output" json:"output"`
 	Node           string            `mapstructure:"node" json:"node"`
 	BroadcastMode  string            `mapstructure:"broadcast-mode" json:"broadcast-mode"`
-	Aliases        map[string]string `mapstructure:"aliases" json:"aliases"`
+	IBCAliases     map[string]string `mapstructure:"aliases" json:"aliases"`
 }
 
 // defaultClientConfig returns the reference to ClientConfig with default values.
 func defaultClientConfig() *ClientConfig {
-	return &ClientConfig{chainID, keyringBackend, output, node, broadcastMode, aliases}
+	return &ClientConfig{chainID, keyringBackend, output, node, broadcastMode, ibcAliases}
 }
 
 func (c *ClientConfig) SetChainID(chainID string) {
@@ -98,6 +98,6 @@ func ReadFromClientConfig(ctx client.Context) (client.Context, error) {
 		WithClient(client).
 		WithBroadcastMode(conf.BroadcastMode)
 
-	ctx = ctx.WithAliases(conf.Aliases)
+	ctx = ctx.WithIBCAliases(conf.IBCAliases)
 	return ctx, nil
 }
