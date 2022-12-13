@@ -81,17 +81,6 @@ func NewBaseAppSuite(t *testing.T, opts ...func(*baseapp.BaseApp)) *BaseAppSuite
 	app.SetParamStore(&paramStore{db: dbm.NewMemDB()})
 	app.SetTxDecoder(txConfig.TxDecoder())
 
-	// testCtx := testutil.DefaultContextWithDB(
-	// 	t,
-	// 	[]storetypes.StoreKey{
-	// 		capKey1,
-	// 		capKey2,
-	// 	},
-	// 	[]storetypes.StoreKey{
-	// 		sdk.NewTransientStoreKey("transient_test")},
-	// )
-
-	// app.SetCMS(testCtx.CMS)
 	require.Nil(t, app.LoadLatestVersion())
 
 	return &BaseAppSuite{
