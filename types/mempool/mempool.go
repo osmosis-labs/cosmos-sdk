@@ -1,38 +1,42 @@
 package mempool
 
 import (
-	"github.com/cosmos/cosmos-sdk/types"
+	"errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-// Tx we define an app-side mempool transaction interface that is as
-// minimal as possible, only requiring applications to define the size of the
-// transaction to be used when reaping and getting the transaction itself.
-// Interface type casting can be used in the actual app-side mempool implementation.
-type Tx interface {
-	types.Tx
-
-	// Size returns the size of the transaction in bytes.
-	Size() int
-
-	// Hash returns the hash of the transaction.
-	Hash() [32]byte
-}
 
 type Mempool interface {
 	// Insert attempts to insert a Tx into the app-side mempool returning
 	// an error upon failure.
-	Insert(types.Context, Tx) error
+	Insert(sdk.Context, sdk.Tx) error
 
-	// Select returns the next set of available transactions from the app-side
-	// mempool, up to maxBytes or until the mempool is empty. The application can
-	// decide to return transactions from its own mempool, from the incoming
-	// txs, or some combination of both.
-	Select(ctx types.Context, txs [][]byte, maxBytes int) ([]Tx, error)
+	// Select returns an Iterator over the app-side mempool. If txs are specified,
+	// then they shall be incorporated into the Iterator. The Iterator must
+	// closed by the caller.
+	Select(sdk.Context, [][]byte) Iterator
 
 	// CountTx returns the number of transactions currently in the mempool.
 	CountTx() int
 
 	// Remove attempts to remove a transaction from the mempool, returning an error
 	// upon failure.
-	Remove(types.Context, Tx) error
+	Remove(sdk.Tx) error
 }
+
+// Iterator defines an app-side mempool iterator interface that is as minimal as
+// possible. The order of iteration is determined by the app-side mempool
+// implementation.
+type Iterator interface {
+	// Next returns the next transaction from the mempool. If there are no more
+	// transactions, it returns nil.
+	Next() Iterator
+
+	// Tx returns the transaction at the current position of the iterator.
+	Tx() sdk.Tx
+}
+
+var (
+	ErrTxNotFound           = errors.New("tx not found in mempool")
+	ErrMempoolTxMaxCapacity = errors.New("pool reached max tx capacity")
+)

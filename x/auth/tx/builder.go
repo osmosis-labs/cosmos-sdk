@@ -8,7 +8,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -36,7 +35,6 @@ var (
 	_ client.TxBuilder           = &wrapper{}
 	_ ante.HasExtensionOptionsTx = &wrapper{}
 	_ ExtensionOptionsTxBuilder  = &wrapper{}
-	_ mempool.Tx                 = &wrapper{}
 )
 
 // ExtensionOptionsTxBuilder defines a TxBuilder that can also set extensions.
@@ -170,10 +168,12 @@ func (w *wrapper) GetTimeoutHeight() uint64 {
 func (w *wrapper) GetSignaturesV2() ([]signing.SignatureV2, error) {
 	signerInfos := w.tx.AuthInfo.SignerInfos
 	sigs := w.tx.Signatures
+
 	pubKeys, err := w.GetPubKeys()
 	if err != nil {
 		return nil, err
 	}
+
 	n := len(signerInfos)
 	res := make([]signing.SignatureV2, n)
 
@@ -185,16 +185,17 @@ func (w *wrapper) GetSignaturesV2() ([]signing.SignatureV2, error) {
 			}
 		} else {
 			var err error
+
 			sigData, err := ModeInfoAndSigToSignatureData(si.ModeInfo, sigs[i])
 			if err != nil {
 				return nil, err
 			}
+
 			res[i] = signing.SignatureV2{
 				PubKey:   pubKeys[i],
 				Data:     sigData,
 				Sequence: si.GetSequence(),
 			}
-
 		}
 	}
 
