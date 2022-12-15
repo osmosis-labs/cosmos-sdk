@@ -107,7 +107,7 @@ $ %s debug pubkey cosmos1e0jnq2sun3dzjh8p2xq95kk0expwmd7shwjpfg
 				return err
 			}
 			pubkeyType = strings.ToLower(pubkeyType)
-			if pubkeyType != "secp256k1" && pubkeyType != "ed25519" {
+			if pubkeyType != "secp256k1" && pubkeyType != "ed25519" { //nolint:goconst
 				return errors.Wrapf(errors.ErrInvalidType, "invalid pubkey type, expected oneof ed25519 or secp256k1")
 			}
 

@@ -7,23 +7,19 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - goconst
     - gofmt
     - goimports
-    - golint
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - maligned
     - misspell
     - nakedret
     - prealloc
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert

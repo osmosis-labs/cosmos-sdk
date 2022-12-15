@@ -58,6 +58,9 @@ func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKe
 	}
 
 	isUpgradeable, err := tree.IsUpgradeable()
+	if err != nil {
+		return nil, err
+	}
 
 	if isUpgradeable && logger != nil {
 		logger.Info(
