@@ -37,7 +37,7 @@ func Cmd() *cobra.Command {
 }
 
 func bytesToPubkey(bz []byte, keytype string) (cryptotypes.PubKey, bool) {
-	if keytype == "ed25519" {
+	if keytype == "ed25519" { //nolint:goconst
 		if len(bz) == ed25519.PubKeySize {
 			return &ed25519.PubKey{Key: bz}, true
 		}
