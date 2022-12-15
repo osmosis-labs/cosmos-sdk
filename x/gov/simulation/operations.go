@@ -19,8 +19,6 @@ import (
 var initialProposalID = uint64(100000000000000)
 
 // Simulation operation weights constants
-//
-//nolint:gosec
 const (
 	OpWeightMsgDeposit = "op_weight_msg_deposit"
 	OpWeightMsgVote    = "op_weight_msg_vote"
@@ -138,8 +136,7 @@ func SimulateMsgSubmitProposal(
 		var fees sdk.Coins
 		coins, hasNeg := spendable.SafeSub(deposit)
 		if !hasNeg {
-			feeCoins := coins.FilterDenoms([]string{sdk.DefaultBondDenom})
-			fees, err = simtypes.RandomFees(r, ctx, feeCoins)
+			fees, err = simtypes.RandomFees(r, ctx, coins)
 			if err != nil {
 				return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate fees"), nil, err
 			}
@@ -226,8 +223,7 @@ func SimulateMsgDeposit(ak types.AccountKeeper, bk types.BankKeeper, k keeper.Ke
 		var fees sdk.Coins
 		coins, hasNeg := spendable.SafeSub(deposit)
 		if !hasNeg {
-			feeCoins := coins.FilterDenoms([]string{sdk.DefaultBondDenom})
-			fees, err = simtypes.RandomFees(r, ctx, feeCoins)
+			fees, err = simtypes.RandomFees(r, ctx, coins)
 			if err != nil {
 				return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate fees"), nil, err
 			}
@@ -290,8 +286,7 @@ func operationSimulateMsgVote(ak types.AccountKeeper, bk types.BankKeeper, k kee
 		account := ak.GetAccount(ctx, simAccount.Address)
 		spendable := bk.SpendableCoins(ctx, account.GetAddress())
 
-		feeCoins := spendable.FilterDenoms([]string{sdk.DefaultBondDenom})
-		fees, err := simtypes.RandomFees(r, ctx, feeCoins)
+		fees, err := simtypes.RandomFees(r, ctx, spendable)
 		if err != nil {
 			return simtypes.NoOpMsg(types.ModuleName, msg.Type(), "unable to generate fees"), nil, err
 		}
