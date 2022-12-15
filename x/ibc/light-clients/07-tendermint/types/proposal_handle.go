@@ -14,8 +14,9 @@ import (
 
 // CheckProposedHeaderAndUpdateState will try to update the client with the new header if and
 // only if the proposal passes and one of the following two conditions is satisfied:
-// 		1) AllowUpdateAfterExpiry=true and Expire(ctx.BlockTime) = true
-// 		2) AllowUpdateAfterMisbehaviour and IsFrozen() = true
+//  1. AllowUpdateAfterExpiry=true and Expire(ctx.BlockTime) = true
+//  2. AllowUpdateAfterMisbehaviour and IsFrozen() = true
+//
 // In case 2) before trying to update the client, the client will be unfrozen by resetting
 // the FrozenHeight to the zero Height. If AllowUpdateAfterMisbehaviour is set to true,
 // expired clients will also be updated even if AllowUpdateAfterExpiry is set to false.
