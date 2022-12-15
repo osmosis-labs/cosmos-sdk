@@ -399,7 +399,7 @@ proto-lint:
 	@$(DOCKER_BUF) lint --error-format=json
 
 proto-check-breaking:
-	@$(DOCKER_BUF) breaking --against-input $(HTTPS_GIT)#branch=osmo-v0.42.x
+	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=osmo-v0.42.x
 
 
 TM_URL              = https://raw.githubusercontent.com/tendermint/tendermint/v0.34.24/proto/tendermint
