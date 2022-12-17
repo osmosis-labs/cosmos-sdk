@@ -396,16 +396,16 @@ proto-format:
 		find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {}; fi
 
 proto-lint:
-	@$(DOCKER_BUF) lint --error-format=json
+	@$(DOCKER_BUF) check lint --error-format=json
 
 proto-check-breaking:
-	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=v0.42.9-osmo-v4
+	@$(DOCKER_BUF) check breaking --against-input $(HTTPS_GIT)#branch=osmo-v0.42.x
 
 
-TM_URL              = https://raw.githubusercontent.com/tendermint/tendermint/v0.34.24/proto/tendermint
+TM_URL              = https://raw.githubusercontent.com/tendermint/tendermint/v0.34.0-rc6/proto/tendermint
 GOGO_PROTO_URL      = https://raw.githubusercontent.com/regen-network/protobuf/cosmos
 COSMOS_PROTO_URL    = https://raw.githubusercontent.com/regen-network/cosmos-proto/master
-CONFIO_URL          = https://raw.githubusercontent.com/confio/ics23/v0.7.1
+CONFIO_URL          = https://raw.githubusercontent.com/confio/ics23/v0.6.3
 
 TM_CRYPTO_TYPES     = third_party/proto/tendermint/crypto
 TM_ABCI_TYPES       = third_party/proto/tendermint/abci
