@@ -88,7 +88,6 @@ func NewOperationMsg(msg sdk.Msg, ok bool, comment string, gasWanted, gasUsed ui
 	bz := cdc.MustMarshalJSON(msg)
 
 	return NewOperationMsgBasic(sdk.MsgTypeURL(msg), sdk.MsgTypeURL(msg), comment, ok, gasWanted, gasUsed, bz)
-
 }
 
 // NoOpMsg - create a no-operation message

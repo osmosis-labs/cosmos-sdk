@@ -7,11 +7,12 @@ import (
 
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/pruning"
 	"github.com/cosmos/cosmos-sdk/pruning/mock"
 	"github.com/cosmos/cosmos-sdk/pruning/types"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
 
 	"github.com/tendermint/tendermint/libs/log"
 	db "github.com/tendermint/tm-db"

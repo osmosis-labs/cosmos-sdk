@@ -3,8 +3,9 @@ package mock
 import (
 	"encoding/json"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	db "github.com/tendermint/tm-db"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type ParamStore struct {

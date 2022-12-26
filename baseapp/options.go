@@ -126,7 +126,6 @@ func (app *BaseApp) GetAppVersion() (uint64, error) {
 	appVersion, err := app.cms.GetAppVersion()
 	if err != nil {
 		return 0, err
-
 	}
 	return appVersion, nil
 }

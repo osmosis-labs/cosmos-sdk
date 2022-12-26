@@ -16,6 +16,7 @@ const (
 var _, _, _ sdk.Msg = &MsgCreateVestingAccount{}, &MsgCreateVestingAccount{}, &MsgClawback{}
 
 // NewMsgCreateVestingAccount returns a reference to a new MsgCreateVestingAccount.
+//
 //nolint:interfacer
 func NewMsgCreateVestingAccount(fromAddr, toAddr sdk.AccAddress, amount sdk.Coins, endTime int64, delayed bool) *MsgCreateVestingAccount {
 	return &MsgCreateVestingAccount{
@@ -82,6 +83,7 @@ func (msg MsgCreateVestingAccount) GetSigners() []sdk.AccAddress {
 }
 
 // NewMsgCreateClawbackVestingAccount returns a reference to a new MsgCreateClawbackVestingAccount.
+//
 //nolint:interfacer
 func NewMsgCreateClawbackVestingAccount(fromAddr, toAddr sdk.AccAddress, startTime int64, lockupPeriods, vestingPeriods []Period, merge bool) *MsgCreateClawbackVestingAccount {
 	return &MsgCreateClawbackVestingAccount{
@@ -161,6 +163,7 @@ func (msg MsgCreateClawbackVestingAccount) ValidateBasic() error {
 
 // NewMsgClawback returns a reference to a new MsgClawback.
 // The dest address may be nil - defaulting to the funder.
+//
 //nolint:interfacer
 func NewMsgClawback(funder, addr, dest sdk.AccAddress) *MsgClawback {
 	var destString string

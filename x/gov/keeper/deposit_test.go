@@ -33,7 +33,7 @@ func TestDeposits(t *testing.T) {
 		app := simapp.Setup(false)
 		ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-		// With expedited proposals the minimum deposit is higer, so we must
+		// With expedited proposals the minimum deposit is higher, so we must
 		// initialize and deposit an amount depositMultiplier times larger
 		// than the regular min deposit amount.
 		depositMultiplier := int64(1)

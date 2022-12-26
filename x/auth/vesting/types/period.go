@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	yaml "gopkg.in/yaml.v2"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Periods stores all vesting periods passed as part of a PeriodicVestingAccount
@@ -223,7 +224,7 @@ func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTi
 	}
 
 	// consumeBoth processes simultaneous events in P and Q and emits an
-	// event if the minumum of P and Q changes
+	// event if the minimum of P and Q changes
 	consumeBoth := func(nextTime int64) {
 		amountP = amountP.Add(periodsP[iP].Amount...)
 		amountQ = amountQ.Add(periodsQ[iQ].Amount...)

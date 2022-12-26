@@ -1,8 +1,9 @@
 package types_test
 
 import (
-	"github.com/tendermint/tendermint/libs/log"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/stretchr/testify/suite"
 	dbm "github.com/tendermint/tm-db"

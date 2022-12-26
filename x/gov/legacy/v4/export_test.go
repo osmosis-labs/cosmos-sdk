@@ -1,7 +1,7 @@
 package v4
 
 var (
-	MinExpeditedDeposit = minExpeditedDeposit
+	MinExpeditedDeposit   = minExpeditedDeposit
 	ExpeditedVotingPeriod = expeditedVotingPeriod
-	ExpeditedThreshold = expeditedThreshold
+	ExpeditedThreshold    = expeditedThreshold
 )

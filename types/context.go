@@ -63,7 +63,7 @@ func (c Context) EventManager() *EventManager { return c.eventManager }
 
 // clone the header before returning
 func (c Context) BlockHeader() tmproto.Header {
-	var msg = proto.Clone(&c.header).(*tmproto.Header)
+	msg := proto.Clone(&c.header).(*tmproto.Header)
 	return *msg
 }
 
@@ -275,7 +275,7 @@ func (c Context) CacheContext() (cc Context, writeCache func()) {
 	cc = c.WithMultiStore(cms).WithEventManager(NewEventManager())
 
 	writeCache = func() {
-		// commented out for compatability with SDK v0.45.10. Relayers depend on this
+		// commented out for compatibility with SDK v0.45.10. Relayers depend on this
 		// c.EventManager().EmitEvents(cc.EventManager().Events())
 		cms.Write()
 	}

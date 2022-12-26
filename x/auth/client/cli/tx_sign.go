@@ -110,7 +110,6 @@ func makeSignBatchCmd() func(cmd *cobra.Command, args []string) error {
 				}
 			} else {
 				multisigAddr, err := sdk.AccAddressFromBech32(ms)
-
 				// if passed in string for multisig flag is not an address, check to see if it is a name in the keybase
 				if err != nil {
 					multisigAddr, _, _, err = client.GetFromFields(txFactory.Keybase(), ms, clientCtx.GenerateOnly)
@@ -152,7 +151,7 @@ func setOutputFile(cmd *cobra.Command) (func(), error) {
 		return func() {}, nil
 	}
 
-	fp, err := os.OpenFile(outputDoc, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	fp, err := os.OpenFile(outputDoc, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return func() {}, err
 	}
@@ -244,7 +243,6 @@ func makeSignCmd() func(cmd *cobra.Command, args []string) error {
 		if multisig != "" {
 
 			multisigAddr, err := sdk.AccAddressFromBech32(multisig)
-
 			// if passed in string for multisig flag is not an address, check to see if it is a name in the keybase
 			if err != nil {
 				multisigAddr, _, _, err = client.GetFromFields(txFactory.Keybase(), multisig, clientCtx.GenerateOnly)
@@ -298,7 +296,7 @@ func makeSignCmd() func(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
-		fp, err := os.OpenFile(outputDoc, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		fp, err := os.OpenFile(outputDoc, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 		if err != nil {
 			return err
 		}

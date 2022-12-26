@@ -24,8 +24,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-const initialAppVersion = 0
-const StoreInfoPath = "info"
+const (
+	initialAppVersion = 0
+	StoreInfoPath     = "info"
+)
 
 type AppVersionError struct {
 	Actual  uint64
@@ -902,7 +904,6 @@ func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.R
 		}
 	}
 	return resp
-
 }
 
 func handleQueryP2P(app *BaseApp, path []string) abci.ResponseQuery {
