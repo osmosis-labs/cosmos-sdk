@@ -293,7 +293,7 @@ func StringifyEvent(e abci.Event) StringEvent {
 	for _, attr := range e.Attributes {
 		res.Attributes = append(
 			res.Attributes,
-			Attribute{string(attr.Key), string(attr.Value)},
+			Attribute{Key: attr.Key, Value: attr.Value},
 		)
 	}
 

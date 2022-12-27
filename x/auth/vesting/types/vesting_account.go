@@ -12,16 +12,15 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
-	vestexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 )
 
 // Compile-time type assertions
 var (
-	_ authtypes.AccountI          = (*BaseVestingAccount)(nil)
-	_ vestexported.VestingAccount = (*ContinuousVestingAccount)(nil)
-	_ vestexported.VestingAccount = (*PeriodicVestingAccount)(nil)
-	_ vestexported.VestingAccount = (*DelayedVestingAccount)(nil)
-	_ vestexported.VestingAccount = (*ClawbackVestingAccount)(nil)
+	_ authtypes.AccountI      = (*BaseVestingAccount)(nil)
+	_ exported.VestingAccount = (*ContinuousVestingAccount)(nil)
+	_ exported.VestingAccount = (*PeriodicVestingAccount)(nil)
+	_ exported.VestingAccount = (*DelayedVestingAccount)(nil)
+	_ exported.VestingAccount = (*ClawbackVestingAccount)(nil)
 )
 
 // Base Vesting Account
@@ -198,8 +197,8 @@ func (bva BaseVestingAccount) MarshalYAML() (interface{}, error) {
 // Continuous Vesting Account
 
 var (
-	_ vestexported.VestingAccount = (*ContinuousVestingAccount)(nil)
-	_ authtypes.GenesisAccount    = (*ContinuousVestingAccount)(nil)
+	_ exported.VestingAccount  = (*ContinuousVestingAccount)(nil)
+	_ authtypes.GenesisAccount = (*ContinuousVestingAccount)(nil)
 )
 
 // NewContinuousVestingAccountRaw creates a new ContinuousVestingAccount object from BaseVestingAccount
@@ -314,8 +313,8 @@ func (cva ContinuousVestingAccount) MarshalYAML() (interface{}, error) {
 // Periodic Vesting Account
 
 var (
-	_ vestexported.VestingAccount = (*PeriodicVestingAccount)(nil)
-	_ authtypes.GenesisAccount    = (*PeriodicVestingAccount)(nil)
+	_ exported.VestingAccount  = (*PeriodicVestingAccount)(nil)
+	_ authtypes.GenesisAccount = (*PeriodicVestingAccount)(nil)
 )
 
 // NewPeriodicVestingAccountRaw creates a new PeriodicVestingAccount object from BaseVestingAccount
@@ -460,8 +459,8 @@ func (pva PeriodicVestingAccount) MarshalYAML() (interface{}, error) {
 // Delayed Vesting Account
 
 var (
-	_ vestexported.VestingAccount = (*DelayedVestingAccount)(nil)
-	_ authtypes.GenesisAccount    = (*DelayedVestingAccount)(nil)
+	_ exported.VestingAccount  = (*DelayedVestingAccount)(nil)
+	_ authtypes.GenesisAccount = (*DelayedVestingAccount)(nil)
 )
 
 // NewDelayedVestingAccountRaw creates a new DelayedVestingAccount object from BaseVestingAccount
@@ -530,8 +529,8 @@ func (dva DelayedVestingAccount) String() string {
 // Permanent Locked Vesting Account
 
 var (
-	_ vestexported.VestingAccount = (*PermanentLockedAccount)(nil)
-	_ authtypes.GenesisAccount    = (*PermanentLockedAccount)(nil)
+	_ exported.VestingAccount  = (*PermanentLockedAccount)(nil)
+	_ authtypes.GenesisAccount = (*PermanentLockedAccount)(nil)
 )
 
 // NewPermanentLockedAccount returns a PermanentLockedAccount
@@ -617,8 +616,8 @@ func marshalYaml(i interface{}) (interface{}, error) {
 // Clawback Vesting Account
 
 var (
-	_ vestexported.VestingAccount = (*ClawbackVestingAccount)(nil)
-	_ authtypes.GenesisAccount    = (*ClawbackVestingAccount)(nil)
+	_ exported.VestingAccount  = (*ClawbackVestingAccount)(nil)
+	_ authtypes.GenesisAccount = (*ClawbackVestingAccount)(nil)
 )
 
 // NewClawbackVestingAccount returns a new ClawbackVestingAccount

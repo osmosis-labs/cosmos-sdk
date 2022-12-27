@@ -290,7 +290,7 @@ func TestRejectUnknownFields_allowUnknownNonCriticals(t *testing.T) {
 
 			c1 := new(testdata.Customer1)
 			_, gotErr := RejectUnknownFields(blob, c1, tt.allowUnknownNonCriticals, DefaultAnyResolver{})
-			if !reflect.DeepEqual(gotErr, tt.wantErr) {
+			if !reflect.DeepEqual(gotErr, tt.wantErr) { //nolint:deepequalerrors
 				t.Fatalf("Error mismatch\nGot:\n%s\n\nWant:\n%s", gotErr, tt.wantErr)
 			}
 		})
