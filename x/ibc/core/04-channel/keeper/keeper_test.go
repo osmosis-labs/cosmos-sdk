@@ -218,7 +218,7 @@ func (suite KeeperTestSuite) TestGetAllPacketState() { //nolint:govet // this is
 
 // TestSetSequence verifies that the keeper correctly sets the sequence counters.
 func (suite *KeeperTestSuite) TestSetSequence() {
-	_, _, _, _, channelA, _ := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
+	_, _, _, _, channelA, _ := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED) //nolint:dogsled
 
 	ctxA := suite.chainA.GetContext()
 	one := uint64(1)

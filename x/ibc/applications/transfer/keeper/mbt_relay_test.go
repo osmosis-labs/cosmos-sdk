@@ -7,7 +7,6 @@ package keeper_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -100,7 +99,7 @@ func AddressFromTla(addr []string) string {
 		panic("failed to convert from TLA+ address: wrong number of address components")
 	}
 	s := ""
-	if len(addr[0]) == 0 && len(addr[1]) == 0 {
+	if len(addr[0]) == 0 && len(addr[1]) == 0 { //nolint:gocritic
 		// simple address: id
 		s = addr[2]
 	} else if len(addr[2]) == 0 {
@@ -293,7 +292,7 @@ func (suite *KeeperTestSuite) CheckBankBalances(chain *ibctesting.TestChain, ban
 
 func (suite *KeeperTestSuite) TestModelBasedRelay() {
 	dirname := "model_based_tests/"
-	files, err := ioutil.ReadDir(dirname)
+	files, err := os.ReadDir(dirname)
 	if err != nil {
 		panic(fmt.Errorf("Failed to read model-based test files: %w", err))
 	}
@@ -306,7 +305,7 @@ func (suite *KeeperTestSuite) TestModelBasedRelay() {
 		if err != nil {
 			panic(fmt.Errorf("Failed to read JSON test fixture: %w", err))
 		}
-		err = json.Unmarshal([]byte(jsonBlob), &tlaTestCases)
+		err = json.Unmarshal(jsonBlob, &tlaTestCases)
 		if err != nil {
 			panic(fmt.Errorf("Failed to parse JSON test fixture: %w", err))
 		}

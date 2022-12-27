@@ -60,7 +60,7 @@ func (suite *GenTxTestSuite) SetupTest() {
 	suite.NoError(err)
 }
 
-func (suite *GenTxTestSuite) setAccountBalance(addr sdk.AccAddress, amount int64) json.RawMessage {
+func (suite *GenTxTestSuite) setAccountBalance(addr sdk.AccAddress, amount int64) json.RawMessage { //nolint:unparam
 	acc := suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, addr)
 	suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
 
@@ -269,14 +269,14 @@ func (suite *GenTxTestSuite) TestDeliverGenTxs() {
 
 			if tc.expPass {
 				suite.Require().NotPanics(func() {
-					genutil.DeliverGenTxs(
+					genutil.DeliverGenTxs( //nolint:errcheck
 						suite.ctx, genTxs, suite.app.StakingKeeper, suite.app.BaseApp.DeliverTx,
 						suite.encodingConfig.TxConfig,
 					)
 				})
 			} else {
 				suite.Require().Panics(func() {
-					genutil.DeliverGenTxs(
+					genutil.DeliverGenTxs( //nolint:errcheck
 						suite.ctx, genTxs, suite.app.StakingKeeper, suite.app.BaseApp.DeliverTx,
 						suite.encodingConfig.TxConfig,
 					)

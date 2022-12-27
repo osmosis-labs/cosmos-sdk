@@ -195,5 +195,5 @@ func writeOperation(w io.Writer, op operation, tc types.TraceContext, key, value
 		panic(errors.Wrap(err, "failed to write trace operation"))
 	}
 
-	io.WriteString(w, "\n")
+	io.WriteString(w, "\n") //nolint: errcheck
 }

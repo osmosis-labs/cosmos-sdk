@@ -155,6 +155,7 @@ func (s IntegrationTestSuite) TestQueryValidatorSetByHeight() { //nolint:govet /
 
 	// rest query with pagination
 	restRes, err := rest.GetRequest(fmt.Sprintf("%s/cosmos/base/tendermint/v1beta1/validatorsets/%d?pagination.offset=%d&pagination.limit=%d", val.APIAddress, 1, 0, 1))
+	s.Require().NoError(err)
 	var validatorSetRes tmservice.GetValidatorSetByHeightResponse
 	s.Require().NoError(val.ClientCtx.JSONMarshaler.UnmarshalJSON(restRes, &validatorSetRes))
 }

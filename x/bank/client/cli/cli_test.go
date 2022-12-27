@@ -354,7 +354,7 @@ func (s *IntegrationTestSuite) TestNewSendTxCmdGenOnly() {
 	clientCtx := val.ClientCtx
 
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
+	_ = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
 
 	from := val.Address
 	to := val.Address
