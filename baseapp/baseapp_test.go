@@ -46,7 +46,10 @@ func (ps *paramStore) Set(_ sdk.Context, key []byte, value interface{}) {
 		panic(err)
 	}
 
-	ps.db.Set(key, bz)
+	err = ps.db.Set(key, bz)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (ps *paramStore) Has(_ sdk.Context, key []byte) bool {
@@ -120,7 +123,7 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) *BaseApp {
 }
 
 // simple one store baseapp with data and snapshots. Each tx is 1 MB in size (uncompressed).
-func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options ...func(*BaseApp)) (*BaseApp, func()) {
+func setupBaseAppWithSnapshots(t *testing.T, blocks uint, blockTxs int, options ...func(*BaseApp)) (*BaseApp, func()) { //nolint:unparam
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 	routerOpt := func(bapp *BaseApp) {
@@ -1491,7 +1494,7 @@ func TestCustomRunTxPanicHandler(t *testing.T) {
 	{
 		tx := newTxCounter(0, 0)
 
-		require.PanicsWithValue(t, customPanicMsg, func() { app.Deliver(aminoTxEncoder(), tx) })
+		require.PanicsWithValue(t, customPanicMsg, func() { app.Deliver(aminoTxEncoder(), tx) }) //nolint:errcheck
 	}
 }
 

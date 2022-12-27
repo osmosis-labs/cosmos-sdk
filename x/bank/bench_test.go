@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -24,7 +23,7 @@ func BenchmarkOneBankSendTxPerBlock(b *testing.B) {
 	}
 
 	// construct genesis state
-	genAccs := []types.GenesisAccount{&acc}
+	genAccs := []authtypes.GenesisAccount{&acc}
 	benchmarkApp := simapp.SetupWithGenesisAccounts(genAccs)
 	ctx := benchmarkApp.BaseApp.NewContext(false, tmproto.Header{})
 

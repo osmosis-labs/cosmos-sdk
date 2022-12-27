@@ -13,8 +13,7 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
-	"github.com/cosmos/cosmos-sdk/crypto/types"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	types "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -39,7 +38,7 @@ func NewTestStdFee() StdFee {
 }
 
 // Deprecated, use TxBuilder.
-func NewTestTx(ctx sdk.Context, msgs []sdk.Msg, privs []cryptotypes.PrivKey, accNums []uint64, seqs []uint64, timeout uint64, fee StdFee) sdk.Tx {
+func NewTestTx(ctx sdk.Context, msgs []sdk.Msg, privs []types.PrivKey, accNums []uint64, seqs []uint64, timeout uint64, fee StdFee) sdk.Tx {
 	sigs := make([]StdSignature, len(privs))
 	for i, priv := range privs {
 		signBytes := StdSignBytes(ctx.ChainID(), accNums[i], seqs[i], timeout, fee, msgs, "")
@@ -126,7 +125,7 @@ func TestTxValidateBasic(t *testing.T) {
 	require.Equal(t, sdkerrors.ErrInsufficientFee.ABCICode(), code)
 
 	// require to fail validation when no signatures exist
-	privs, accNums, seqs := []cryptotypes.PrivKey{}, []uint64{}, []uint64{}
+	privs, accNums, seqs := []types.PrivKey{}, []uint64{}, []uint64{}
 	tx = NewTestTx(ctx, msgs, privs, accNums, seqs, 0, fee)
 
 	err = tx.ValidateBasic()
@@ -135,7 +134,7 @@ func TestTxValidateBasic(t *testing.T) {
 	require.Equal(t, sdkerrors.ErrNoSignatures.ABCICode(), code)
 
 	// require to fail validation when signatures do not match expected signers
-	privs, accNums, seqs = []cryptotypes.PrivKey{priv1}, []uint64{0, 1}, []uint64{0, 0}
+	privs, accNums, seqs = []types.PrivKey{priv1}, []uint64{0, 1}, []uint64{0, 0}
 	tx = NewTestTx(ctx, msgs, privs, accNums, seqs, 0, fee)
 
 	err = tx.ValidateBasic()
@@ -154,7 +153,7 @@ func TestTxValidateBasic(t *testing.T) {
 	require.Equal(t, sdkerrors.ErrInvalidRequest.ABCICode(), code)
 
 	// require to pass when above criteria are matched
-	privs, accNums, seqs = []cryptotypes.PrivKey{priv1, priv2}, []uint64{0, 1}, []uint64{0, 0}
+	privs, accNums, seqs = []types.PrivKey{priv1, priv2}, []uint64{0, 1}, []uint64{0, 0}
 	tx = NewTestTx(ctx, msgs, privs, accNums, seqs, 0, fee)
 
 	err = tx.ValidateBasic()
@@ -231,7 +230,7 @@ func TestSignatureV2Conversions(t *testing.T) {
 
 	// multisigs
 	_, pubKey2, _ := testdata.KeyTestPubAddr()
-	multiPK := kmultisig.NewLegacyAminoPubKey(1, []cryptotypes.PubKey{
+	multiPK := kmultisig.NewLegacyAminoPubKey(1, []types.PubKey{
 		pubKey, pubKey2,
 	})
 	dummy2 := []byte("dummySig2")

@@ -12,6 +12,6 @@ func (suite *KeeperTestSuite) TestParams() {
 
 	expParams.AllowedClients = []string{}
 	suite.chainA.App.IBCKeeper.ClientKeeper.SetParams(suite.chainA.GetContext(), expParams)
-	params = suite.chainA.App.IBCKeeper.ClientKeeper.GetParams(suite.chainA.GetContext())
+	_ = suite.chainA.App.IBCKeeper.ClientKeeper.GetParams(suite.chainA.GetContext())
 	suite.Require().Empty(expParams.AllowedClients)
 }

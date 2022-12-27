@@ -8,7 +8,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
-	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	commitmenttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
 	ibctmtypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/07-tendermint/types"
@@ -25,7 +24,7 @@ func (suite *KeeperTestSuite) TestCreateClient() {
 		expPass     bool
 	}{
 		{"success", ibctmtypes.NewClientState(testChainID, ibctmtypes.DefaultTrustLevel, trustingPeriod, ubdPeriod, maxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, false, false), true},
-		{"client type not supported", localhosttypes.NewClientState(testChainID, clienttypes.NewHeight(0, 1)), false},
+		{"client type not supported", localhosttypes.NewClientState(testChainID, types.NewHeight(0, 1)), false},
 	}
 
 	for i, tc := range cases {
@@ -44,15 +43,15 @@ func (suite *KeeperTestSuite) TestCreateClient() {
 func (suite *KeeperTestSuite) TestUpdateClientTendermint() {
 	// Must create header creation functions since suite.header gets recreated on each test case
 	createFutureUpdateFn := func(s *KeeperTestSuite) *ibctmtypes.Header {
-		heightPlus3 := clienttypes.NewHeight(suite.header.GetHeight().GetRevisionNumber(), suite.header.GetHeight().GetRevisionHeight()+3)
-		height := suite.header.GetHeight().(clienttypes.Height)
+		heightPlus3 := types.NewHeight(suite.header.GetHeight().GetRevisionNumber(), suite.header.GetHeight().GetRevisionHeight()+3)
+		height := suite.header.GetHeight().(types.Height)
 
 		return suite.chainA.CreateTMClientHeader(testChainID, int64(heightPlus3.RevisionHeight), height, suite.header.Header.Time.Add(time.Hour),
 			suite.valSet, suite.valSet, []tmtypes.PrivValidator{suite.privVal})
 	}
 	createPastUpdateFn := func(s *KeeperTestSuite) *ibctmtypes.Header {
-		heightMinus2 := clienttypes.NewHeight(suite.header.GetHeight().GetRevisionNumber(), suite.header.GetHeight().GetRevisionHeight()-2)
-		heightMinus4 := clienttypes.NewHeight(suite.header.GetHeight().GetRevisionNumber(), suite.header.GetHeight().GetRevisionHeight()-4)
+		heightMinus2 := types.NewHeight(suite.header.GetHeight().GetRevisionNumber(), suite.header.GetHeight().GetRevisionHeight()-2)
+		heightMinus4 := types.NewHeight(suite.header.GetHeight().GetRevisionNumber(), suite.header.GetHeight().GetRevisionHeight()-4)
 
 		return suite.chainA.CreateTMClientHeader(testChainID, int64(heightMinus2.RevisionHeight), heightMinus4, suite.header.Header.Time,
 			suite.valSet, suite.valSet, []tmtypes.PrivValidator{suite.privVal})
@@ -247,7 +246,7 @@ func (suite *KeeperTestSuite) TestUpgradeClient() {
 				}
 
 				// last Height is at next block
-				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
+				lastHeight = types.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 
 				// zero custom fields and store in upgrade store
 				suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
@@ -276,7 +275,7 @@ func (suite *KeeperTestSuite) TestUpgradeClient() {
 				}
 
 				// last Height is at next block
-				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
+				lastHeight = types.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 
 				// zero custom fields and store in upgrade store
 				suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
@@ -307,7 +306,7 @@ func (suite *KeeperTestSuite) TestUpgradeClient() {
 				}
 
 				// last Height is at next block
-				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
+				lastHeight = types.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 
 				// zero custom fields and store in upgrade store
 				suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
@@ -342,7 +341,7 @@ func (suite *KeeperTestSuite) TestUpgradeClient() {
 				}
 
 				// last Height is at next block
-				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
+				lastHeight = types.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 
 				// zero custom fields and store in upgrade store
 				suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
@@ -603,22 +602,23 @@ func (suite *KeeperTestSuite) TestUpdateClientEventEmission() {
 	header, err := suite.chainA.ConstructUpdateTMClientHeader(suite.chainB, clientID)
 	suite.Require().NoError(err)
 
-	msg, err := clienttypes.NewMsgUpdateClient(
+	msg, err := types.NewMsgUpdateClient(
 		clientID, header,
 		suite.chainA.SenderAccount.GetAddress(),
 	)
+	suite.Require().NoError(err)
 
 	result, err := suite.chainA.SendMsgs(msg)
 	suite.Require().NoError(err)
 	// first 3 event type are "tx.signature", "tx.acc_seq", and "message"
 	updateEvent := result.Events[3]
 
-	suite.Require().Equal(clienttypes.EventTypeUpdateClient, updateEvent.Type)
+	suite.Require().Equal(types.EventTypeUpdateClient, updateEvent.Type)
 
 	// use a boolean to ensure the update event contains the header
 	contains := false
 	for _, attr := range updateEvent.Attributes {
-		if string(attr.Key) == clienttypes.AttributeKeyHeader {
+		if string(attr.Key) == types.AttributeKeyHeader {
 			contains = true
 
 			bz, err := hex.DecodeString(string(attr.Value))

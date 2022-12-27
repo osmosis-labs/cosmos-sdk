@@ -29,7 +29,7 @@ func initClientContext(t *testing.T, envVar string) (client.Context, func()) {
 		WithHomeDir(home).
 		WithViper("")
 
-	clientCtx.Viper.BindEnv(nodeEnv)
+	clientCtx.Viper.BindEnv(nodeEnv) //nolint:errcheck
 	if envVar != "" {
 		os.Setenv(nodeEnv, envVar)
 	}
@@ -57,7 +57,8 @@ func TestConfigCmd(t *testing.T) {
 	b := bytes.NewBufferString("")
 	cmd.SetOut(b)
 	cmd.SetArgs([]string{"node"})
-	cmd.Execute()
+	err = cmd.Execute()
+	require.NoError(t, err)
 	out, err := io.ReadAll(b)
 	require.NoError(t, err)
 	require.Equal(t, string(out), testNode1+"\n")

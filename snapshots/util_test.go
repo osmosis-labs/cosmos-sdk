@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -144,7 +143,7 @@ func TestChunkReader(t *testing.T) {
 	// Closing the reader should close the writer
 	pr, pw = io.Pipe()
 	pch = make(chan io.ReadCloser, 2)
-	pch <- ioutil.NopCloser(bytes.NewBuffer([]byte{1, 2, 3}))
+	pch <- io.NopCloser(bytes.NewBuffer([]byte{1, 2, 3}))
 	pch <- pr
 	close(pch)
 

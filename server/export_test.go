@@ -107,7 +107,7 @@ func TestExportCmd_Height(t *testing.T) {
 
 			output := &bytes.Buffer{}
 			cmd.SetOut(output)
-			args := append(tc.flags, fmt.Sprintf("--%s=%s", flags.FlagHome, tempDir))
+			args := append(tc.flags, fmt.Sprintf("--%s=%s", flags.FlagHome, tempDir)) //nolint:gocritic
 			cmd.SetArgs(args)
 			require.NoError(t, cmd.ExecuteContext(ctx))
 

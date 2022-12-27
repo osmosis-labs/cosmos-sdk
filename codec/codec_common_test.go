@@ -28,7 +28,7 @@ func testInterfaceMarshaling(require *require.Assertions, cdc interfaceMarshaler
 	var animal testdata.Animal
 	if isAminoBin {
 		require.PanicsWithValue("Unmarshal expects a pointer", func() {
-			cdc.unmarshal(bz, animal)
+			cdc.unmarshal(bz, animal) //nolint:errcheck
 		})
 	} else {
 		err = cdc.unmarshal(bz, animal)

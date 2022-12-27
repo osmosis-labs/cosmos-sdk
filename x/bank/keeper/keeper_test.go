@@ -47,7 +47,7 @@ func newBarCoin(amt int64) sdk.Coin {
 	return sdk.NewInt64Coin(barDenom, amt)
 }
 
-// nolint: interfacer
+//nolint: interfacer
 func getCoinsByName(ctx sdk.Context, bk keeper.Keeper, ak types.AccountKeeper, moduleName string) sdk.Coins {
 	moduleAddress := ak.GetModuleAddress(moduleName)
 	macc := ak.GetAccount(ctx, moduleAddress)
@@ -1054,9 +1054,9 @@ func (suite *IntegrationTestSuite) getTestMetadata() []types.Metadata {
 		{
 			Description: "The native staking token of the Cosmos Hub.",
 			DenomUnits: []*types.DenomUnit{
-				{"uatom", uint32(0), []string{"microatom"}},
-				{"matom", uint32(3), []string{"milliatom"}},
-				{"atom", uint32(6), nil},
+				{Denom: "uatom", Exponent: uint32(0), Aliases: []string{"microatom"}},
+				{Denom: "matom", Exponent: uint32(3), Aliases: []string{"milliatom"}},
+				{Denom: "atom", Exponent: uint32(6), Aliases: nil},
 			},
 			Base:    "uatom",
 			Display: "atom",

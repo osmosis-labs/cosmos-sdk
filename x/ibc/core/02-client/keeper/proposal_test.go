@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
-	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
 	ibctmtypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/07-tendermint/types"
 	ibctesting "github.com/cosmos/cosmos-sdk/x/ibc/testing"
@@ -34,39 +33,39 @@ func (suite *KeeperTestSuite) TestClientUpdateProposal() {
 				header, err := suite.chainA.ConstructUpdateTMClientHeader(suite.chainB, clientA)
 				suite.Require().NoError(err)
 
-				content, err = clienttypes.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, clientA, header)
+				content, err = types.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, clientA, header)
 				suite.Require().NoError(err)
 			}, true,
 		},
 		{
 			"client type does not exist", func() {
-				content, err = clienttypes.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, ibctesting.InvalidID, &ibctmtypes.Header{})
+				content, err = types.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, ibctesting.InvalidID, &ibctmtypes.Header{})
 				suite.Require().NoError(err)
 			}, false,
 		},
 		{
 			"cannot update localhost", func() {
-				content, err = clienttypes.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, exported.Localhost, &ibctmtypes.Header{})
+				content, err = types.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, exported.Localhost, &ibctmtypes.Header{})
 				suite.Require().NoError(err)
 			}, false,
 		},
 		{
 			"client does not exist", func() {
-				content, err = clienttypes.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, ibctesting.InvalidID, &ibctmtypes.Header{})
+				content, err = types.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, ibctesting.InvalidID, &ibctmtypes.Header{})
 				suite.Require().NoError(err)
 			}, false,
 		},
 		{
 			"cannot unpack header, header is nil", func() {
 				clientA, _ := suite.coordinator.SetupClients(suite.chainA, suite.chainB, exported.Tendermint)
-				content = &clienttypes.ClientUpdateProposal{ibctesting.Title, ibctesting.Description, clientA, nil}
+				content = &types.ClientUpdateProposal{Title: ibctesting.Title, Description: ibctesting.Description, ClientId: clientA, Header: nil}
 			}, false,
 		},
 		{
 			"update fails", func() {
 				header := &ibctmtypes.Header{}
 				clientA, _ := suite.coordinator.SetupClients(suite.chainA, suite.chainB, exported.Tendermint)
-				content, err = clienttypes.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, clientA, header)
+				content, err = types.NewClientUpdateProposal(ibctesting.Title, ibctesting.Description, clientA, header)
 				suite.Require().NoError(err)
 			}, false,
 		},

@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -39,7 +38,7 @@ func hash(chunks [][]byte) []byte {
 func makeChunks(chunks [][]byte) <-chan io.ReadCloser {
 	ch := make(chan io.ReadCloser, len(chunks))
 	for _, chunk := range chunks {
-		ch <- ioutil.NopCloser(bytes.NewReader(chunk))
+		ch <- io.NopCloser(bytes.NewReader(chunk))
 	}
 	close(ch)
 	return ch
@@ -92,7 +91,7 @@ func (m *mockSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.Read
 	}
 	ch := make(chan io.ReadCloser, len(m.chunks))
 	for _, chunk := range m.chunks {
-		ch <- ioutil.NopCloser(bytes.NewReader(chunk))
+		ch <- io.NopCloser(bytes.NewReader(chunk))
 	}
 	close(ch)
 	return ch, nil
@@ -138,7 +137,7 @@ func (m *hungSnapshotter) Close() {
 func (m *hungSnapshotter) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, error) {
 	<-m.ch
 	ch := make(chan io.ReadCloser, 1)
-	ch <- ioutil.NopCloser(bytes.NewReader([]byte{}))
+	ch <- io.NopCloser(bytes.NewReader([]byte{}))
 	return ch, nil
 }
 

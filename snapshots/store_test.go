@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -86,7 +85,7 @@ func TestStore_Delete(t *testing.T) {
 
 	// Deleting a snapshot being saved should error
 	ch := make(chan io.ReadCloser)
-	go store.Save(9, 1, ch)
+	go store.Save(9, 1, ch) //nolint:errcheck
 
 	time.Sleep(10 * time.Millisecond)
 	err = store.Delete(9, 1)
@@ -320,7 +319,7 @@ func TestStore_Save(t *testing.T) {
 
 	ch := make(chan io.ReadCloser, 2)
 	ch <- pr
-	ch <- ioutil.NopCloser(bytes.NewBuffer([]byte{0xff}))
+	ch <- io.NopCloser(bytes.NewBuffer([]byte{0xff}))
 	close(ch)
 
 	_, err = store.Save(6, 1, ch)
@@ -331,7 +330,7 @@ func TestStore_Save(t *testing.T) {
 	// Saving a snapshot should error if a snapshot is already in progress for the same height,
 	// regardless of format. However, a different height should succeed.
 	ch = make(chan io.ReadCloser)
-	go store.Save(7, 1, ch)
+	go store.Save(7, 1, ch) //nolint:errcheck
 	time.Sleep(10 * time.Millisecond)
 	_, err = store.Save(7, 2, makeChunks(nil))
 	require.Error(t, err)

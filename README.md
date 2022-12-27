@@ -11,7 +11,7 @@ This build of the cosmos-sdk has been updated for easier migrations:
 
 * it uses iavl v0.19.4 with fast node on by default
 * it's been linted so that if you encounter issues in your migration, those issues stand out when using a linter.
-* it uses tendermint v0.34.24
+* it uses tendermint v0.34.24 so that you don't need to concern yourself with the various changes needed to support the latest tendermint consensus.
 
 **Please kindly note that this is unsupported software.**
 

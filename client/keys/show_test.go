@@ -60,9 +60,12 @@ func TestShowCmdWithMultisigAccount(t *testing.T) {
 	threshold := 2
 
 	t.Cleanup(func() {
-		kb.Delete(fakeKeyName1)
-		kb.Delete(fakeKeyName2)
-		kb.Delete(myMultiSig)
+		err = kb.Delete(fakeKeyName1)
+		require.NoError(t, err)
+		err = kb.Delete(fakeKeyName2)
+		require.NoError(t, err)
+		err = kb.Delete(myMultiSig)
+		require.NoError(t, err)
 	})
 
 	path := hd.NewFundraiserParams(1, sdk.CoinType, 0).String()
@@ -98,7 +101,8 @@ func TestShowCmdWithMultisigAccount(t *testing.T) {
 	out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, args)
 	require.NoError(t, err)
 
-	KeysCdc.Amino.UnmarshalJSON(out.Bytes(), &res)
+	err = KeysCdc.Amino.UnmarshalJSON(out.Bytes(), &res)
+	require.NoError(t, err)
 	require.Equal(t, res.Threshold, uint(threshold))
 	require.Len(t, res.PubKeys, 2)
 	require.Equal(t, strings.TrimSpace(out.String()), string(multiSigInfoBytes))
@@ -128,8 +132,10 @@ func Test_runShowCmd(t *testing.T) {
 	fakeKeyName2 := "runShowCmd_Key2"
 
 	t.Cleanup(func() {
-		kb.Delete("runShowCmd_Key1")
-		kb.Delete("runShowCmd_Key2")
+		err = kb.Delete("runShowCmd_Key1")
+		require.NoError(t, err)
+		err = kb.Delete("runShowCmd_Key2")
+		require.NoError(t, err)
 	})
 
 	path := hd.NewFundraiserParams(1, sdk.CoinType, 0).String()

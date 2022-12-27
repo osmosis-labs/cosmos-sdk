@@ -9,10 +9,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
-type byter interface {
-	Bytes() []byte
-}
-
 func checkAminoJSON(t *testing.T, src interface{}, dst interface{}, isNil bool) {
 	// Marshal to JSON bytes.
 	js, err := cdc.MarshalJSON(src)
@@ -28,9 +24,8 @@ func checkAminoJSON(t *testing.T, src interface{}, dst interface{}, isNil bool) 
 	require.Nil(t, err, "%+v", err)
 }
 
-// nolint: govet
 func ExamplePrintRegisteredTypes() {
-	cdc.PrintTypes(os.Stdout)
+	cdc.PrintTypes(os.Stdout) //nolint:errcheck
 	// | Type | Name | Prefix | Length | Notes |
 	// | ---- | ---- | ------ | ----- | ------ |
 	// | PrivKeyLedgerSecp256k1 | tendermint/PrivKeyLedgerSecp256k1 | 0x10CAB393 | variable |  |

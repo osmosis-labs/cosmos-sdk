@@ -1,7 +1,7 @@
 run:
   tests: true
   timeout: 5m
-  concurrency: 4
+  concurrency: 10
 
 linters:
   disable-all: true
@@ -10,19 +10,16 @@ linters:
     - depguard
     - dogsled
     - errcheck
+    - exportloopref
     - goconst
     - gocritic
     - gofumpt
-    - golint
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - misspell
     - nakedret
-    - prealloc
-    - scopelint
     - staticcheck
     - stylecheck
     - typecheck

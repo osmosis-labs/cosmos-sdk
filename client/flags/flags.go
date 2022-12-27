@@ -86,7 +86,7 @@ func AddQueryFlagsToCmd(cmd *cobra.Command) {
 	cmd.Flags().Int64(FlagHeight, 0, "Use a specific height to query state at (this can error if the node is pruning state)")
 	cmd.Flags().StringP(tmcli.OutputFlag, "o", "text", "Output format (text|json)")
 
-	cmd.MarkFlagRequired(FlagChainID) // nolint: errcheck
+	cmd.MarkFlagRequired(FlagChainID) //nolint: errcheck
 
 	cmd.SetErr(cmd.ErrOrStderr())
 	cmd.SetOut(cmd.OutOrStdout())
@@ -117,7 +117,7 @@ func AddTxFlagsToCmd(cmd *cobra.Command) {
 	// --gas can accept integers and "auto"
 	cmd.Flags().String(FlagGas, "", fmt.Sprintf("gas limit to set per-transaction; set to %q to calculate sufficient gas automatically (default %d)", GasFlagAuto, DefaultGasLimit))
 
-	cmd.MarkFlagRequired(FlagChainID)
+	cmd.MarkFlagRequired(FlagChainID) //nolint:errcheck
 
 	cmd.SetErr(cmd.ErrOrStderr())
 	cmd.SetOut(cmd.OutOrStdout())

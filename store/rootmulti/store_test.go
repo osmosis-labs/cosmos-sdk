@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -404,7 +403,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	k2, v2 := []byte("water"), []byte("flows")
 	// v3 := []byte("is cold")
 
-	cid := multi.Commit()
+	_ = multi.Commit()
 
 	// Make sure we can get by name.
 	garbage := multi.getStoreByName("bad-name")
@@ -419,7 +418,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	store2.Set(k2, v2)
 
 	// Commit the multistore.
-	cid = multi.Commit()
+	cid := multi.Commit()
 	ver := cid.Version
 
 	// Reload multistore from database
@@ -709,7 +708,7 @@ func benchmarkMultistoreSnapshot(b *testing.B, stores uint8, storeKeys uint64) {
 		chunks, err := source.Snapshot(uint64(version), snapshottypes.CurrentFormat)
 		require.NoError(b, err)
 		for reader := range chunks {
-			_, err := io.Copy(ioutil.Discard, reader)
+			_, err := io.Copy(io.Discard, reader)
 			require.NoError(b, err)
 			err = reader.Close()
 			require.NoError(b, err)
@@ -764,7 +763,7 @@ func newMultiStoreWithMixedMounts(db dbm.DB) *Store {
 	store.MountStoreWithDB(types.NewKVStoreKey("iavl2"), types.StoreTypeIAVL, nil)
 	store.MountStoreWithDB(types.NewKVStoreKey("iavl3"), types.StoreTypeIAVL, nil)
 	store.MountStoreWithDB(types.NewTransientStoreKey("trans1"), types.StoreTypeTransient, nil)
-	store.LoadLatestVersion()
+	store.LoadLatestVersion() //nolint:errcheck
 
 	return store
 }

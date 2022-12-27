@@ -49,7 +49,7 @@ func TestMarshalAny(t *testing.T) {
 	require.Equal(t, kitty, animal)
 
 	// nil should fail
-	registry = NewTestInterfaceRegistry()
+	_ = NewTestInterfaceRegistry()
 	err = cdc.UnmarshalInterface(bz, nil)
 	require.Error(t, err)
 }

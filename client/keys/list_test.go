@@ -38,7 +38,7 @@ func Test_runListCmd(t *testing.T) {
 		kb.Delete("something") //nolint:errcheck
 	})
 
-	type args struct {
+	type args struct { //nolint:unused,structcheck
 		cmd  *cobra.Command
 		args []string
 	}

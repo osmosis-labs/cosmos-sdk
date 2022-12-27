@@ -4,7 +4,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/ibc/light-clients/06-solomachine/types"
-	solomachinetypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/06-solomachine/types"
 	ibctesting "github.com/cosmos/cosmos-sdk/x/ibc/testing"
 )
 
@@ -13,11 +12,11 @@ func (suite *SoloMachineTestSuite) TestVerifySignature() {
 	signBytes := []byte("sign bytes")
 
 	singleSignature := suite.solomachine.GenerateSignature(signBytes)
-	singleSigData, err := solomachinetypes.UnmarshalSignatureData(cdc, singleSignature)
+	singleSigData, err := types.UnmarshalSignatureData(cdc, singleSignature)
 	suite.Require().NoError(err)
 
 	multiSignature := suite.solomachineMulti.GenerateSignature(signBytes)
-	multiSigData, err := solomachinetypes.UnmarshalSignatureData(cdc, multiSignature)
+	multiSigData, err := types.UnmarshalSignatureData(cdc, multiSignature)
 	suite.Require().NoError(err)
 
 	testCases := []struct {
@@ -56,7 +55,7 @@ func (suite *SoloMachineTestSuite) TestVerifySignature() {
 		tc := tc
 
 		suite.Run(tc.name, func() {
-			err := solomachinetypes.VerifySignature(tc.publicKey, signBytes, tc.sigData)
+			err := types.VerifySignature(tc.publicKey, signBytes, tc.sigData)
 
 			if tc.expPass {
 				suite.Require().NoError(err)

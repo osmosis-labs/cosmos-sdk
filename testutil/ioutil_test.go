@@ -1,7 +1,7 @@
 package testutil_test
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -40,6 +40,6 @@ func TestApplyMockIODiscardOutErr(t *testing.T) {
 
 	testutil.ApplyMockIODiscardOutErr(cmd)
 	require.NotEqual(t, cmd.InOrStdin(), oldStdin)
-	require.Equal(t, cmd.OutOrStdout(), ioutil.Discard)
-	require.Equal(t, cmd.ErrOrStderr(), ioutil.Discard)
+	require.Equal(t, cmd.OutOrStdout(), io.Discard)
+	require.Equal(t, cmd.ErrOrStderr(), io.Discard)
 }
