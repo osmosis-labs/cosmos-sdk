@@ -204,30 +204,20 @@ func (st *Store) DeleteVersions(versions ...int64) error {
 
 // Implements types.KVStore.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	var iTree *iavl.ImmutableTree
-
-	switch tree := st.tree.(type) {
-	case *immutableTree:
-		iTree = tree.ImmutableTree
-	case *iavl.MutableTree:
-		iTree = tree.ImmutableTree
+	iterator, err := st.tree.Iterator(start, end, true)
+	if err != nil {
+		panic(err)
 	}
-
-	return newIAVLIterator(iTree, start, end, true)
+	return iterator
 }
 
 // Implements types.KVStore.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	var iTree *iavl.ImmutableTree
-
-	switch tree := st.tree.(type) {
-	case *immutableTree:
-		iTree = tree.ImmutableTree
-	case *iavl.MutableTree:
-		iTree = tree.ImmutableTree
+	iterator, err := st.tree.Iterator(start, end, false)
+	if err != nil {
+		panic(err)
 	}
-
-	return newIAVLIterator(iTree, start, end, false)
+	return iterator
 }
 
 // SetInitialVersion sets the initial version of the IAVL tree. It is used when
