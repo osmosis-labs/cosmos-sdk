@@ -334,8 +334,8 @@ func (suite *IBCTestSuite) TestExportGenesis() {
 				// creates clients
 				suite.coordinator.Setup(suite.chainA, suite.chainB, channeltypes.UNORDERED)
 				// create extra clients
-				suite.coordinator.CreateClient(suite.chainA, suite.chainB, exported.Tendermint)
-				suite.coordinator.CreateClient(suite.chainA, suite.chainB, exported.Tendermint)
+				suite.coordinator.CreateClient(suite.chainA, suite.chainB, exported.Tendermint) //nolint:errcheck
+				suite.coordinator.CreateClient(suite.chainA, suite.chainB, exported.Tendermint) //nolint:errcheck
 			},
 		},
 	}

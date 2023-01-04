@@ -27,18 +27,18 @@ func (suite *KeeperTestSuite) TestTimeoutPacket() {
 
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
 			// need to update chainA's client representing chainB to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, true},
 		{"success: UNORDERED", func() {
 			ordered = false
 
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
 			// need to update chainA's client representing chainB to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, true},
 		{"channel not found", func() {
 			// use wrong channel naming
@@ -76,8 +76,8 @@ func (suite *KeeperTestSuite) TestTimeoutPacket() {
 		{"timeout", func() {
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, timeoutHeight, disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)                //nolint:errcheck
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, false},
 		{"packet already received ", func() {
 			ordered = true
@@ -85,13 +85,13 @@ func (suite *KeeperTestSuite) TestTimeoutPacket() {
 
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, timeoutHeight, uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)                //nolint:errcheck
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, false},
 		{"packet hasn't been sent", func() {
 			clientA, _, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, timeoutHeight, uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, false},
 		{"next seq receive verification failed", func() {
 			// set ordered to false resulting in wrong proof provided
@@ -99,8 +99,8 @@ func (suite *KeeperTestSuite) TestTimeoutPacket() {
 
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)                //nolint:errcheck
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, false},
 		{"packet ack verification failed", func() {
 			// set ordered to true resulting in wrong proof provided
@@ -108,8 +108,8 @@ func (suite *KeeperTestSuite) TestTimeoutPacket() {
 
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)                //nolint:errcheck
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 		}, false},
 	}
 
@@ -157,7 +157,7 @@ func (suite *KeeperTestSuite) TestTimeoutExecuted() {
 		{"success ORDERED", func() {
 			_, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
 
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, true},
@@ -169,7 +169,7 @@ func (suite *KeeperTestSuite) TestTimeoutExecuted() {
 		{"incorrect capability", func() {
 			_, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
 
 			chanCap = capabilitytypes.NewCapability(100)
 		}, false},
@@ -210,10 +210,10 @@ func (suite *KeeperTestSuite) TestTimeoutOnClose() {
 			ordered = true
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
+			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)  //nolint:errcheck
 			// need to update chainA's client representing chainB to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, true},
@@ -221,10 +221,10 @@ func (suite *KeeperTestSuite) TestTimeoutOnClose() {
 			ordered = false
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
+			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)  //nolint:errcheck
 			// need to update chainA's client representing chainB to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, true},
@@ -270,10 +270,10 @@ func (suite *KeeperTestSuite) TestTimeoutOnClose() {
 			ordered = true
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
+			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)  //nolint:errcheck
 			// need to update chainA's client representing chainB to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, false},
@@ -281,7 +281,7 @@ func (suite *KeeperTestSuite) TestTimeoutOnClose() {
 			ordered = true
 			_, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, false},
 		{"next seq receive verification failed", func() {
@@ -289,9 +289,9 @@ func (suite *KeeperTestSuite) TestTimeoutOnClose() {
 			ordered = false
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)                //nolint:errcheck
+			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)                 //nolint:errcheck
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, false},
 		{"packet ack verification failed", func() {
@@ -299,19 +299,19 @@ func (suite *KeeperTestSuite) TestTimeoutOnClose() {
 			ordered = true
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)                //nolint:errcheck
+			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)                 //nolint:errcheck
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 			chanCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, false},
 		{"channel capability not found", func() {
 			ordered = true
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.ORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.GetSelfHeight(suite.chainB.GetContext()), uint64(suite.chainB.GetContext().BlockTime().UnixNano()))
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
+			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, channelB)  //nolint:errcheck
 			// need to update chainA's client representing chainB to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint) //nolint:errcheck
 
 			chanCap = capabilitytypes.NewCapability(100)
 		}, false},

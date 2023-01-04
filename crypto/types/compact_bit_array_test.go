@@ -13,7 +13,7 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 )
 
-func randCompactBitArray(bits int) (*CompactBitArray, []byte) {
+func randCompactBitArray(bits int) (*CompactBitArray, []byte) { //nolint:unparam
 	numBytes := (bits + 7) / 8
 	src := tmrand.Bytes((bits + 7) / 8)
 	bA := NewCompactBitArray(bits)

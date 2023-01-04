@@ -34,7 +34,7 @@ func (suite *SoloMachineTestSuite) TestCheckMisbehaviourAndUpdateState() {
 				"old misbehaviour is successful (timestamp is less than current consensus state)",
 				func() {
 					clientState = solomachine.ClientState()
-					solomachine.Time = solomachine.Time - 5
+					solomachine.Time -= 5
 					misbehaviour = solomachine.CreateMisbehaviour()
 				}, true,
 			},

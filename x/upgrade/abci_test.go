@@ -37,7 +37,7 @@ type TestSuite struct {
 
 var s TestSuite
 
-func setupTest(height int64, skip map[int64]bool) TestSuite {
+func setupTest(height int64, skip map[int64]bool) TestSuite { //nolint:unparam
 	db := dbm.NewMemDB()
 	app := simapp.NewSimApp(log.NewNopLogger(), db, nil, true, skip, simapp.DefaultNodeHome, 0, simapp.MakeTestEncodingConfig(), simapp.EmptyAppOptions{})
 	genesisState := simapp.NewDefaultGenesisState(app.AppCodec())
@@ -56,7 +56,7 @@ func setupTest(height int64, skip map[int64]bool) TestSuite {
 	s.ctx = app.BaseApp.NewContext(false, tmproto.Header{Height: height, Time: time.Now()})
 
 	s.module = upgrade.NewAppModule(s.keeper)
-	s.querier = s.module.LegacyQuerierHandler(app.LegacyAmino())
+	s.querier = s.module.LegacyQuerierHandler(app.LegacyAmino()) //nolint:staticcheck // SA1019: LegacyAmino is deprecated
 	s.handler = upgrade.NewSoftwareUpgradeProposalHandler(s.keeper)
 	return s
 }

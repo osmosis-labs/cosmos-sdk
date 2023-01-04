@@ -474,7 +474,7 @@ func (suite *AnteTestSuite) TestAnteHandlerFees() {
 		{
 			"signer does not have enough funds to pay the fee",
 			func() {
-				suite.app.BankKeeper.SetBalances(suite.ctx, addr0, sdk.NewCoins(sdk.NewInt64Coin("atom", 149)))
+				suite.app.BankKeeper.SetBalances(suite.ctx, addr0, sdk.NewCoins(sdk.NewInt64Coin("atom", 149))) //nolint:errcheck
 			},
 			false,
 			false,

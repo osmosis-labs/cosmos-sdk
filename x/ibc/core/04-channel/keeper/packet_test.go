@@ -20,8 +20,6 @@ var (
 	timeoutHeight            = clienttypes.NewHeight(0, 100)
 
 	// for when the testing package cannot be used
-	clientIDA  = "clientA"
-	clientIDB  = "clientB"
 	connIDA    = "connA"
 	connIDB    = "connB"
 	portID     = "portid"
@@ -342,7 +340,7 @@ func (suite *KeeperTestSuite) TestRecvPacket() {
 		{"receipt already stored", func() {
 			_, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, timeoutHeight, disabledTimeoutTimestamp)
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) //nolint:errcheck
 			suite.chainB.App.IBCKeeper.ChannelKeeper.SetPacketReceipt(suite.chainB.GetContext(), channelB.PortID, channelB.ID, 1)
 			channelCap = suite.chainB.GetChannelCapability(channelB.PortID, channelB.ID)
 		}, false},
@@ -592,7 +590,7 @@ func (suite *KeeperTestSuite) TestAcknowledgePacket() {
 			packet = types.NewPacket(validPacketData, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, timeoutHeight, disabledTimeoutTimestamp)
 
 			// create packet commitment
-			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB)
+			suite.coordinator.SendPacket(suite.chainA, suite.chainB, packet, clientB) // nolint:errcheck
 			channelCap = suite.chainA.GetChannelCapability(channelA.PortID, channelA.ID)
 		}, false},
 		{"next ack sequence not found", func() {

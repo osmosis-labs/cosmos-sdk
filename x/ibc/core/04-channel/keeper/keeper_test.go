@@ -310,7 +310,7 @@ func (suite *KeeperTestSuite) TestGetAllPacketCommitmentsAtChannel() {
 // TestSetPacketAcknowledgement verifies that packet acknowledgements are correctly
 // set in the keeper.
 func (suite *KeeperTestSuite) TestSetPacketAcknowledgement() {
-	_, _, _, _, channelA, _ := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED)
+	_, _, _, _, channelA, _ := suite.coordinator.Setup(suite.chainA, suite.chainB, types.UNORDERED) //nolint:dogsled
 
 	ctxA := suite.chainA.GetContext()
 	seq := uint64(10)

@@ -353,7 +353,7 @@ func (suite *KeeperTestSuite) TestQueryChannelClientState() {
 
 				channel := suite.chainA.GetChannel(channelA)
 				// update channel to reference a connection that does not exist
-				channel.ConnectionHops[0] = "doesnotexist"
+				channel.ConnectionHops[0] = "doesnotexist" //nolint:goconst
 
 				// set connection hops to wrong connection ID
 				suite.chainA.App.IBCKeeper.ChannelKeeper.SetChannel(suite.chainA.GetContext(), channelA.PortID, channelA.ID, channel)

@@ -401,7 +401,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
 			res, err := queryClient.ValidatorDelegations(gocontext.Background(), req)
-			if tc.expPass && !tc.expErr {
+			if tc.expPass && !tc.expErr { //nolint:gocritic
 				suite.NoError(err)
 				suite.Len(res.DelegationResponses, 1)
 				suite.NotNil(res.Pagination.NextKey)
@@ -536,7 +536,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorUnbondingDelegations() {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
 			res, err := queryClient.DelegatorUnbondingDelegations(gocontext.Background(), req)
-			if tc.expPass && !tc.expErr {
+			if tc.expPass && !tc.expErr { //nolint:gocritic
 				suite.NoError(err)
 				suite.NotNil(res.Pagination.NextKey)
 				suite.Equal(uint64(2), res.Pagination.Total)
@@ -713,7 +713,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegation() {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
 			res, err := queryClient.Redelegations(gocontext.Background(), req)
-			if tc.expPass && !tc.expErr {
+			if tc.expPass && !tc.expErr { //nolint:gocritic
 				suite.NoError(err)
 				suite.Len(res.RedelegationResponses, len(redel.Entries))
 				suite.Equal(redel.DelegatorAddress, res.RedelegationResponses[0].Redelegation.DelegatorAddress)
@@ -804,12 +804,14 @@ func createValidators(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers 
 
 	app.StakingKeeper.SetValidator(ctx, val1)
 	app.StakingKeeper.SetValidator(ctx, val2)
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, val1)
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, val2)
+	err := app.StakingKeeper.SetValidatorByConsAddr(ctx, val1)
+	require.NoError(t, err)
+	err = app.StakingKeeper.SetValidatorByConsAddr(ctx, val2)
+	require.NoError(t, err)
 	app.StakingKeeper.SetNewValidatorByPowerIndex(ctx, val1)
 	app.StakingKeeper.SetNewValidatorByPowerIndex(ctx, val2)
 
-	_, err := app.StakingKeeper.Delegate(ctx, addrs[0], sdk.TokensFromConsensusPower(powers[0]), types.Unbonded, val1, true)
+	_, err = app.StakingKeeper.Delegate(ctx, addrs[0], sdk.TokensFromConsensusPower(powers[0]), types.Unbonded, val1, true)
 	require.NoError(t, err)
 	_, err = app.StakingKeeper.Delegate(ctx, addrs[1], sdk.TokensFromConsensusPower(powers[1]), types.Unbonded, val2, true)
 	require.NoError(t, err)

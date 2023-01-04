@@ -13,7 +13,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 )
 
-func testComponents() (*codec.LegacyAmino, sdk.Context, sdk.StoreKey, sdk.StoreKey, paramskeeper.Keeper) {
+func testComponents() (*codec.LegacyAmino, sdk.Context, sdk.StoreKey, sdk.StoreKey, paramskeeper.Keeper) { //nolint:unparam
 	marshaler := simapp.MakeTestEncodingConfig().Marshaler
 	legacyAmino := createTestCodec()
 	mkey := sdk.NewKVStoreKey("test")

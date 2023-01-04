@@ -619,7 +619,7 @@ func (suite *KeeperTestSuite) TestChanCloseInit() {
 			suite.Require().NoError(err)
 
 			// create channel in init
-			channelA, _, err := suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
+			channelA, _, _ := suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
 
 			// ensure channel capability check passes
 			suite.chainA.CreateChannelCapability(channelA.PortID, channelA.ID)

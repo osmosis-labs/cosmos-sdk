@@ -84,7 +84,7 @@ func (suite *SoloMachineTestSuite) TestInitialize() {
 	// test singlesig and multisig public keys
 	for _, solomachine := range []*ibctesting.Solomachine{suite.solomachine, suite.solomachineMulti} {
 		malleatedConsensus := solomachine.ClientState().ConsensusState
-		malleatedConsensus.Timestamp = malleatedConsensus.Timestamp + 10
+		malleatedConsensus.Timestamp += 10
 
 		testCases := []struct {
 			name      string

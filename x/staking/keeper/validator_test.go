@@ -43,7 +43,7 @@ func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*simapp.Si
 	return app, ctx, addrDels, addrVals
 }
 
-func initValidators(t testing.TB, power int64, numAddrs int, powers []int64) (*simapp.SimApp, sdk.Context, []sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
+func initValidators(t testing.TB, power int64, numAddrs int, powers []int64) (*simapp.SimApp, sdk.Context, []sdk.AccAddress, []sdk.ValAddress, []types.Validator) { //nolint:unparam
 	app, ctx, addrs, valAddrs := bootstrapValidatorTest(t, power, numAddrs)
 	pks := simapp.CreateTestPubKeys(numAddrs)
 
@@ -194,7 +194,7 @@ func TestUpdateBondedValidatorsDecreaseCliff(t *testing.T) {
 	app.StakingKeeper.DeleteValidatorByPowerIndex(ctx, nextCliffVal)
 	shares := sdk.TokensFromConsensusPower(21)
 	nextCliffVal, _ = nextCliffVal.RemoveDelShares(shares.ToDec())
-	nextCliffVal = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, nextCliffVal, true)
+	_ = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, nextCliffVal, true)
 
 	expectedValStatus := map[int]types.BondStatus{
 		9: types.Bonded, 8: types.Bonded, 7: types.Bonded, 5: types.Bonded, 4: types.Bonded,
@@ -233,7 +233,8 @@ func TestSlashToZeroPowerRemoved(t *testing.T) {
 	validator, _ = validator.AddTokensFromDel(valTokens)
 	require.Equal(t, types.Unbonded, validator.Status)
 	require.Equal(t, valTokens, validator.Tokens)
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, validator)
+	err = app.StakingKeeper.SetValidatorByConsAddr(ctx, validator)
+	require.NoError(t, err)
 	validator = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validator, true)
 	require.Equal(t, valTokens, validator.Tokens, "\nvalidator %v\npool %v", validator, valTokens)
 
@@ -275,7 +276,8 @@ func TestValidatorBasics(t *testing.T) {
 
 	// set and retrieve a record
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], true)
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, validators[0])
+	err := app.StakingKeeper.SetValidatorByConsAddr(ctx, validators[0])
+	require.NoError(t, err)
 	resVal, found := app.StakingKeeper.GetValidator(ctx, addrVals[0])
 	require.True(t, found)
 	assert.True(ValEq(t, validators[0], resVal))

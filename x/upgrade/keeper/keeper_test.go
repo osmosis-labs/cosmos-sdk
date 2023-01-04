@@ -118,7 +118,7 @@ func (s *KeeperTestSuite) TestScheduleUpgrade() {
 				Height: 123450000,
 			},
 			setup: func() {
-				s.app.UpgradeKeeper.ScheduleUpgrade(s.ctx, types.Plan{
+				s.app.UpgradeKeeper.ScheduleUpgrade(s.ctx, types.Plan{ //nolint:errcheck
 					Name:   "alt-good",
 					Info:   "new text here",
 					Height: 543210000,
@@ -135,7 +135,7 @@ func (s *KeeperTestSuite) TestScheduleUpgrade() {
 				UpgradedClientState: cs,
 			},
 			setup: func() {
-				s.app.UpgradeKeeper.ScheduleUpgrade(s.ctx, types.Plan{
+				s.app.UpgradeKeeper.ScheduleUpgrade(s.ctx, types.Plan{ //nolint:errcheck
 					Name:                "alt-good",
 					Info:                "new text here",
 					Height:              543210000,
@@ -152,7 +152,7 @@ func (s *KeeperTestSuite) TestScheduleUpgrade() {
 				Height: 123450000,
 			},
 			setup: func() {
-				s.app.UpgradeKeeper.ScheduleUpgrade(s.ctx, types.Plan{
+				s.app.UpgradeKeeper.ScheduleUpgrade(s.ctx, types.Plan{ //nolint:errcheck
 					Name:                "alt-good",
 					Info:                "new text here",
 					Height:              543210000,
@@ -269,7 +269,7 @@ func (s *KeeperTestSuite) TestSetUpgradedClient() {
 			height: 10,
 			setup: func() {
 				clientState = &ibctmtypes.ClientState{ChainId: "gaiachain"}
-				s.app.UpgradeKeeper.SetUpgradedClient(s.ctx, 10, clientState)
+				s.app.UpgradeKeeper.SetUpgradedClient(s.ctx, 10, clientState) // nolint:errcheck
 			},
 			exists: true,
 		},

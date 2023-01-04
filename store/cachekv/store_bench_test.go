@@ -14,7 +14,7 @@ var sink interface{}
 const defaultValueSizeBz = 1 << 12
 
 // This benchmark measures the time of iterator.Next() when the parent store is blank
-func benchmarkBlankParentIteratorNext(b *testing.B, keysize int) {
+func benchmarkBlankParentIteratorNext(b *testing.B, keysize int) { //nolint:unparam
 	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	kvstore := cachekv.NewStore(mem)
 	// Use a singleton for value, to not waste time computing it
@@ -42,7 +42,7 @@ func benchmarkBlankParentIteratorNext(b *testing.B, keysize int) {
 }
 
 // Benchmark setting New keys to a store, where the new keys are in sequence.
-func benchmarkBlankParentAppend(b *testing.B, keysize int) {
+func benchmarkBlankParentAppend(b *testing.B, keysize int) { //nolint:unparam
 	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	kvstore := cachekv.NewStore(mem)
 

@@ -17,7 +17,6 @@ import (
 	clienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/04-channel/types"
 	commitmenttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/23-commitment/types"
-	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
 )
 
 const (
@@ -55,9 +54,7 @@ var (
 	packet        = types.NewPacket(validPacketData, 1, portid, chanid, cpportid, cpchanid, timeoutHeight, timeoutTimestamp)
 	invalidPacket = types.NewPacket(unknownPacketData, 0, portid, chanid, cpportid, cpchanid, timeoutHeight, timeoutTimestamp)
 
-	emptyProof     = []byte{}
-	invalidProofs1 = exported.Proof(nil)
-	invalidProofs2 = emptyProof
+	emptyProof = []byte{}
 
 	addr      = sdk.AccAddress("testaddr111111111111")
 	emptyAddr sdk.AccAddress
@@ -81,7 +78,8 @@ func (suite *TypesTestSuite) SetupTest() {
 	storeKey := storetypes.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, nil)
-	store.LoadVersion(0)
+	err := store.LoadVersion(0)
+	suite.Require().NoError(err)
 	iavlStore := store.GetCommitStore(storeKey).(*iavl.Store)
 
 	iavlStore.Set([]byte("KEY"), []byte("VALUE"))

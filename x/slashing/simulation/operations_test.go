@@ -66,7 +66,8 @@ func TestSimulateMsgUnjail(t *testing.T) {
 	validator0 := getTestingValidator0(t, app, ctx, accounts)
 
 	// setup validator0 by consensus address
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, validator0)
+	err := app.StakingKeeper.SetValidatorByConsAddr(ctx, validator0)
+	require.NoError(t, err)
 	val0ConsAddress, err := validator0.GetConsAddr()
 	require.NoError(t, err)
 	info := types.NewValidatorSigningInfo(val0ConsAddress, int64(4), int64(3),
@@ -94,7 +95,7 @@ func TestSimulateMsgUnjail(t *testing.T) {
 	require.NoError(t, err)
 
 	var msg types.MsgUnjail
-	types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
+	types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg) //nolint:errcheck
 
 	require.True(t, operationMsg.OK)
 	require.Equal(t, types.TypeMsgUnjail, msg.Type())

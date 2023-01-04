@@ -219,7 +219,10 @@ func setupTest() (*simapp.SimApp, sdk.Context, codec.Marshaler) {
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 
-	ms.LoadLatestVersion()
+	err := ms.LoadLatestVersion()
+	if err != nil {
+		panic(err)
+	}
 
 	maccPerms := simapp.GetMaccPerms()
 	maccPerms[holder] = nil

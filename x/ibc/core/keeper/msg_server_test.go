@@ -18,8 +18,6 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
-const height = 10
-
 var (
 	timeoutHeight = clienttypes.NewHeight(0, 10000)
 	maxSequence   = uint64(10)
@@ -326,7 +324,8 @@ func (suite *KeeperTestSuite) TestHandleTimeoutPacket() {
 			suite.Require().NoError(err)
 
 			// need to update chainA client to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			packetKey = host.NextSequenceRecvKey(packet.GetDestPort(), packet.GetDestChannel())
 		}, true},
@@ -339,7 +338,8 @@ func (suite *KeeperTestSuite) TestHandleTimeoutPacket() {
 			suite.Require().NoError(err)
 
 			// need to update chainA client to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			packetKey = host.PacketReceiptKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
 		}, true},
@@ -357,7 +357,8 @@ func (suite *KeeperTestSuite) TestHandleTimeoutPacket() {
 				suite.Require().NoError(err)
 			}
 
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err := suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 			packetKey = host.PacketReceiptKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
 		}, true},
 		{"success: ORDERED timeout out of order packet", func() {
@@ -373,7 +374,8 @@ func (suite *KeeperTestSuite) TestHandleTimeoutPacket() {
 				suite.Require().NoError(err)
 			}
 
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err := suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 			packetKey = host.NextSequenceRecvKey(packet.GetDestPort(), packet.GetDestChannel())
 		}, true},
 		{"channel does not exist", func() {
@@ -452,12 +454,14 @@ func (suite *KeeperTestSuite) TestHandleTimeoutOnClosePacket() {
 			suite.Require().NoError(err)
 
 			// need to update chainA client to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			packetKey = host.NextSequenceRecvKey(packet.GetDestPort(), packet.GetDestChannel())
 
 			// close counterparty channel
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			err = suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			suite.Require().NoError(err)
 		}, true},
 		{"success: UNORDERED", func() {
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, channeltypes.UNORDERED)
@@ -473,12 +477,14 @@ func (suite *KeeperTestSuite) TestHandleTimeoutOnClosePacket() {
 			suite.Require().NoError(err)
 
 			// need to update chainA client to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			packetKey = host.PacketReceiptKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
 
 			// close counterparty channel
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			err = suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			suite.Require().NoError(err)
 		}, true},
 		{"success: UNORDERED timeout out of order packet", func() {
 			// setup uses an UNORDERED channel
@@ -499,11 +505,13 @@ func (suite *KeeperTestSuite) TestHandleTimeoutOnClosePacket() {
 				suite.Require().NoError(err)
 			}
 
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err := suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 			packetKey = host.PacketReceiptKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
 
 			// close counterparty channel
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			err = suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			suite.Require().NoError(err)
 		}, true},
 		{"success: ORDERED timeout out of order packet", func() {
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, channeltypes.ORDERED)
@@ -523,11 +531,13 @@ func (suite *KeeperTestSuite) TestHandleTimeoutOnClosePacket() {
 				suite.Require().NoError(err)
 			}
 
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err := suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 			packetKey = host.NextSequenceRecvKey(packet.GetDestPort(), packet.GetDestChannel())
 
 			// close counterparty channel
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			err = suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			suite.Require().NoError(err)
 		}, true},
 		{"channel does not exist", func() {
 			// any non-nil value of packet is valid
@@ -546,7 +556,8 @@ func (suite *KeeperTestSuite) TestHandleTimeoutOnClosePacket() {
 			}
 
 			// close counterparty channel
-			suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			err := suite.coordinator.SetChannelClosed(suite.chainB, suite.chainA, counterpartyChannel)
+			suite.Require().NoError(err)
 		}, false},
 		{"ORDERED: channel not closed", func() {
 			clientA, clientB, _, _, channelA, channelB := suite.coordinator.Setup(suite.chainA, suite.chainB, channeltypes.ORDERED)
@@ -562,7 +573,8 @@ func (suite *KeeperTestSuite) TestHandleTimeoutOnClosePacket() {
 			suite.Require().NoError(err)
 
 			// need to update chainA client to prove missing ack
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			packetKey = host.NextSequenceRecvKey(packet.GetDestPort(), packet.GetDestChannel())
 		}, false},
@@ -634,13 +646,14 @@ func (suite *KeeperTestSuite) TestUpgradeClient() {
 				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 
 				// zero custom fields and store in upgrade store
-				suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
-				suite.chainB.App.UpgradeKeeper.SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsState)
+				err := suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
+				suite.Require().NoError(err)
+				err = suite.chainB.App.UpgradeKeeper.SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsState)
+				suite.Require().NoError(err)
 
 				// commit upgrade store changes and update clients
-
 				suite.coordinator.CommitBlock(suite.chainB)
-				err := suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+				err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
 				suite.Require().NoError(err)
 
 				cs, found := suite.chainA.App.IBCKeeper.ClientKeeper.GetClientState(suite.chainA.GetContext(), clientA)
@@ -670,13 +683,14 @@ func (suite *KeeperTestSuite) TestUpgradeClient() {
 				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 
 				// zero custom fields and store in upgrade store
-				suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
-				suite.chainB.App.UpgradeKeeper.SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsState)
+				err := suite.chainB.App.UpgradeKeeper.SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClient)
+				suite.Require().NoError(err)
+				err = suite.chainB.App.UpgradeKeeper.SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsState)
+				suite.Require().NoError(err)
 
 				// commit upgrade store changes and update clients
-
 				suite.coordinator.CommitBlock(suite.chainB)
-				err := suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+				err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
 				suite.Require().NoError(err)
 
 				msg, err = clienttypes.NewMsgUpgradeClient(clientA, upgradedClient, upgradedConsState, nil, nil, suite.chainA.SenderAccount.GetAddress())

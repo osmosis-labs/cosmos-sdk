@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck // SA1019: package github.com/golang/protobuf/proto is deprecated
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"

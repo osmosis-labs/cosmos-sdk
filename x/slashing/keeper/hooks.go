@@ -32,7 +32,10 @@ func (k Keeper) AfterValidatorCreated(ctx sdk.Context, valAddr sdk.ValAddress) e
 	if err != nil {
 		return err
 	}
-	k.AddPubkey(ctx, consPk)
+	err = k.AddPubkey(ctx, consPk)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -68,7 +71,7 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, 
 
 // Implements sdk.ValidatorHooks
 func (h Hooks) AfterValidatorCreated(ctx sdk.Context, valAddr sdk.ValAddress) {
-	h.k.AfterValidatorCreated(ctx, valAddr)
+	h.k.AfterValidatorCreated(ctx, valAddr) //nolint:errcheck
 }
 
 func (h Hooks) AfterValidatorBeginUnbonding(_ sdk.Context, _ sdk.ConsAddress, _ sdk.ValAddress)  {}

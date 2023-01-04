@@ -426,7 +426,8 @@ func (suite *KeeperTestSuite) TestVerifyPacketReceiptAbsence() {
 			} else {
 				// need to update height to prove absence
 				suite.coordinator.CommitBlock(suite.chainA, suite.chainB)
-				suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+				err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+				suite.Require().NoError(err)
 			}
 
 			packetReceiptKey := host.PacketReceiptKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())

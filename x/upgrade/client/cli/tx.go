@@ -139,8 +139,8 @@ func NewCmdSubmitCancelUpgradeProposal() *cobra.Command {
 	cmd.Flags().String(cli.FlagTitle, "", "title of proposal")
 	cmd.Flags().String(cli.FlagDescription, "", "description of proposal")
 	cmd.Flags().String(cli.FlagDeposit, "", "deposit of proposal")
-	cmd.MarkFlagRequired(cli.FlagTitle)
-	cmd.MarkFlagRequired(cli.FlagDescription)
+	cmd.MarkFlagRequired(cli.FlagTitle)       //nolint:errcheck
+	cmd.MarkFlagRequired(cli.FlagDescription) //nolint:errcheck
 
 	return cmd
 }

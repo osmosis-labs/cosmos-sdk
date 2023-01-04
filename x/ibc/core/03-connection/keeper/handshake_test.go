@@ -131,7 +131,8 @@ func (suite *KeeperTestSuite) TestConnOpenTry() {
 
 			// commit in order for proof to return correct value
 			suite.coordinator.CommitBlock(suite.chainA)
-			suite.coordinator.UpdateClient(suite.chainB, suite.chainA, clientB, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainB, suite.chainA, clientB, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			// retrieve client state of chainA to pass as counterpartyClient
 			counterpartyClient = suite.chainA.GetClientState(clientA)
@@ -367,9 +368,11 @@ func (suite *KeeperTestSuite) TestConnOpenAck() {
 			connection.Counterparty.ConnectionId = connA.ID
 			suite.chainB.App.IBCKeeper.ConnectionKeeper.SetConnection(suite.chainB.GetContext(), connB.ID, connection)
 			// update clientB so state change is committed
-			suite.coordinator.UpdateClient(suite.chainB, suite.chainA, clientB, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainB, suite.chainA, clientB, exported.Tendermint)
+			suite.Require().NoError(err)
 
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			// retrieve client state of chainB to pass as counterpartyClient
 			counterpartyClient = suite.chainB.GetClientState(clientB)
@@ -481,8 +484,10 @@ func (suite *KeeperTestSuite) TestConnOpenAck() {
 			suite.chainB.App.IBCKeeper.ConnectionKeeper.SetConnection(suite.chainB.GetContext(), connB.ID, connection)
 
 			// update clientB so state change is committed
-			suite.coordinator.UpdateClient(suite.chainB, suite.chainA, clientB, exported.Tendermint)
-			suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			err = suite.coordinator.UpdateClient(suite.chainB, suite.chainA, clientB, exported.Tendermint)
+			suite.Require().NoError(err)
+			err = suite.coordinator.UpdateClient(suite.chainA, suite.chainB, clientA, exported.Tendermint)
+			suite.Require().NoError(err)
 
 			// retrieve client state of chainB to pass as counterpartyClient
 			counterpartyClient = suite.chainB.GetClientState(clientB)

@@ -54,7 +54,7 @@ func (suite *UpgradeTestSuite) TestQueryCurrentPlan() {
 			"with current upgrade plan",
 			func() {
 				plan := types.Plan{Name: "test-plan", Height: 5}
-				suite.app.UpgradeKeeper.ScheduleUpgrade(suite.ctx, plan)
+				suite.app.UpgradeKeeper.ScheduleUpgrade(suite.ctx, plan) //nolint:errcheck
 
 				req = &types.QueryCurrentPlanRequest{}
 				expResponse = types.QueryCurrentPlanResponse{Plan: &plan}
@@ -107,7 +107,7 @@ func (suite *UpgradeTestSuite) TestAppliedCurrentPlan() {
 
 				planName := "test-plan"
 				plan := types.Plan{Name: planName, Height: expHeight}
-				suite.app.UpgradeKeeper.ScheduleUpgrade(suite.ctx, plan)
+				suite.app.UpgradeKeeper.ScheduleUpgrade(suite.ctx, plan) //nolint:errcheck
 
 				suite.ctx = suite.ctx.WithBlockHeight(expHeight)
 				suite.app.UpgradeKeeper.SetUpgradeHandler(planName, func(ctx sdk.Context, plan types.Plan) {})

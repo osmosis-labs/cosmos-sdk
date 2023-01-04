@@ -25,7 +25,6 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 		{
 			name: "all defaults",
 			fsModify: func(fs *pflag.FlagSet) {
-				return
 			},
 			expectedCfg: TxCreateValidatorConfig{
 				IP:                      ip,
@@ -43,7 +42,7 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 		{
 			name: "Custom amount",
 			fsModify: func(fs *pflag.FlagSet) {
-				fs.Set(FlagAmount, "2000stake")
+				fs.Set(FlagAmount, "2000stake") //nolint:errcheck
 			},
 			expectedCfg: TxCreateValidatorConfig{
 				IP:                      ip,
@@ -61,7 +60,7 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 		{
 			name: "Custom commission rate",
 			fsModify: func(fs *pflag.FlagSet) {
-				fs.Set(FlagCommissionRate, "0.54")
+				fs.Set(FlagCommissionRate, "0.54") //nolint:errcheck
 			},
 			expectedCfg: TxCreateValidatorConfig{
 				IP:                      ip,
@@ -79,7 +78,7 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 		{
 			name: "Custom commission max rate",
 			fsModify: func(fs *pflag.FlagSet) {
-				fs.Set(FlagCommissionMaxRate, "0.89")
+				fs.Set(FlagCommissionMaxRate, "0.89") //nolint:errcheck
 			},
 			expectedCfg: TxCreateValidatorConfig{
 				IP:                      ip,
@@ -97,7 +96,7 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 		{
 			name: "Custom commission max change rate",
 			fsModify: func(fs *pflag.FlagSet) {
-				fs.Set(FlagCommissionMaxChangeRate, "0.55")
+				fs.Set(FlagCommissionMaxChangeRate, "0.55") //nolint:errcheck
 			},
 			expectedCfg: TxCreateValidatorConfig{
 				IP:                      ip,
@@ -115,7 +114,7 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 		{
 			name: "Custom min self delegations",
 			fsModify: func(fs *pflag.FlagSet) {
-				fs.Set(FlagMinSelfDelegation, "0.33")
+				fs.Set(FlagMinSelfDelegation, "0.33") //nolint:errcheck
 			},
 			expectedCfg: TxCreateValidatorConfig{
 				IP:                      ip,
