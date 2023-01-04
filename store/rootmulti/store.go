@@ -989,7 +989,7 @@ func setPruningHeights(batch dbm.Batch, pruneHeights []int64) {
 		bz = append(bz, buf...)
 	}
 
-	batch.Set([]byte(pruneHeightsKey), bz)
+	batch.Set([]byte(pruneHeightsKey), bz) //nolint:errcheck
 }
 
 func getPruningHeights(db dbm.DB) ([]int64, error) {
