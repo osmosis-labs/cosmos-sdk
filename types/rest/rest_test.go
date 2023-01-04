@@ -421,7 +421,7 @@ func runPostProcessResponse(t *testing.T, ctx client.Context, obj interface{}, e
 	require.Equal(t, string(expectedBody), string(body))
 }
 
-func mustNewRequest(t *testing.T, method, url string, body io.Reader) *http.Request {
+func mustNewRequest(t *testing.T, method, url string, body io.Reader) *http.Request { //nolint:unparam
 	req, err := http.NewRequest(method, url, body)
 	require.NoError(t, err)
 	err = req.ParseForm()

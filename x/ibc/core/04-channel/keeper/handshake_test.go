@@ -150,7 +150,7 @@ func (suite *KeeperTestSuite) TestChanOpenTry() {
 	testCases := []testCase{
 		{"success", func() {
 			_, _, connA, connB = suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
+			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED) //nolint:errcheck
 
 			suite.chainB.CreatePortCapability(suite.chainB.NextTestChannel(connB, ibctesting.MockPort).PortID)
 			portCap = suite.chainB.GetPortCapability(suite.chainB.NextTestChannel(connB, ibctesting.MockPort).PortID)
@@ -167,7 +167,7 @@ func (suite *KeeperTestSuite) TestChanOpenTry() {
 			_, _, connA, connB = suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
 
 			// make previous channel have wrong ordering
-			suite.coordinator.ChanOpenInit(suite.chainB, suite.chainA, connB, connA, ibctesting.MockPort, ibctesting.MockPort, types.UNORDERED)
+			suite.coordinator.ChanOpenInit(suite.chainB, suite.chainA, connB, connA, ibctesting.MockPort, ibctesting.MockPort, types.UNORDERED) //nolint:errcheck
 		}, false},
 		{"connection doesn't exist", func() {
 			// any non-nil values of connA and connB are acceptable
@@ -190,7 +190,7 @@ func (suite *KeeperTestSuite) TestChanOpenTry() {
 		}, false},
 		{"consensus state not found", func() {
 			_, _, connA, connB = suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
+			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED) //nolint:errcheck
 
 			suite.chainB.CreatePortCapability(suite.chainB.NextTestChannel(connB, ibctesting.MockPort).PortID)
 			portCap = suite.chainB.GetPortCapability(suite.chainB.NextTestChannel(connB, ibctesting.MockPort).PortID)
@@ -204,13 +204,13 @@ func (suite *KeeperTestSuite) TestChanOpenTry() {
 		}, false},
 		{"port capability not found", func() {
 			_, _, connA, connB = suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
+			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED) //nolint:errcheck
 
 			portCap = capabilitytypes.NewCapability(3)
 		}, false},
 		{"connection version not negotiated", func() {
 			_, _, connA, connB = suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
+			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED) //nolint:errcheck
 
 			// modify connB versions
 			conn := suite.chainB.GetConnection(connB)
@@ -227,7 +227,7 @@ func (suite *KeeperTestSuite) TestChanOpenTry() {
 		}, false},
 		{"connection does not support ORDERED channels", func() {
 			_, _, connA, connB = suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
+			suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED) //nolint:errcheck
 
 			// modify connA versions to only support UNORDERED channels
 			conn := suite.chainA.GetConnection(connA)
@@ -400,7 +400,7 @@ func (suite *KeeperTestSuite) TestChanOpenAck() {
 			channelA, channelB, err := suite.coordinator.ChanOpenInit(suite.chainA, suite.chainB, connA, connB, ibctesting.MockPort, ibctesting.MockPort, types.ORDERED)
 			suite.Require().NoError(err)
 
-			suite.coordinator.ChanOpenTry(suite.chainB, suite.chainA, channelB, channelA, connB, types.ORDERED)
+			suite.coordinator.ChanOpenTry(suite.chainB, suite.chainA, channelB, channelA, connB, types.ORDERED) //nolint:errcheck
 
 			channelCap = capabilitytypes.NewCapability(6)
 		}, false},

@@ -30,7 +30,7 @@ func TestBasicManager(t *testing.T) {
 	cdc := codec.NewProtoCodec(interfaceRegistry)
 
 	clientCtx := client.Context{}
-	clientCtx = clientCtx.WithLegacyAmino(legacyAmino)
+	clientCtx = clientCtx.WithLegacyAmino(legacyAmino) //nolint:staticcheck // SA1019: legacyAmino is deprecated: Legacy amino is deprecated
 	wantDefaultGenesis := map[string]json.RawMessage{"mockAppModuleBasic1": json.RawMessage(``)}
 
 	mockAppModuleBasic1 := mocks.NewMockAppModuleBasic(mockCtrl)

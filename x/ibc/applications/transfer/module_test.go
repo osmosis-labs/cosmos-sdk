@@ -44,7 +44,7 @@ func (suite *TransferTestSuite) TestOnChanOpenInit() {
 		},
 		{
 			"invalid version", func() {
-				channel.Version = "version"
+				channel.Version = "version" //nolint:goconst
 			}, false,
 		},
 		{

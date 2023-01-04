@@ -79,7 +79,8 @@ func (suite *SimTestSuite) TestSimulateMsgSend() {
 	suite.Require().NoError(err)
 
 	var msg types.MsgSend
-	types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
+	suite.Require().NoError(err)
 
 	suite.Require().True(operationMsg.OK)
 	suite.Require().Equal("65337742stake", msg.Amount.String())
@@ -107,7 +108,8 @@ func (suite *SimTestSuite) TestSimulateMsgMultiSend() {
 	suite.Require().NoError(err)
 
 	var msg types.MsgMultiSend
-	types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
+	err = types.ModuleCdc.UnmarshalJSON(operationMsg.Msg, &msg)
+	suite.Require().NoError(err)
 
 	suite.Require().True(operationMsg.OK)
 	suite.Require().Len(msg.Inputs, 3)

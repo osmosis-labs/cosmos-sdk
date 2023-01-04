@@ -380,8 +380,8 @@ func (s *intTestSuite) TestIntMod() {
 }
 
 func (s *intTestSuite) TestIntEq() {
-	_, resp, _, _, _ := sdk.IntEq(s.T(), sdk.ZeroInt(), sdk.ZeroInt())
+	_, resp, _, _, _ := sdk.IntEq(s.T(), sdk.ZeroInt(), sdk.ZeroInt()) //nolint:dogsled
 	s.Require().True(resp)
-	_, resp, _, _, _ = sdk.IntEq(s.T(), sdk.OneInt(), sdk.ZeroInt())
+	_, resp, _, _, _ = sdk.IntEq(s.T(), sdk.OneInt(), sdk.ZeroInt()) //nolint:dogsled
 	s.Require().False(resp)
 }

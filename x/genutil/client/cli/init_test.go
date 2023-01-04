@@ -151,7 +151,7 @@ func TestEmptyState(t *testing.T) {
 	outC := make(chan string)
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, r)
+		io.Copy(&buf, r) // nolint:errcheck
 		outC <- buf.String()
 	}()
 
@@ -198,6 +198,7 @@ func TestStartStandAlone(t *testing.T) {
 func TestInitNodeValidatorFiles(t *testing.T) {
 	home := t.TempDir()
 	cfg, err := genutiltest.CreateDefaultTendermintConfig(home)
+	require.NoError(t, err)
 	nodeID, valPubKey, err := genutil.InitializeNodeValidatorFiles(cfg)
 
 	require.Nil(t, err)

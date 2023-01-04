@@ -82,7 +82,8 @@ func (suite *AnteTestSuite) TestDeductFees() {
 	// Set account with insufficient funds
 	acc := suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, addr1)
 	suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
-	suite.app.BankKeeper.SetBalances(suite.ctx, addr1, sdk.NewCoins(sdk.NewCoin("atom", sdk.NewInt(10))))
+	err = suite.app.BankKeeper.SetBalances(suite.ctx, addr1, sdk.NewCoins(sdk.NewCoin("atom", sdk.NewInt(10))))
+	suite.Require().NoError(err)
 
 	dfd := ante.NewDeductFeeDecorator(suite.app.AccountKeeper, suite.app.BankKeeper)
 	antehandler := sdk.ChainAnteDecorators(dfd)
@@ -93,7 +94,8 @@ func (suite *AnteTestSuite) TestDeductFees() {
 
 	// Set account with sufficient funds
 	suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
-	suite.app.BankKeeper.SetBalances(suite.ctx, addr1, sdk.NewCoins(sdk.NewCoin("atom", sdk.NewInt(200))))
+	err = suite.app.BankKeeper.SetBalances(suite.ctx, addr1, sdk.NewCoins(sdk.NewCoin("atom", sdk.NewInt(200))))
+	suite.Require().NoError(err)
 
 	_, err = antehandler(suite.ctx, tx, false)
 

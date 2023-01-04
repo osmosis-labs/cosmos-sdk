@@ -105,7 +105,7 @@ func QueryTxsRequestHandlerFn(clientCtx client.Context) http.HandlerFunc {
 		}
 
 		for _, txRes := range searchResult.Txs {
-			packStdTxResponse(w, clientCtx, txRes)
+			packStdTxResponse(w, clientCtx, txRes) // nolint:errcheck
 		}
 
 		err = checkAminoMarshalError(clientCtx, searchResult, "/cosmos/tx/v1beta1/txs")

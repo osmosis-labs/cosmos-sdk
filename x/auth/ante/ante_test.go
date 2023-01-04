@@ -488,7 +488,7 @@ func (suite *AnteTestSuite) TestAnteHandlerFees() {
 				suite.Require().True(suite.app.BankKeeper.GetAllBalances(suite.ctx, modAcc.GetAddress()).Empty())
 				require.True(sdk.IntEq(suite.T(), suite.app.BankKeeper.GetAllBalances(suite.ctx, addr0).AmountOf("atom"), sdk.NewInt(149)))
 
-				suite.app.BankKeeper.SetBalances(suite.ctx, addr0, sdk.NewCoins(sdk.NewInt64Coin("atom", 150)))
+				suite.app.BankKeeper.SetBalances(suite.ctx, addr0, sdk.NewCoins(sdk.NewInt64Coin("atom", 150))) //nolint:errcheck
 			},
 			false,
 			true,
@@ -852,7 +852,7 @@ func (suite *AnteTestSuite) TestAnteHandlerSetPubKey() {
 
 				privs, accNums, accSeqs = []cryptotypes.PrivKey{accounts[1].priv}, []uint64{1}, []uint64{0}
 				msgs = []sdk.Msg{testdata.NewTestMsg(accounts[1].acc.GetAddress())}
-				suite.txBuilder.SetMsgs(msgs...)
+				suite.txBuilder.SetMsgs(msgs...) //nolint:errcheck
 				suite.txBuilder.SetFeeAmount(feeAmount)
 				suite.txBuilder.SetGasLimit(gasLimit)
 
@@ -1143,7 +1143,8 @@ func (suite *AnteTestSuite) TestAnteHandlerReCheck() {
 
 	// remove funds for account so antehandler fails on recheck
 	suite.app.AccountKeeper.SetAccount(suite.ctx, accounts[0].acc)
-	suite.app.BankKeeper.SetBalances(suite.ctx, accounts[0].acc.GetAddress(), sdk.NewCoins())
+	err = suite.app.BankKeeper.SetBalances(suite.ctx, accounts[0].acc.GetAddress(), sdk.NewCoins())
+	suite.Require().NoError(err)
 
 	_, err = suite.anteHandler(suite.ctx, tx, false)
 	suite.Require().NotNil(err, "antehandler on recheck did not fail once feePayer no longer has sufficient funds")

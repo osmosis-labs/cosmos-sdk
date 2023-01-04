@@ -502,7 +502,7 @@ func (s IntegrationTestSuite) mkTxBuilder() client.TxBuilder { //nolint:govet //
 }
 
 // txBuilderToProtoTx converts a txBuilder into a proto tx.Tx.
-func txBuilderToProtoTx(txBuilder client.TxBuilder) (*tx.Tx, error) { // nolint
+func txBuilderToProtoTx(txBuilder client.TxBuilder) (*tx.Tx, error) {
 	protoProvider, ok := txBuilder.(authtx.ProtoTxProvider)
 	if !ok {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "expected proto tx builder, got %T", txBuilder)

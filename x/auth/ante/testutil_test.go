@@ -74,7 +74,7 @@ func (suite *AnteTestSuite) CreateTestAccounts(numAccs int) []TestAccount {
 		err := acc.SetAccountNumber(uint64(i))
 		suite.Require().NoError(err)
 		suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
-		suite.app.BankKeeper.SetBalances(suite.ctx, addr, sdk.Coins{
+		suite.app.BankKeeper.SetBalances(suite.ctx, addr, sdk.Coins{ // nolint:errcheck
 			sdk.NewInt64Coin("atom", 10000000),
 		})
 

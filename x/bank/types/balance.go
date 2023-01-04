@@ -55,7 +55,7 @@ func (b Balance) Validate() error {
 	}
 
 	// sort the coins post validation
-	b.Coins = b.Coins.Sort()
+	b.Coins = b.Coins.Sort() //nolint:staticcheck // ignore SA1019, we need to sort the coins
 
 	return nil
 }

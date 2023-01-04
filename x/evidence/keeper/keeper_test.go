@@ -107,7 +107,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.stakingHdl = staking.NewHandler(app.StakingKeeper)
 }
 
-func (suite *KeeperTestSuite) populateEvidence(ctx sdk.Context, numEvidence int) []exported.Evidence {
+func (suite *KeeperTestSuite) populateEvidence(ctx sdk.Context, numEvidence int) []exported.Evidence { //nolint:unparam
 	evidence := make([]exported.Evidence, numEvidence)
 
 	for i := 0; i < numEvidence; i++ {
