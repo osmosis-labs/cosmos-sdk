@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/p2p"
-	pvm "github.com/tendermint/tendermint/privval"
 	tversion "github.com/tendermint/tendermint/version"
 	yaml "gopkg.in/yaml.v2"
 
@@ -51,7 +50,7 @@ func ShowValidatorCmd() *cobra.Command {
 			serverCtx := GetServerContextFromCmd(cmd)
 			cfg := serverCtx.Config
 
-			privValidator := pvm.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
+			privValidator := privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
 			valPubKey, err := privValidator.GetPubKey()
 			if err != nil {
 				return err
@@ -89,7 +88,7 @@ func ShowAddressCmd() *cobra.Command {
 			serverCtx := GetServerContextFromCmd(cmd)
 			cfg := serverCtx.Config
 
-			privValidator := pvm.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
+			privValidator := privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
 			valConsAddr := (sdk.ConsAddress)(privValidator.GetAddress())
 
 			output, _ := cmd.Flags().GetString(cli.OutputFlag)
