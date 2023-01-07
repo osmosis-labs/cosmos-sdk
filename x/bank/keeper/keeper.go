@@ -290,7 +290,6 @@ func (k BaseKeeper) SendCoinsFromAccountToModule(
 func (k BaseKeeper) SendCoinsFromModuleToAccountOriginalVesting(
 	ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins,
 ) error {
-
 	err := k.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
 	if err != nil {
 		return err

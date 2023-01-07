@@ -30,11 +30,13 @@ func (h MultiGovHooks) AfterProposalVote(ctx sdk.Context, proposalID uint64, vot
 		h[i].AfterProposalVote(ctx, proposalID, voterAddr)
 	}
 }
+
 func (h MultiGovHooks) AfterProposalInactive(ctx sdk.Context, proposalID uint64) {
 	for i := range h {
 		h[i].AfterProposalInactive(ctx, proposalID)
 	}
 }
+
 func (h MultiGovHooks) AfterProposalActive(ctx sdk.Context, proposalID uint64) {
 	for i := range h {
 		h[i].AfterProposalActive(ctx, proposalID)

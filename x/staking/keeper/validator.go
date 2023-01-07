@@ -155,7 +155,8 @@ func (k Keeper) UpdateValidatorCommission(ctx sdk.Context,
 // MustUpdateValidatorCommission updates a validator's commission rate,
 // ignoring the max change rate.
 func (k Keeper) MustUpdateValidatorCommission(ctx sdk.Context,
-	validator types.Validator, newRate sdk.Dec) (types.Commission, error) {
+	validator types.Validator, newRate sdk.Dec,
+) (types.Commission, error) {
 	commission := validator.Commission
 	blockTime := ctx.BlockHeader().Time
 
