@@ -17,7 +17,7 @@ export GO111MODULE = on
 
 # process build tags
 
-build_tags = netgo
+build_tags = netgo pebbledb
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -56,6 +56,8 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sim \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=simd \
+		  -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb \
+		  -X github.com/tendermint/tm-db.ForceSync=1 \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
@@ -223,11 +225,11 @@ TEST_TARGETS := test-unit test-unit-amino test-unit-proto test-ledger-mock test-
 # Test runs-specific rules. To add a new test target, just add
 # a new rule, customise ARGS or TEST_PACKAGES ad libitum, and
 # append the new rule to the TEST_TARGETS list.
-test-unit: ARGS=-tags='cgo ledger test_ledger_mock norace'
-test-unit-amino: ARGS=-tags='ledger test_ledger_mock test_amino norace'
-test-ledger: ARGS=-tags='cgo ledger norace'
-test-ledger-mock: ARGS=-tags='ledger test_ledger_mock norace'
-test-race: ARGS=-race -tags='cgo ledger test_ledger_mock'
+test-unit: ARGS=-tags='cgo ledger test_ledger_mock norace pebbledb'
+test-unit-amino: ARGS=-tags='ledger test_ledger_mock test_amino norace pebbledb'
+test-ledger: ARGS=-tags='cgo ledger norace pebbledb'
+test-ledger-mock: ARGS=-tags='ledger test_ledger_mock norace pebbledb'
+test-race: ARGS=-race -tags='cgo ledger test_ledger_mock pebbledb'
 test-race: TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
 $(TEST_TARGETS): run-tests
 

@@ -11,8 +11,8 @@ import (
 
 var (
 	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
-	DBBackend = ""
-	backend   = dbm.GoLevelDBBackend
+	DBBackend = "pebbledb"
+	backend   = dbm.PebbleDBBackend
 )
 
 func init() {
