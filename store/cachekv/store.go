@@ -182,7 +182,7 @@ func (store *Store) iterator(start, end []byte, ascending bool) types.Iterator {
 // from string -> []byte to speed up operations, it is not meant
 // to be used generally, but for a specific pattern to check for available
 // keys within a domain.
-func strToBytes(s string) []byte {
+func strToByte(s string) []byte {
 	var b []byte
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&b))
 	hdr.Cap = len(s)
