@@ -192,7 +192,7 @@ func (st *Store) Has(key []byte) (exists bool) {
 // Implements types.KVStore.
 func (st *Store) Delete(key []byte) {
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "delete")
-	st.tree.Remove(key)
+	st.tree.Remove(key) //nolint:errcheck
 }
 
 // DeleteVersions deletes a series of versions from the MutableTree. An error
@@ -385,7 +385,7 @@ var _ types.Iterator = (*iavlIterator)(nil)
 // newIAVLIterator will create a new iavlIterator.
 // CONTRACT: Caller must release the iavlIterator, as each one creates a new
 // goroutine.
-func newIAVLIterator(tree *iavl.ImmutableTree, start, end []byte, ascending bool) *iavlIterator {
+func newIAVLIterator(tree *iavl.ImmutableTree, start, end []byte, ascending bool) *iavlIterator { //nolint:unused
 	iterator, err := tree.Iterator(start, end, ascending)
 	if err != nil {
 		panic(err)

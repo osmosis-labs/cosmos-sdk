@@ -280,6 +280,7 @@ func ExampleSomeBIP32TestVecs() {
 	//
 	// c4c11d8c03625515905d7e89d25dfc66126fbc629ecca6db489a1a72fc4bda78
 }
+*/
 
 // Ensuring that we don't crash if values have trailing slashes
 // See issue https://github.com/cosmos/cosmos-sdk/issues/8557.
@@ -303,5 +304,3 @@ func TestDerivePrivateKeyForPathDoNotCrash(t *testing.T) {
 		})
 	}
 }
-
-*/

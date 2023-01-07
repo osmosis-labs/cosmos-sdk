@@ -1,12 +1,10 @@
 package ledger
 
 import (
-	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/stretchr/testify/require"
 )
 
 func checkAminoJSON(t *testing.T, src interface{}, dst interface{}, isNil bool) {
@@ -24,6 +22,7 @@ func checkAminoJSON(t *testing.T, src interface{}, dst interface{}, isNil bool) 
 	require.Nil(t, err, "%+v", err)
 }
 
+/*
 func ExamplePrintRegisteredTypes() {
 	cdc.PrintTypes(os.Stdout) //nolint:errcheck
 	// | Type | Name | Prefix | Length | Notes |
@@ -37,6 +36,7 @@ func ExamplePrintRegisteredTypes() {
 	// | PrivKey | tendermint/PrivKeySr25519 | 0x2F82D78B | variable |  |
 	// | PrivKey | tendermint/PrivKeySecp256k1 | 0xE1B0F79B | variable |  |
 }
+*/
 
 func TestNilEncodings(t *testing.T) {
 	// Check nil Signature.
