@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
-	DBBackend = "pebbledb"
+	// This is set at compile time. Could be cleveldb, default is pebbledb.
+	DBBackend = ""
 	backend   = dbm.PebbleDBBackend
 )
 
