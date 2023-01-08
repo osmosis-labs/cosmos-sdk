@@ -202,7 +202,6 @@ func MustNewDecFromStr(s string) Dec {
 }
 
 // _____________________________________________________________________________________________
-//nolint
 
 func (d Dec) IsNil() bool       { return d.i == nil }                 // is decimal nil
 func (d Dec) IsZero() bool      { return (d.i).Sign() == 0 }          // is equal to zero
