@@ -220,7 +220,7 @@ test: test-unit
 test-all: test-unit test-ledger-mock test-race test-cover
 
 TEST_PACKAGES=./...
-TEST_TARGETS := test-unit test-unit-amino test-unit-proto test-ledger-mock test-race test-ledger test-race
+TEST_TARGETS := test-unit test-unit-amino test-unit-proto test-ledger-mock test-race test-ledger
 
 # Test runs-specific rules. To add a new test target, just add
 # a new rule, customise ARGS or TEST_PACKAGES ad libitum, and
@@ -229,8 +229,7 @@ test-unit: ARGS=-tags='cgo ledger test_ledger_mock norace pebbledb'
 test-unit-amino: ARGS=-tags='ledger test_ledger_mock test_amino norace pebbledb'
 test-ledger: ARGS=-tags='cgo ledger norace pebbledb'
 test-ledger-mock: ARGS=-tags='ledger test_ledger_mock norace pebbledb'
-test-race: ARGS=-race -tags='cgo ledger test_ledger_mock pebbledb'
-test-race: TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
+test-race: ARGS=-race -tags='cgo ledger test_ledger_mock pebbledb' TEST_PACKAGES=$(PACKAGES_NOSIMULATION)
 $(TEST_TARGETS): run-tests
 
 # check-* compiles and collects tests without running them
