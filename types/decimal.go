@@ -80,7 +80,7 @@ func precisionMultiplier(prec int64) *big.Int {
 	return precisionMultipliers[prec]
 }
 
-// ______________________________________________________________________________________________
+// _____________________________________________________________________________________________
 
 // create a new Dec from integer assuming whole number
 func NewDec(i int64) Dec {
@@ -201,7 +201,9 @@ func MustNewDecFromStr(s string) Dec {
 	return dec
 }
 
-// ______________________________________________________________________________________________
+// _____________________________________________________________________________________________
+//nolint
+
 func (d Dec) IsNil() bool       { return d.i == nil }                 // is decimal nil
 func (d Dec) IsZero() bool      { return (d.i).Sign() == 0 }          // is equal to zero
 func (d Dec) IsNegative() bool  { return (d.i).Sign() == -1 }         // is negative
@@ -643,7 +645,7 @@ func (d Dec) RoundInt() Int {
 	return NewIntFromBigInt(chopPrecisionAndRoundNonMutative(d.i))
 }
 
-// ___________________________________________________________________________________
+// __________________________________________________________________________________
 
 // similar to chopPrecisionAndRound, but always rounds down
 func chopPrecisionAndTruncate(d *big.Int) *big.Int {
@@ -694,7 +696,7 @@ func (d Dec) Ceil() Dec {
 	return NewDecFromBigInt(quo.Add(quo, oneInt))
 }
 
-// ___________________________________________________________________________________
+// __________________________________________________________________________________
 
 // MaxSortableDec is the largest Dec that can be passed into SortableDecBytes()
 // Its negative form is the least Dec that can be passed in.
@@ -734,7 +736,7 @@ func SortableDecBytes(dec Dec) []byte {
 	return []byte(fmt.Sprintf(fmt.Sprintf("%%0%ds", Precision*2+1), dec.String()))
 }
 
-// ___________________________________________________________________________________
+// __________________________________________________________________________________
 
 // reuse nil values
 var nilJSON []byte
@@ -844,7 +846,7 @@ func (dp DecProto) String() string {
 	return dp.Dec.String()
 }
 
-// ___________________________________________________________________________________
+// __________________________________________________________________________________
 // helpers
 
 // test if two decimal arrays are equal

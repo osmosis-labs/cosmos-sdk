@@ -36,6 +36,11 @@ const (
 var DefaultMinCommissionRate = sdk.ZeroDec()
 
 var (
+	// DefaultMinCommissionRate is set to 0%
+	DefaultMinCommissionRate = sdk.ZeroDec()
+)
+
+var (
 	KeyUnbondingTime     = []byte("UnbondingTime")
 	KeyMaxValidators     = []byte("MaxValidators")
 	KeyMaxEntries        = []byte("MaxEntries")
