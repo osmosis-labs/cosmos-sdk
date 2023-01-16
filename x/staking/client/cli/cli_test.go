@@ -1,6 +1,3 @@
-//go:build norace
-// +build norace
-
 package cli_test
 
 import (
@@ -1309,7 +1306,7 @@ func (s *IntegrationTestSuite) TestBlockResults() {
 	require.NoError(err)
 
 	// Create a HTTP rpc client.
-	rpcClient, err := http.New(val.RPCAddress, "/websocket")
+	rpcClient, _ := http.New(val.RPCAddress, "/websocket")
 
 	// Loop until we find a block result with the correct validator updates.
 	// By experience, it happens around 2 blocks after `delHeight`.
@@ -1336,7 +1333,7 @@ func (s *IntegrationTestSuite) TestBlockResults() {
 			break
 		}
 
-		s.network.WaitForNextBlock()
+		s.network.WaitForNextBlock() //nolint:errcheck
 	}
 }
 

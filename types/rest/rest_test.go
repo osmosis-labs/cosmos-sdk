@@ -3,7 +3,6 @@ package rest_test
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sort"
@@ -228,7 +227,7 @@ func TestProcessPostResponse(t *testing.T) {
 
 func TestReadRESTReq(t *testing.T) {
 	t.Parallel()
-	reqBody := ioutil.NopCloser(strings.NewReader(`{"chain_id":"alessio","memo":"text"}`))
+	reqBody := io.NopCloser(strings.NewReader(`{"chain_id":"alessio","memo":"text"}`))
 	req := &http.Request{Body: reqBody}
 	w := httptest.NewRecorder()
 	var br rest.BaseReq
@@ -241,7 +240,7 @@ func TestReadRESTReq(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.StatusCode)
 
 	// test non valid JSON
-	reqBody = ioutil.NopCloser(strings.NewReader(`MALFORMED`))
+	reqBody = io.NopCloser(strings.NewReader(`MALFORMED`))
 	req = &http.Request{Body: reqBody}
 	br = rest.BaseReq{}
 	w = httptest.NewRecorder()
