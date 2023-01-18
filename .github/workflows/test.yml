@@ -207,7 +207,7 @@ jobs:
   #        with:
   #          name: "${{ github.sha }}-${{ matrix.part }}-race-output"
   #          path: ./${{ matrix.part }}-race-output.txt
-  #
+
   liveness-test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
