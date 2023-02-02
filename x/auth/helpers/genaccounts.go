@@ -84,7 +84,7 @@ func AddGenesisAccount(
 	bankGenState := banktypes.GetGenesisStateFromAppState(cdc, appState)
 	if accs.Contains(accAddr) {
 		if !appendAcct {
-			return fmt.Errorf(" Account %s already exists\nUse `append` flag to append account at existing address", accAddr)
+			return fmt.Errorf("Account %s already exists\nUse `append` flag to append account at existing address", accAddr)
 		}
 
 		genesisB := banktypes.GetGenesisStateFromAppState(cdc, appState)
