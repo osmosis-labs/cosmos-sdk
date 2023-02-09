@@ -100,7 +100,6 @@ func (s *StoreUpgrades) RenamedFrom(key string) string {
 		}
 	}
 	return ""
-
 }
 
 type MultiStore interface {
