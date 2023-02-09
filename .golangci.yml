@@ -1,39 +1,32 @@
 run:
-  tests: false
+  tests: true
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 5m
 
 linters:
   disable-all: true
   enable:
-    - bodyclose
-    - deadcode
     - depguard
     - dogsled
-    # - errcheck
+    - errcheck
+    - exportloopref
     - goconst
-    # - gocritic
-    - gofmt
-    - goimports
+    - gocritic
+    - gofumpt
     - gosec
     - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
-    - prealloc
+    - nolintlint
     - revive
-    - exportloopref
-    # - staticcheck
-    - structcheck
+    - staticcheck
     - stylecheck
     - typecheck
     - unconvert
-    - unused
     - unparam
-    - misspell
-    # - wsl
-    # - nolintlint
+    - unused
 
 issues:
   exclude-rules:
@@ -54,7 +47,7 @@ issues:
     - text: "ST1016:"
       linters:
         - stylecheck
-    - path: "legacy"
+    - path: "migrations"
       text: "SA1019:"
       linters:
         - staticcheck
