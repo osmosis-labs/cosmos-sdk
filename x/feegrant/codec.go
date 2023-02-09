@@ -2,6 +2,7 @@ package feegrant
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,8 +13,8 @@ import (
 // RegisterLegacyAminoCodec registers the necessary x/feegrant interfaces and concrete types
 // on the provided LegacyAmino codec. These types are used for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgGrantAllowance{}, "cosmos-sdk/MsgGrantAllowance", nil)
-	cdc.RegisterConcrete(&MsgRevokeAllowance{}, "cosmos-sdk/MsgRevokeAllowance", nil)
+	legacy.RegisterAminoMsg(cdc, &MsgGrantAllowance{}, "cosmos-sdk/MsgGrantAllowance")
+	legacy.RegisterAminoMsg(cdc, &MsgRevokeAllowance{}, "cosmos-sdk/MsgRevokeAllowance")
 
 	cdc.RegisterInterface((*FeeAllowanceI)(nil), nil)
 	cdc.RegisterConcrete(&BasicAllowance{}, "cosmos-sdk/BasicAllowance", nil)
