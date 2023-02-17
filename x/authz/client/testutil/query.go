@@ -221,7 +221,7 @@ func (s *IntegrationTestSuite) TestQueryGranterGrants() {
 			},
 			false,
 			"",
-			6,
+			5,
 		},
 		{
 			"valid case with pagination",
