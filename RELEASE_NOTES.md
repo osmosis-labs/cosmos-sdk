@@ -18,7 +18,6 @@ Finally, a small improvement in gov, we increased the maximum proposal descripti
 - `AuthKeeper` interface in `x/auth` now includes a function `HasAccount`.
 - Moved `TestMnemonic` from `testutil` package to `testdata`.
 
-
 Finally, when using the `SetOrder*` functions in simapp, e.g. `SetOrderBeginBlocker`, we now require that all modules be present in the function arguments, or else the node panics at startup. We also added a new `SetOrderMigration` function to set the order of running module migrations.
 
 ### Improvements
