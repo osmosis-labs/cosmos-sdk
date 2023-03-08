@@ -8,7 +8,7 @@ import (
 // Implements StakingHooks interface
 var _ types.BankHooks = BaseSendKeeper{}
 
-// TrackbeforeSend executes the TrackBeforeSend hook if registered.
+// TrackBeforeSend executes the TrackBeforeSend hook if registered.
 func (k BaseSendKeeper) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	if k.hooks != nil {
 		k.hooks.TrackBeforeSend(ctx, from, to, amount)
