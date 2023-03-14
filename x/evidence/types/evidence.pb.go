@@ -6,9 +6,15 @@ package types
 import (
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
+<<<<<<< HEAD
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
+=======
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+>>>>>>> c3a425b83 (Add proto annotations (#412))
 	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"

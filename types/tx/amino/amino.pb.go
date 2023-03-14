@@ -5,7 +5,11 @@ package amino
 
 import (
 	fmt "fmt"
+<<<<<<< HEAD
 	proto "github.com/gogo/protobuf/proto"
+=======
+	proto "github.com/cosmos/gogoproto/proto"
+>>>>>>> c3a425b83 (Add proto annotations (#412))
 	descriptorpb "google.golang.org/protobuf/types/descriptorpb"
 	math "math"
 )

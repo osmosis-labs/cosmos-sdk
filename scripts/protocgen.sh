@@ -14,7 +14,12 @@ protoc_gen_gocosmos() {
 protoc_gen_gocosmos
 
 echo "Generating gogo proto code"
+<<<<<<< HEAD
 proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+=======
+cd proto
+proto_dirs=$(find ./cosmos ./amino -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+>>>>>>> c3a425b83 (Add proto annotations (#412))
 for dir in $proto_dirs; do
   buf protoc \
     -I "proto" \

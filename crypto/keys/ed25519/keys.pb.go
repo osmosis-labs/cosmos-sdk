@@ -7,8 +7,13 @@ import (
 	crypto_ed25519 "crypto/ed25519"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
+<<<<<<< HEAD
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
+=======
+	_ "github.com/cosmos/gogoproto/gogoproto"
+	proto "github.com/cosmos/gogoproto/proto"
+>>>>>>> c3a425b83 (Add proto annotations (#412))
 	io "io"
 	math "math"
 	math_bits "math/bits"
