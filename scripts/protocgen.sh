@@ -13,6 +13,7 @@ protoc_gen_gocosmos() {
 
 protoc_gen_gocosmos
 
+echo "Generating gogo proto code"
 proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
   buf protoc \
