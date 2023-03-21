@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	gogogrpc "github.com/gogo/protobuf/grpc"
+	gogoproto "github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding"
-	"google.golang.org/grpc/encoding/proto"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -93,7 +93,7 @@ func (ctx Context) Invoke(grpcCtx gocontext.Context, method string, req, reply i
 		return err
 	}
 
-	err = protoCodec.Unmarshal(res.Value, reply)
+	err = ctx.gRPCCodec().Unmarshal(res.Value, reply)
 	if err != nil {
 		return err
 	}
@@ -171,15 +171,15 @@ func (f failingInterfaceRegistry) UnpackAny(any *types.Any, iface interface{}) e
 	return errCodecNotSet
 }
 
-func (f failingInterfaceRegistry) Resolve(typeUrl string) (proto.Message, error) {
+func (f failingInterfaceRegistry) Resolve(typeUrl string) (gogoproto.Message, error) {
 	return nil, errCodecNotSet
 }
 
-func (f failingInterfaceRegistry) RegisterInterface(protoName string, iface interface{}, impls ...proto.Message) {
+func (f failingInterfaceRegistry) RegisterInterface(protoName string, iface interface{}, impls ...gogoproto.Message) {
 	panic("cannot be called")
 }
 
-func (f failingInterfaceRegistry) RegisterImplementations(iface interface{}, impls ...proto.Message) {
+func (f failingInterfaceRegistry) RegisterImplementations(iface interface{}, impls ...gogoproto.Message) {
 	panic("cannot be called")
 }
 
