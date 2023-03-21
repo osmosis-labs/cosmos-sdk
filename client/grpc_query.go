@@ -8,12 +8,14 @@ import (
 	"strings"
 
 	gogogrpc "github.com/gogo/protobuf/grpc"
+	"github.com/pkg/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/encoding/proto"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
@@ -22,7 +24,10 @@ import (
 
 var _ gogogrpc.ClientConn = Context{}
 
-var protoCodec = encoding.GetCodec(proto.Name)
+// fallBackCodec is used by Context in case Codec is not set.
+// it can process every gRPC type, except the ones which contain
+// interfaces in their types.
+var fallBackCodec = codec.NewProtoCodec(failingInterfaceRegistry{})
 
 // Invoke implements the grpc ClientConn.Invoke method
 func (ctx Context) Invoke(grpcCtx gocontext.Context, method string, req, reply interface{}, opts ...grpc.CallOption) (err error) {
@@ -72,7 +77,7 @@ func (ctx Context) Invoke(grpcCtx gocontext.Context, method string, req, reply i
 	}
 
 	// Case 2-2. Querying state via abci query.
-	reqBz, err := protoCodec.Marshal(req)
+	reqBz, err := ctx.gRPCCodec().Marshal(req)
 	if err != nil {
 		return err
 	}
@@ -137,4 +142,51 @@ func selectHeight(clientContext Context, grpcCtx gocontext.Context) (int64, erro
 		}
 	}
 	return height, nil
+}
+
+func (ctx Context) gRPCCodec() encoding.Codec {
+	if ctx.Codec == nil {
+		return fallBackCodec.GRPCCodec()
+	}
+
+	pc, ok := ctx.Codec.(codec.GRPCCodecProvider)
+	if !ok {
+		return fallBackCodec.GRPCCodec()
+	}
+
+	return pc.GRPCCodec()
+}
+
+var _ types.InterfaceRegistry = failingInterfaceRegistry{}
+
+// failingInterfaceRegistry is used by the fallback codec
+// in case Context's Codec is not set.
+type failingInterfaceRegistry struct{}
+
+// errCodecNotSet is return by failingInterfaceRegistry in case there are attempt to decode
+// or encode a type which contains an interface field.
+var errCodecNotSet = errors.New("client: cannot encode or decode type which requires the application specific codec")
+
+func (f failingInterfaceRegistry) UnpackAny(any *types.Any, iface interface{}) error {
+	return errCodecNotSet
+}
+
+func (f failingInterfaceRegistry) Resolve(typeUrl string) (proto.Message, error) {
+	return nil, errCodecNotSet
+}
+
+func (f failingInterfaceRegistry) RegisterInterface(protoName string, iface interface{}, impls ...proto.Message) {
+	panic("cannot be called")
+}
+
+func (f failingInterfaceRegistry) RegisterImplementations(iface interface{}, impls ...proto.Message) {
+	panic("cannot be called")
+}
+
+func (f failingInterfaceRegistry) ListAllInterfaces() []string {
+	panic("cannot be called")
+}
+
+func (f failingInterfaceRegistry) ListImplementations(ifaceTypeURL string) []string {
+	panic("cannot be called")
 }
