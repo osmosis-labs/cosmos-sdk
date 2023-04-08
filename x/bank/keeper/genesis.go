@@ -12,7 +12,7 @@ import (
 func (k BaseKeeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 
-	totalSupply := sdk.Coins{}
+	totalSupplyMap := sdk.MapCoins{}
 
 	genState.Balances = types.SanitizeGenesisBalances(genState.Balances)
 	for _, balance := range genState.Balances {
@@ -22,8 +22,9 @@ func (k BaseKeeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 			panic(fmt.Errorf("error on setting balances %w", err))
 		}
 
-		totalSupply = totalSupply.Add(balance.Coins...)
+		totalSupplyMap.Add(balance.Coins...)
 	}
+	totalSupply := totalSupplyMap.ToCoins()
 
 	if !genState.Supply.Empty() && !genState.Supply.IsEqual(totalSupply) {
 		panic(fmt.Errorf("genesis supply is incorrect, expected %v, got %v", genState.Supply, totalSupply))

@@ -19,6 +19,7 @@ var (
 type coinTestSuite struct {
 	suite.Suite
 	ca0, ca1, ca2, cm0, cm1, cm2 sdk.Coin
+	emptyCoins                   sdk.Coins
 }
 
 func TestCoinTestSuite(t *testing.T) {
