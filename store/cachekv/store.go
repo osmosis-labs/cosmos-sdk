@@ -99,56 +99,73 @@ func (store *Store) Delete(key []byte) {
 	store.setCacheValue(key, nil, true, true)
 }
 
+type cEntry struct {
+	key string
+	val *cValue
+}
+
+func (store *Store) deleteCaches() {
+	if len(store.cache) > 100_000 {
+		// Cache is too large. We likely did something linear time
+		// (e.g. Epoch block, Genesis block, etc). Free the cache from memory.
+		// In a future CacheKV redesign, such linear workloads should get into a different cache instantiation.
+		store.cache = make(map[string]*cValue)
+		store.unsortedCache = make(map[string]struct{})
+		store.deleted = make(map[string]struct{})
+	} else {
+		// Clear the cache using the map clearing idiom
+		// and not allocating fresh objects.
+		// Please see https://bencher.orijtech.com/perfclinic/mapclearing/
+		for key := range store.cache {
+			delete(store.cache, key)
+		}
+		for key := range store.unsortedCache {
+			delete(store.unsortedCache, key)
+		}
+		for key := range store.deleted {
+			delete(store.deleted, key)
+		}
+	}
+	store.sortedCache = dbm.NewMemDB()
+}
+
 // Implements Cachetypes.KVStore.
 func (store *Store) Write() {
 	store.mtx.Lock()
 	defer store.mtx.Unlock()
-	defer telemetry.MeasureSince(time.Now(), "store", "cachekv", "write")
 
 	// We need a copy of all of the keys.
 	// Not the best, but probably not a bottleneck depending.
-	keys := make([]string, 0, len(store.cache))
+	sortedCache := make([]cEntry, 0, len(store.cache))
 
 	for key, dbValue := range store.cache {
 		if dbValue.dirty {
-			keys = append(keys, key)
+			if _, ok := store.deleted[key]; ok {
+				dbValue.value = nil
+			}
+			sortedCache = append(sortedCache, cEntry{key, dbValue})
 		}
 	}
-
-	sort.Strings(keys)
+	store.deleteCaches()
+	sort.Slice(sortedCache, func(i, j int) bool {
+		return sortedCache[i].key < sortedCache[j].key
+	})
 
 	// TODO: Consider allowing usage of Batch, which would allow the write to
 	// at least happen atomically.
-	for _, key := range keys {
-		if store.isDeleted(key) {
-			// We use []byte(key) instead of conv.UnsafeStrToBytes because we cannot
-			// be sure if the underlying store might do a save with the byteslice or
-			// not. Once we get confirmation that .Delete is guaranteed not to
-			// save the byteslice, then we can assume only a read-only copy is sufficient.
-			store.parent.Delete([]byte(key))
-			continue
-		}
-
-		cacheValue := store.cache[key]
+	for _, obj := range sortedCache {
+		// We use []byte(obj.key) instead of conv.UnsafeStrToBytes because we cannot
+		// be sure if the underlying store might do a save with the byteslice or
+		// not. Once we get confirmation that .Delete is guaranteed not to
+		// save the byteslice, then we can assume only a read-only copy is sufficient.
+		// TODO: Revisit above comment.
+		cacheValue := obj.val
 		if cacheValue.value != nil {
-			// It already exists in the parent, hence delete it.
-			store.parent.Set([]byte(key), cacheValue.value)
+			store.parent.Set([]byte(obj.key), cacheValue.value)
+		} else {
+			store.parent.Delete([]byte(obj.key))
 		}
 	}
-
-	// Clear the cache using the map clearing idiom
-	// and not allocating fresh objects.
-	// Please see https://bencher.orijtech.com/perfclinic/mapclearing/
-	for key := range store.cache {
-		delete(store.cache, key)
-	}
-	for key := range store.deleted {
-		delete(store.deleted, key)
-	}
-	for key := range store.unsortedCache {
-		delete(store.unsortedCache, key)
-	}
-	store.sortedCache = dbm.NewMemDB()
 }
 
 // CacheWrap implements CacheWrapper.
@@ -270,7 +287,7 @@ func findEndIndex(strL []string, endQ string) int {
 	return -1
 }
 
-//nolint
+// nolint
 func findStartEndIndex(strL []string, startStr, endStr string) (int, int) {
 	// Now find the values within the domain
 	//  [start, end)
