@@ -3059,6 +3059,7 @@ a version/height.
 | ----- | ---- | ----- | ----------- |
 | `version` | [int64](#int64) |  |  |
 | `store_infos` | [StoreInfo](#cosmos.base.store.v1beta1.StoreInfo) | repeated |  |
+| `timestamp` | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
 
 
 
