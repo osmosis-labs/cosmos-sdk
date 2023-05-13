@@ -465,17 +465,24 @@ func (d Dec) ApproxRoot(root uint64) (guess Dec, err error) {
 	var prev Dec
 
 	for iter := 0; delta.AbsMut().GT(smallestDec) && iter < maxApproxRootIterations; iter++ {
-		if root == 2 {
-			prev = guess
-		} else {
+		// prev = guess^(root-1)
+		// optimize for root == 2, to take no exponent.
+		prev = guess
+		if root != 2 {
 			prev = guess.Power(root - 1)
 		}
 		if prev.IsZero() {
 			prev = smallestDec
 		}
+		// delta = ((d/prev) - guess)/root
 		delta.Set(d).QuoMut(prev)
 		delta.SubMut(guess)
-		delta.QuoInt64Mut(int64(root))
+		// optimize for root = 2
+		if root == 2 {
+			delta.i = delta.i.Rsh(delta.i, 1)
+		} else {
+			delta.QuoInt64Mut(int64(root))
+		}
 
 		guess.AddMut(delta)
 	}
