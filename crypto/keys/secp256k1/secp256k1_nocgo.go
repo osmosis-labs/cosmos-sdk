@@ -59,7 +59,7 @@ func (pubKey *PubKey) VerifySignature(msg []byte, sigStr []byte) bool {
 	} else {
 		// Ensure that "v" is canonical
 		v := sigStr[64]
-		ecRecoverValid := isECRecoverByteValid(v, pub)
+		ecRecoverValid := isECRecoverByteValid(v, msg, sigStr, pub)
 		if !ecRecoverValid {
 			return false
 		}

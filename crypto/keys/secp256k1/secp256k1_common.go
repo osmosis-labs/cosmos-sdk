@@ -1,15 +1,16 @@
 package secp256k1
 
 import (
-	"fmt"
+	"bytes"
 	"math/big"
 
+	"gitee.com/aqchain/go-ethereum/crypto"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
 
 	"golang.org/x/crypto/sha3"
 )
 
-func isECRecoverByteValid(v byte, pubkey *secp256k1.PublicKey) bool {
+func isECRecoverByteValid(v byte, msg []byte, sig []byte, pubkey *secp256k1.PublicKey) bool {
 	// EIP-191 allows 27, 28
 	if v != 27 && v != 28 {
 		return false
@@ -18,19 +19,13 @@ func isECRecoverByteValid(v byte, pubkey *secp256k1.PublicKey) bool {
 	// See https://ethereum.github.io/yellowpaper/paper.pdf, page 25. Its defined
 	// two sentences above footnote 6.
 	// When using the above, we verify all GETH signatures correctly.
-	EIP_191_ECRecoverStandard := true
 	// _HOWEVER_ we are aiming to verify EIP-191 signatures.
 	// Inexplicably, every wallet when making an EIP-191 signature has the
-	// v_parity bit flipped (so 28 when you'd ex)
-	v_parity := 1 - (v % 2)
-	v_parity_bool := v_parity == 1
-	if EIP_191_ECRecoverStandard {
-		v_parity_bool = !v_parity_bool
-	}
-	actual_parity := pubkey.Y.Bit(0)
-	actual_parity_bool := actual_parity == 1
-	fmt.Println(v, v_parity, actual_parity)
-	return v_parity_bool == actual_parity_bool
+	// v_parity bit flipped (so 28 when you'd expect 27)
+	recovered, _ := crypto.Ecrecover(msg, sig)
+	uncompressed := pubkey.SerializeUncompressed()
+
+	return bytes.Equal(recovered, uncompressed)
 }
 
 func sha3Hash(msg []byte) []byte {
