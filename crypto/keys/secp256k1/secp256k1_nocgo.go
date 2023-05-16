@@ -3,7 +3,6 @@
 package secp256k1
 
 import (
-	"fmt"
 	"math/big"
 
 	secp256k1 "github.com/btcsuite/btcd/btcec"
@@ -13,8 +12,8 @@ import (
 
 // used to reject malleable signatures
 // see:
-//  - https://github.com/ethereum/go-ethereum/blob/f9401ae011ddf7f8d2d95020b7446c17f8d98dc1/crypto/signature_nocgo.go#L90-L93
-//  - https://github.com/ethereum/go-ethereum/blob/f9401ae011ddf7f8d2d95020b7446c17f8d98dc1/crypto/crypto.go#L39
+//   - https://github.com/ethereum/go-ethereum/blob/f9401ae011ddf7f8d2d95020b7446c17f8d98dc1/crypto/signature_nocgo.go#L90-L93
+//   - https://github.com/ethereum/go-ethereum/blob/f9401ae011ddf7f8d2d95020b7446c17f8d98dc1/crypto/crypto.go#L39
 var secp256k1halfN = new(big.Int).Rsh(secp256k1.S256().N, 1)
 
 // Sign creates an ECDSA signature on curve Secp256k1, using SHA256 on the msg.
@@ -57,14 +56,12 @@ func (pubKey *PubKey) VerifySignature(msg []byte, sigStr []byte) bool {
 	if sigLen == 64 { // Use sha256 hashing for (R,S) signature form
 		return signature.Verify(crypto.Sha256(msg), pub)
 	} else {
-		// Ensure that "v" is canonical
-		v := sigStr[64]
-		ecRecoverValid := isECRecoverByteValid(v, msg, sigStr, pub)
-		if !ecRecoverValid {
+		// Checks ecrecovered pubkey against the supplied pubkey
+		pubkey_is_valid := checkPubkeyMatchesEcrecover(sha3Hash(msg), sigStr, pub)
+		if !pubkey_is_valid {
 			return false
 		}
 		// Use keccak256 hashing for (R,S) signature form
-		fmt.Println(sha3Hash(msg))
 		validSig := signature.Verify(sha3Hash(msg), pub)
 		return validSig
 	}

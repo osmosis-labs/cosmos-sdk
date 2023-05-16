@@ -277,7 +277,7 @@ static int secp256k1_ecdsa_sig_sign(const secp256k1_ecmult_gen_context *ctx, sec
     secp256k1_scalar n;
     int overflow = 0;
 
-    secp256k1_ecmult_gen(ctx, &rp, nonce); // rec = k * G
+    secp256k1_ecmult_gen(ctx, &rp, nonce);
     secp256k1_ge_set_gej(&r, &rp);
     secp256k1_fe_normalize(&r.x);
     secp256k1_fe_normalize(&r.y);

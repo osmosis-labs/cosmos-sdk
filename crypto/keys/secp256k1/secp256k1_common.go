@@ -4,28 +4,32 @@ import (
 	"bytes"
 	"math/big"
 
-	"gitee.com/aqchain/go-ethereum/crypto"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"golang.org/x/crypto/sha3"
 )
 
-func isECRecoverByteValid(v byte, msg []byte, sig []byte, pubkey *secp256k1.PublicKey) bool {
-	// EIP-191 allows 27, 28
-	if v != 27 && v != 28 {
+func checkPubkeyMatchesEcrecover(hash []byte, sig []byte, pubkey *secp256k1.PublicKey) bool {
+	// EIP-191 allows 27, 28 for the ecrecover byte
+	if sig[64] != 27 && sig[64] != 28 {
 		return false
 	}
 	// 27 represents even, 28 represents odd
 	// See https://ethereum.github.io/yellowpaper/paper.pdf, page 25. Its defined
 	// two sentences above footnote 6.
-	// When using the above, we verify all GETH signatures correctly.
-	// _HOWEVER_ we are aiming to verify EIP-191 signatures.
-	// Inexplicably, every wallet when making an EIP-191 signature has the
-	// v_parity bit flipped (so 28 when you'd expect 27)
-	recovered, _ := crypto.Ecrecover(msg, sig)
-	uncompressed := pubkey.SerializeUncompressed()
 
-	return bytes.Equal(recovered, uncompressed)
+	// GETH's Ecrecover only works for signatures with last byte 0 <= v < 4, so we need
+	// to subtract 27 from the last byte and add it back afterwards.  Ecrecover returns a
+	// pubkey bytearray in uncompressed format: 0x04 || pubkey.X || pubkey.Y
+
+	sig[64] -= 27
+	recovered_pubkey, _ := crypto.Ecrecover(hash, sig)
+	sig[64] += 27
+
+	// Serializes the supplied pubkey in uncompressed format and compares for equality
+	actual_pubkey_uncompressed := pubkey.SerializeUncompressed()
+	return bytes.Equal(recovered_pubkey, actual_pubkey_uncompressed)
 }
 
 func sha3Hash(msg []byte) []byte {

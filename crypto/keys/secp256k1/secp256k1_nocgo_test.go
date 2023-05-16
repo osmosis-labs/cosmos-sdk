@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"testing"
 
-	"gitee.com/aqchain/go-ethereum/crypto/sha3"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -56,19 +55,7 @@ func eip191MsgTransform(msg string) string {
 	return "\x19Ethereum Signed Message:\n" + fmt.Sprintf("%d", len(msg)) + msg
 }
 
-func hashPersonalMessage(data []byte) []byte {
-	msg := []byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(data), data))
-
-	fmt.Printf("message: %x\n", data)
-	fmt.Printf("prehash: %x\n", msg)
-	h := sha3.NewKeccak256() // Create a new instance of the hash
-	h.Write(msg)             // Write the data you wanted hashed to it
-	out := h.Sum(nil)        // Finalize the checksum
-	fmt.Printf("hash: %x\n", out)
-	return out
-}
-
-// Test thing
+// GeneratesThe hash is computed as SHA3(EIP191)
 func TestGenerateRandomEIP191(t *testing.T) {
 	const NUM_TEST_CASES = 10
 
@@ -88,7 +75,7 @@ func TestGenerateRandomEIP191(t *testing.T) {
 		_, err = rand.Read(message)
 
 		// Computes H(EIP191(message))
-		hash := hashPersonalMessage([]byte(message))
+		hash := sha3Hash([]byte(eip191MsgTransform(string(message))))
 		sig, err := crypto.Sign(hash, privKeyECDSA)
 		sig[64] += 27
 		testcase := TestCase{
@@ -113,7 +100,7 @@ func TestGenerateRandomEIP191(t *testing.T) {
 		msgBz := []byte(tc.msg)
 		sigVerif := pk.VerifySignature(msgBz, sigBz)
 		fmt.Println("Test name:", tc.tcName)
-		fmt.Println("Actual signature: ", hex.EncodeToString(sigBz))
+		//fmt.Println("Actual signature: ", hex.EncodeToString(sigBz))
 		require.Equal(t, tc.expectPass, sigVerif, "Verify signature didn't act as expected, tc %v", tc.tcName)
 	}
 }
