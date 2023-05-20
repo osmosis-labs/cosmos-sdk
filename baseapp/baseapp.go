@@ -3,6 +3,7 @@ package baseapp
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 
@@ -168,6 +169,7 @@ func NewBaseApp(
 		msgServiceRouter: NewMsgServiceRouter(),
 		txDecoder:        txDecoder,
 		fauxMerkleMode:   false,
+		queryGasLimit:    math.MaxUint64,
 	}
 
 	for _, option := range options {
