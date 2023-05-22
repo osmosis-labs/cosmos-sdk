@@ -56,6 +56,7 @@ type Context struct {
 	NodeURI           string
 	FeeGranter        sdk.AccAddress
 	Viper             *viper.Viper
+	AssetListUrl      string
 
 	// TODO: Deprecated (remove).
 	LegacyAmino *codec.LegacyAmino
@@ -269,6 +270,11 @@ func (ctx Context) WithViper(prefix string) Context {
 	return ctx
 }
 
+func (ctx Context) WithAssetListUrl(assetListUrl string) Context {
+	ctx.AssetListUrl = assetListUrl
+	return ctx
+}
+
 // PrintString prints the raw string to ctx.Output if it's defined, otherwise to os.Stdout
 func (ctx Context) PrintString(str string) error {
 	return ctx.PrintBytes([]byte(str))
@@ -295,6 +301,15 @@ func (ctx Context) PrintProto(toPrint proto.Message) error {
 	if err != nil {
 		return err
 	}
+	// If AssetListUrl have value, we convert ibc format to base denom
+	if ctx.AssetListUrl != "" {
+		outStr := string(out)
+		outStr, err = ReplaceIbcWithBaseDenom(ctx, outStr)
+		if err != nil {
+			return err
+		}
+		out = []byte(outStr)
+	}
 	return ctx.printOutput(out)
 }
 
@@ -305,6 +320,15 @@ func (ctx Context) PrintObjectLegacy(toPrint interface{}) error {
 	out, err := ctx.LegacyAmino.MarshalJSON(toPrint)
 	if err != nil {
 		return err
+	}
+	// If AssetListUrl have value, we convert ibc format to base denom
+	if ctx.AssetListUrl != "" {
+		outStr := string(out)
+		outStr, err = ReplaceIbcWithBaseDenom(ctx, outStr)
+		if err != nil {
+			return err
+		}
+		out = []byte(outStr)
 	}
 	return ctx.printOutput(out)
 }
