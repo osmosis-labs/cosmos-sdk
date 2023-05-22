@@ -26,6 +26,8 @@ output = "{{ .Output }}"
 node = "{{ .Node }}"
 # Transaction broadcasting mode (sync|async|block)
 broadcast-mode = "{{ .BroadcastMode }}"
+# Url link to asset list for converting ibc denom to human readable denom
+asset-list-url = "{{ .AssetListUrl }}"
 `
 
 // writeConfigToFile parses defaultConfigTemplate, renders config using the template and writes it to
