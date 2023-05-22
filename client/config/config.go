@@ -15,6 +15,7 @@ const (
 	output         = "text"
 	node           = "tcp://localhost:26657"
 	broadcastMode  = "sync"
+	assetListUrl   = "https://raw.githubusercontent.com/osmosis-labs/assetlists/main/osmosis-1/osmosis-1.assetlist.json"
 )
 
 type ClientConfig struct {
@@ -23,11 +24,12 @@ type ClientConfig struct {
 	Output         string `mapstructure:"output" json:"output"`
 	Node           string `mapstructure:"node" json:"node"`
 	BroadcastMode  string `mapstructure:"broadcast-mode" json:"broadcast-mode"`
+	AssetListUrl  string `mapstructure:"asset-list-url" json:"asset-list-url"`
 }
 
 // defaultClientConfig returns the reference to ClientConfig with default values.
 func defaultClientConfig() *ClientConfig {
-	return &ClientConfig{chainID, keyringBackend, output, node, broadcastMode}
+	return &ClientConfig{chainID, keyringBackend, output, node, broadcastMode, assetListUrl}
 }
 
 func (c *ClientConfig) SetChainID(chainID string) {
@@ -74,7 +76,8 @@ func ReadFromClientConfig(ctx client.Context) (client.Context, error) {
 	// we need to update KeyringDir field on Client Context first cause it is used in NewKeyringFromBackend
 	ctx = ctx.WithOutputFormat(conf.Output).
 		WithChainID(conf.ChainID).
-		WithKeyringDir(ctx.HomeDir)
+		WithKeyringDir(ctx.HomeDir).
+		WithAssetListUrl(conf.AssetListUrl)
 
 	keyring, err := client.NewKeyringFromBackend(ctx, conf.KeyringBackend)
 	if err != nil {
