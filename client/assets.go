@@ -18,13 +18,12 @@ import (
 )
 
 type DenomUnits struct {
-	Denom    string `mapstructure:"denom" json:"denom"`
-	Aliases    []string `mapstructure:"aliases" json:"aliases"`
-	
+	Denom   string   `mapstructure:"denom" json:"denom"`
+	Aliases []string `mapstructure:"aliases" json:"aliases"`
 }
 
 type Asset struct {
-	Base    string `mapstructure:"base" json:"base"`
+	Base       string       `mapstructure:"base" json:"base"`
 	DenomUnits []DenomUnits `mapstructure:"denom_units" json:"denom_units"`
 }
 
@@ -35,21 +34,25 @@ type AssetList struct {
 
 var IbcDenomRegex = `ibc\/[0-9a-fA-F]{64}`
 
-func ReplaceIbcWithBaseDenom(ctx Context,str string) (string, error) {
+func ReplaceIbcWithBaseDenom(ctx Context, str string) (string, error) {
 	regex := regexp.MustCompile(IbcDenomRegex)
+	matches := regex.FindStringSubmatch(str)
+	// No ibc format found, return origin output string
+	if len(matches) == 0 {
+		return str, nil
+	}
+	// Cant fetch assets list, return origin output string
 	assetList, err := getAssetList(ctx)
 	if err != nil {
-		return "", err
+		return str, err
 	}
-	matches := regex.FindStringSubmatch(str)
 	for _, match := range matches {
 		displayDenom, err := getDisplayDenom(ctx, match, assetList)
-		if err != nil {
-			return "", err
+		if err == nil {
+			str = strings.Replace(str, match, displayDenom, 1)
 		}
-		str = strings.Replace(str, match, displayDenom, 1)
 	}
-	return str, nil
+	return str, err
 }
 
 func getAssetList(ctx Context) ([]Asset, error) {
@@ -61,9 +64,9 @@ func getAssetList(ctx Context) ([]Asset, error) {
 
 	defer resp.Body.Close()
 
-    if resp.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("Status error: %v", resp.StatusCode)
-    }
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Status error: %v", resp.StatusCode)
+	}
 	data, err := ioutil.ReadAll(resp.Body)
 	var assetList AssetList
 	err = json.Unmarshal(data, &assetList)

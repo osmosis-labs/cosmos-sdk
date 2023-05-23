@@ -24,7 +24,7 @@ type ClientConfig struct {
 	Output         string `mapstructure:"output" json:"output"`
 	Node           string `mapstructure:"node" json:"node"`
 	BroadcastMode  string `mapstructure:"broadcast-mode" json:"broadcast-mode"`
-	AssetListUrl  string `mapstructure:"asset-list-url" json:"asset-list-url"`
+	AssetListUrl   string `mapstructure:"asset-list-url" json:"asset-list-url"`
 }
 
 // defaultClientConfig returns the reference to ClientConfig with default values.
