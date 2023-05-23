@@ -37,9 +37,13 @@ var IbcDenomRegex = `ibc\/[0-9a-fA-F]{64}`
 
 func ReplaceIbcWithBaseDenom(ctx Context,str string) (string, error) {
 	regex := regexp.MustCompile(IbcDenomRegex)
+	assetList, err := getAssetList(ctx)
+	if err != nil {
+		return "", err
+	}
 	matches := regex.FindStringSubmatch(str)
 	for _, match := range matches {
-		displayDenom, err := getDisplayDenom(ctx, match)
+		displayDenom, err := getDisplayDenom(ctx, match, assetList)
 		if err != nil {
 			return "", err
 		}
@@ -69,13 +73,9 @@ func getAssetList(ctx Context) ([]Asset, error) {
 	return assetList.Assets, nil
 }
 
-func getDisplayDenom(ctx Context, ibcDenom string) (string, error) {
+func getDisplayDenom(ctx Context, ibcDenom string, assetList []Asset) (string, error) {
 	// Validate ibc denom first
 	err := validateIBCDenom(ibcDenom)
-	if err != nil {
-		return "", err
-	}
-	assetList, err := getAssetList(ctx)
 	if err != nil {
 		return "", err
 	}
