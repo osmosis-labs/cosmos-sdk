@@ -118,6 +118,13 @@ func (keeper Keeper) Tally(ctx sdk.Context, proposal types.Proposal) (passes boo
 		return true, false, tallyResults
 	}
 
+	// if the proposal is expedited and less than expedited_quorum_threshold, the proposal fails
+	if proposal.IsExpedited {
+		if percentVoting.LT(tallyParams.ExpeditedQuorumThreshold) {
+			return false, true, tallyResults
+		}
+	}
+
 	// If more than 1/2 of non-abstaining voters vote No, proposal fails
 	return false, false, tallyResults
 }
