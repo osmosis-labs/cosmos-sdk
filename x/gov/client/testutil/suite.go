@@ -104,8 +104,8 @@ deposit_params:
     denom: stake
   min_initial_deposit_ratio: "0.000000000000000000"
 tally_params:
-  expedited_threshold: "0.667000000000000000"
   expedited_quorum_threshold: "0.667000000000000000"
+  expedited_threshold: "0.667000000000000000"
   quorum: "0.334000000000000000"
   threshold: "0.500000000000000000"
   veto_threshold: "0.334000000000000000"
@@ -153,7 +153,7 @@ func (s *IntegrationTestSuite) TestCmdParam() {
 				"tallying",
 				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 			},
-			`{"quorum":"0.334000000000000000","threshold":"0.500000000000000000","veto_threshold":"0.334000000000000000","expedited_threshold":"0.667000000000000000","expedited_quorum_threshold":"0.667000000000000000"}},`,
+			`{"quorum":"0.334000000000000000","threshold":"0.500000000000000000","veto_threshold":"0.334000000000000000","expedited_threshold":"0.667000000000000000","expedited_quorum_threshold":"0.667000000000000000"},`,
 		},
 		{
 			"deposit params",
