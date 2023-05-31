@@ -156,6 +156,15 @@ func (tp TallyParams) GetThreshold(isExpedited bool) sdk.Dec {
 	return tp.Threshold
 }
 
+// GetQuorum returns quorum based on the value isExpedited
+func (tp TallyParams) GetQuorum(isExpedited bool) sdk.Dec {
+	if isExpedited {
+		return tp.ExpeditedQuorum
+	}
+
+	return tp.Quorum
+}
+
 // Equal checks equality of TallyParams
 func (tp TallyParams) Equal(other TallyParams) bool {
 	return tp.Quorum.Equal(other.Quorum) && tp.Threshold.Equal(other.Threshold) && tp.ExpeditedThreshold.Equal(other.ExpeditedThreshold) && tp.VetoThreshold.Equal(other.VetoThreshold)
