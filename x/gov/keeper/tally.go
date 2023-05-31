@@ -97,7 +97,7 @@ func (keeper Keeper) Tally(ctx sdk.Context, proposal types.Proposal) (passes boo
 
 	// If there is not enough quorum of votes, the proposal fails
 	percentVoting := totalVotingPower.Quo(keeper.sk.TotalBondedTokens(ctx).ToDec())
-	if percentVoting.LT(tallyParams.Quorum) {
+	if hasReachedQuorum(percentVoting, tallyParams.Quorum) {
 		return false, true, tallyResults
 	}
 
@@ -111,6 +111,13 @@ func (keeper Keeper) Tally(ctx sdk.Context, proposal types.Proposal) (passes boo
 		return false, true, tallyResults
 	}
 
+	// if the proposal is expedited and less than expedited_quorum, the proposal fails
+	if proposal.IsExpedited {
+		if hasReachedQuorum(percentVoting, tallyParams.ExpeditedQuorum) {
+			return false, true, tallyResults
+		}
+	}
+
 	threshold := tallyParams.GetThreshold(proposal.IsExpedited)
 	// If more than threshold of non-abstaining voters vote Yes, proposal passes
 	// default value for regular proposals is 1/2. For expedited 2/3
@@ -118,13 +125,11 @@ func (keeper Keeper) Tally(ctx sdk.Context, proposal types.Proposal) (passes boo
 		return true, false, tallyResults
 	}
 
-	// if the proposal is expedited and less than expedited_quorum_threshold, the proposal fails
-	if proposal.IsExpedited {
-		if percentVoting.LT(tallyParams.ExpeditedQuorumThreshold) {
-			return false, true, tallyResults
-		}
-	}
-
 	// If more than 1/2 of non-abstaining voters vote No, proposal fails
 	return false, false, tallyResults
+}
+
+// hasReachedQuorum check if the votes have reached quorum or not.
+func hasReachedQuorum(percentVoting, quorum sdk.Dec) bool {
+	return percentVoting.LT(quorum)
 }

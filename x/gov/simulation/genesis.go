@@ -82,8 +82,8 @@ func GenTallyParamsExpeditedThreshold(r *rand.Rand) sdk.Dec {
 	return sdk.NewDecWithPrec(int64(simulation.RandIntBetween(r, tallyNonExpeditedMax, 550)), 3)
 }
 
-// GenTallyParamsExpeditedQuorumThreshold randomized TallyParamsExpeditedThreshold
-func GenTallyParamsExpeditedQuorumThreshold(r *rand.Rand) sdk.Dec {
+// GenTallyParamsExpeditedQuorum randomized TallyParamsExpeditedThreshold
+func GenTallyParamsExpeditedQuorum(r *rand.Rand) sdk.Dec {
 	return sdk.NewDecWithPrec(int64(simulation.RandIntBetween(r, 334, 500)), 3)
 }
 
@@ -159,7 +159,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 	var expeditedQuorum sdk.Dec
 	simState.AppParams.GetOrGenerate(
 		simState.Cdc, TallyParamsExpeditedQuorum, &expeditedQuorum, simState.Rand,
-		func(r *rand.Rand) { quorum = GenTallyParamsExpeditedQuorumThreshold(r) },
+		func(r *rand.Rand) { quorum = GenTallyParamsExpeditedQuorum(r) },
 	)
 
 	proposalVotingPeriods := []types.ProposalVotingPeriod{
