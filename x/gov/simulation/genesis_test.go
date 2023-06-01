@@ -40,7 +40,7 @@ func TestRandomizedGenState(t *testing.T) {
 	var govGenesis types.GenesisState
 	simState.Cdc.MustUnmarshalJSON(simState.GenState[types.ModuleName], &govGenesis)
 
-	dec1, _ := sdk.NewDecFromStr("0.457000000000000000")
+	dec1, _ := sdk.NewDecFromStr("0.466000000000000000")
 	dec2, _ := sdk.NewDecFromStr("0.485000000000000000")
 	dec3, _ := sdk.NewDecFromStr("0.511000000000000000")
 	dec4, _ := sdk.NewDecFromStr("0.291000000000000000")
