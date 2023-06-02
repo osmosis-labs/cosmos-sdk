@@ -42,7 +42,7 @@ func TestRandomizedGenState(t *testing.T) {
 
 	dec1, _ := sdk.NewDecFromStr("0.466000000000000000")
 	dec2, _ := sdk.NewDecFromStr("0.485000000000000000")
-	dec3, _ := sdk.NewDecFromStr("0.511000000000000000")
+	dec3, _ := sdk.NewDecFromStr("0.522000000000000000")
 	dec4, _ := sdk.NewDecFromStr("0.291000000000000000")
 
 	minInitialDepositDec, err := sdk.NewDecFromStr("0.880000000000000000")
