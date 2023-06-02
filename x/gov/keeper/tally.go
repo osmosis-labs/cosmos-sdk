@@ -123,8 +123,3 @@ func (keeper Keeper) Tally(ctx sdk.Context, proposal types.Proposal) (passes boo
 	// If more than 1/2 of non-abstaining voters vote No, proposal fails
 	return false, false, tallyResults
 }
-
-// hasReachedQuorum check if the votes have reached quorum or not.
-func hasReachedQuorum(percentVoting, quorum sdk.Dec) bool {
-	return percentVoting.LT(quorum)
-}
