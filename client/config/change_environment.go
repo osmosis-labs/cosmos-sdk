@@ -128,7 +128,7 @@ func EnvironmentNameToPath(environmentName string, defaultNodeHome string) (stri
 	case EnvMainnet:
 		return defaultNodeHome, nil
 	case EnvLocalnet:
-		return filepath.Join(userHomeDir, defaultNodeHome + "-local/"), nil
+		return filepath.Join(userHomeDir, defaultNodeHome+"-local/"), nil
 	default:
 		osmosisdPath := filepath.Join(userHomeDir, environmentName)
 		_, err := os.Stat(osmosisdPath)
