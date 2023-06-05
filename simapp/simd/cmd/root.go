@@ -39,6 +39,12 @@ import (
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := simapp.MakeTestEncodingConfig()
+	homeEnvironment := config.GetHomeEnvironment(simapp.DefaultNodeHome)
+	homeDir, err := config.EnvironmentNameToPath(homeEnvironment, simapp.DefaultNodeHome)
+	if err != nil {
+		// Failed to convert home environment to home path, using default home
+		homeDir = simapp.DefaultNodeHome
+	}
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
@@ -46,7 +52,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
-		WithHomeDir(simapp.DefaultNodeHome).
+		WithHomeDir(homeDir).
 		WithViper("") // In simapp, we don't use any prefix for env variables.
 
 	rootCmd := &cobra.Command{
@@ -153,6 +159,8 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		testnetCmd(simapp.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
+		config.ChangeEnvironmentCmd(simapp.DefaultNodeHome),
+		config.PrintEnvironmentCmd(simapp.DefaultNodeHome),
 	)
 
 	a := appCreator{encodingConfig}
