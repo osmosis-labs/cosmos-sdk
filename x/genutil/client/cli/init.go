@@ -23,6 +23,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	sdkconfig "github.com/cosmos/cosmos-sdk/client/config"
 )
 
 const (
@@ -31,6 +32,9 @@ const (
 
 	// FlagSeed defines a flag to initialize the private validator key from a specific seed.
 	FlagRecover = "recover"
+
+	// FlagSetEnv defines a flag to create environment file & save current home directory into it.
+	FlagSetEnv = "set-env"
 )
 
 type printInfo struct {
@@ -141,6 +145,14 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			toPrint := newPrintInfo(config.Moniker, chainID, nodeID, "", appState)
 
 			cfg.WriteConfigFile(filepath.Join(config.RootDir, "config", "config.toml"), config)
+
+			createEnv, _ := cmd.Flags().GetBool(FlagSetEnv)
+			if createEnv {
+				err = sdkconfig.CreateEnvFile(cmd, defaultNodeHome)
+				if err != nil {
+					return errors.Wrapf(err, "Failed to create environment file")
+				}
+			}
 			return displayInfo(toPrint)
 		},
 	}
