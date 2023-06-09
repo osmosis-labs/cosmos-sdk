@@ -152,6 +152,7 @@ func (k BaseSendKeeper) SendCoinsWithoutBlockHook(ctx sdk.Context, fromAddr sdk.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	// BlockBeforeSend hook should always be called before the TrackBeforeSend hook.
+	ctx.Logger().Error("SDK: block before send being called")
 	err := k.BlockBeforeSend(ctx, fromAddr, toAddr, amt)
 	if err != nil {
 		return err
