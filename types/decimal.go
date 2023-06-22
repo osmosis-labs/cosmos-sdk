@@ -655,7 +655,7 @@ func chopPrecisionAndRoundUp(d *big.Int) *big.Int {
 		// make d positive, compute chopped value, and then un-mutate d
 		d = d.Neg(d)
 		// truncate since d is negative...
-		chopPrecisionAndTruncate(d)
+		chopPrecisionAndRoundUp(d)
 		d = d.Neg(d)
 		return d
 	}
