@@ -8,10 +8,12 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+	"unsafe"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +50,6 @@ type setupConfig struct {
 	pruningOpts       pruningtypes.PruningOptions
 }
 
-<<<<<<< HEAD
 func defaultLogger() log.Logger {
 	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
 }
@@ -98,6 +99,20 @@ func setupBaseApp(t *testing.T, options ...func(*BaseApp)) (*BaseApp, error) {
 	return app, err
 }
 
+func getQueryBaseapp(t *testing.T) *BaseApp {
+	db := dbm.NewMemDB()
+	name := t.Name()
+	app := NewBaseApp(name, defaultLogger(), db, nil)
+
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
+	app.Commit()
+
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 2}})
+	app.Commit()
+
+	return app
+}
+
 // simple one store baseapp with data and snapshots. Each tx is 1 MB in size (uncompressed).
 func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, func(), error) {
 	codec := codec.NewLegacyAmino()
@@ -112,25 +127,6 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, fun
 
 	snapshotTimeout := 90 * time.Second
 	snapshotDir, err := ioutil.TempDir("", "baseapp")
-=======
-func getQueryBaseapp(t *testing.T) *baseapp.BaseApp {
-	db := dbm.NewMemDB()
-	name := t.Name()
-	app := baseapp.NewBaseApp(name, defaultLogger(), db, nil)
-
-	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
-	app.Commit()
-
-	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 2}})
-	app.Commit()
-
-	return app
-}
-
-func NewBaseAppSuiteWithSnapshots(t *testing.T, cfg SnapshotsConfig, opts ...func(*baseapp.BaseApp)) *BaseAppSuite {
-	snapshotTimeout := 1 * time.Minute
-	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), t.TempDir())
->>>>>>> 8dc41d645 (feat: Add gas limits for queries (#454))
 	require.NoError(t, err)
 	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snapshotDir)
 	require.NoError(t, err)
@@ -1648,7 +1644,6 @@ func TestGasConsumptionBadTx(t *testing.T) {
 		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasWanted))
 
-<<<<<<< HEAD
 			defer func() {
 				if r := recover(); r != nil {
 					switch rType := r.(type) {
@@ -1669,20 +1664,6 @@ func TestGasConsumptionBadTx(t *testing.T) {
 
 			return
 		})
-=======
-	app := getQueryBaseapp(t)
-
-	testCases := []struct {
-		name   string
-		height int64
-		prove  bool
-		expErr bool
-	}{
-		{"valid height", 2, true, false},
-		{"future height", 10, true, true},
-		{"negative height, prove=true", -1, true, true},
-		{"negative height, prove=false", -1, false, true},
->>>>>>> 8dc41d645 (feat: Add gas limits for queries (#454))
 	}
 
 	routerOpt := func(bapp *BaseApp) {
@@ -2096,20 +2077,6 @@ func TestLoadSnapshotChunk(t *testing.T) {
 	}
 }
 
-<<<<<<< HEAD
-func TestOfferSnapshot_Errors(t *testing.T) {
-	// Set up app before test cases, since it's fairly expensive.
-	setupConfig := &setupConfig{
-		blocks:            0,
-		blockTxs:          0,
-		snapshotInterval:  2,
-		snapshotKeepEvery: 2,
-		pruningOpts:       pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
-	}
-	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
-	require.NoError(t, err)
-	defer teardown()
-=======
 type ctxType string
 
 const (
@@ -2120,9 +2087,23 @@ const (
 
 var ctxTypes = []ctxType{QueryCtx, CheckTxCtx}
 
-func (c ctxType) GetCtx(t *testing.T, bapp *baseapp.BaseApp) sdk.Context {
+func getCheckStateCtx(app *BaseApp) sdk.Context {
+	v := reflect.ValueOf(app).Elem()
+	f := v.FieldByName("checkState")
+	rf := reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
+	return rf.MethodByName("Context").Call(nil)[0].Interface().(sdk.Context)
+}
+
+func getDeliverStateCtx(app *BaseApp) sdk.Context {
+	v := reflect.ValueOf(app).Elem()
+	f := v.FieldByName("deliverState")
+	rf := reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem()
+	return rf.MethodByName("Context").Call(nil)[0].Interface().(sdk.Context)
+}
+
+func (c ctxType) GetCtx(t *testing.T, bapp *BaseApp) sdk.Context {
 	if c == QueryCtx {
-		ctx, err := bapp.CreateQueryContext(1, false)
+		ctx, err := bapp.createQueryContext(1, false)
 		require.NoError(t, err)
 		return ctx
 	} else if c == CheckTxCtx {
@@ -2150,7 +2131,7 @@ func TestQueryGasLimit(t *testing.T) {
 		for _, ctxType := range ctxTypes {
 			t.Run(fmt.Sprintf("%s: %d - %d", ctxType, tc.queryGasLimit, tc.gasActuallyUsed), func(t *testing.T) {
 				app := getQueryBaseapp(t)
-				baseapp.SetQueryGasLimit(tc.queryGasLimit)(app)
+				SetQueryGasLimit(tc.queryGasLimit)(app)
 				ctx := ctxType.GetCtx(t, app)
 
 				// query gas limit should have no effect when CtxType != QueryCtx
@@ -2165,11 +2146,18 @@ func TestQueryGasLimit(t *testing.T) {
 	}
 }
 
-func TestGetMaximumBlockGas(t *testing.T) {
-	suite := NewBaseAppSuite(t)
-	suite.baseApp.InitChain(abci.RequestInitChain{})
-	ctx := suite.baseApp.NewContext(true, tmproto.Header{})
->>>>>>> 8dc41d645 (feat: Add gas limits for queries (#454))
+func TestOfferSnapshot_Errors(t *testing.T) {
+	// Set up app before test cases, since it's fairly expensive.
+	setupConfig := &setupConfig{
+		blocks:            0,
+		blockTxs:          0,
+		snapshotInterval:  2,
+		snapshotKeepEvery: 2,
+		pruningOpts:       pruningtypes.NewPruningOptions(pruningtypes.PruningNothing),
+	}
+	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
+	require.NoError(t, err)
+	defer teardown()
 
 	m := snapshottypes.Metadata{ChunkHashes: [][]byte{{1}, {2}, {3}}}
 	metadata, err := m.Marshal()
