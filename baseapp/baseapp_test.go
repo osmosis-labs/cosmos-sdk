@@ -48,6 +48,7 @@ type setupConfig struct {
 	pruningOpts       pruningtypes.PruningOptions
 }
 
+<<<<<<< HEAD
 func defaultLogger() log.Logger {
 	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
 }
@@ -111,6 +112,25 @@ func setupBaseAppWithSnapshots(t *testing.T, config *setupConfig) (*BaseApp, fun
 
 	snapshotTimeout := 90 * time.Second
 	snapshotDir, err := ioutil.TempDir("", "baseapp")
+=======
+func getQueryBaseapp(t *testing.T) *baseapp.BaseApp {
+	db := dbm.NewMemDB()
+	name := t.Name()
+	app := baseapp.NewBaseApp(name, defaultLogger(), db, nil)
+
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 1}})
+	app.Commit()
+
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: 2}})
+	app.Commit()
+
+	return app
+}
+
+func NewBaseAppSuiteWithSnapshots(t *testing.T, cfg SnapshotsConfig, opts ...func(*baseapp.BaseApp)) *BaseAppSuite {
+	snapshotTimeout := 1 * time.Minute
+	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), t.TempDir())
+>>>>>>> 8dc41d645 (feat: Add gas limits for queries (#454))
 	require.NoError(t, err)
 	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snapshotDir)
 	require.NoError(t, err)
@@ -1628,6 +1648,7 @@ func TestGasConsumptionBadTx(t *testing.T) {
 		bapp.SetAnteHandler(func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
 			newCtx = ctx.WithGasMeter(sdk.NewGasMeter(gasWanted))
 
+<<<<<<< HEAD
 			defer func() {
 				if r := recover(); r != nil {
 					switch rType := r.(type) {
@@ -1648,6 +1669,20 @@ func TestGasConsumptionBadTx(t *testing.T) {
 
 			return
 		})
+=======
+	app := getQueryBaseapp(t)
+
+	testCases := []struct {
+		name   string
+		height int64
+		prove  bool
+		expErr bool
+	}{
+		{"valid height", 2, true, false},
+		{"future height", 10, true, true},
+		{"negative height, prove=true", -1, true, true},
+		{"negative height, prove=false", -1, false, true},
+>>>>>>> 8dc41d645 (feat: Add gas limits for queries (#454))
 	}
 
 	routerOpt := func(bapp *BaseApp) {
@@ -2061,6 +2096,7 @@ func TestLoadSnapshotChunk(t *testing.T) {
 	}
 }
 
+<<<<<<< HEAD
 func TestOfferSnapshot_Errors(t *testing.T) {
 	// Set up app before test cases, since it's fairly expensive.
 	setupConfig := &setupConfig{
@@ -2073,6 +2109,67 @@ func TestOfferSnapshot_Errors(t *testing.T) {
 	app, teardown, err := setupBaseAppWithSnapshots(t, setupConfig)
 	require.NoError(t, err)
 	defer teardown()
+=======
+type ctxType string
+
+const (
+	QueryCtx     ctxType = "query"
+	CheckTxCtx   ctxType = "checkTx"
+	DeliverTxCtx ctxType = "deliverTx"
+)
+
+var ctxTypes = []ctxType{QueryCtx, CheckTxCtx}
+
+func (c ctxType) GetCtx(t *testing.T, bapp *baseapp.BaseApp) sdk.Context {
+	if c == QueryCtx {
+		ctx, err := bapp.CreateQueryContext(1, false)
+		require.NoError(t, err)
+		return ctx
+	} else if c == CheckTxCtx {
+		return getCheckStateCtx(bapp)
+	}
+	// TODO: Not supported yet
+	return getDeliverStateCtx(bapp)
+}
+
+func TestQueryGasLimit(t *testing.T) {
+	testCases := []struct {
+		queryGasLimit   uint64
+		gasActuallyUsed uint64
+		shouldQueryErr  bool
+	}{
+		{queryGasLimit: 100, gasActuallyUsed: 50, shouldQueryErr: false},  // Valid case
+		{queryGasLimit: 100, gasActuallyUsed: 150, shouldQueryErr: true},  // gasActuallyUsed > queryGasLimit
+		{queryGasLimit: 0, gasActuallyUsed: 50, shouldQueryErr: false},    // fuzzing with queryGasLimit = 0
+		{queryGasLimit: 0, gasActuallyUsed: 0, shouldQueryErr: false},     // both queryGasLimit and gasActuallyUsed are 0
+		{queryGasLimit: 200, gasActuallyUsed: 200, shouldQueryErr: true},  // gasActuallyUsed > queryGasLimit
+		{queryGasLimit: 100, gasActuallyUsed: 1000, shouldQueryErr: true}, // gasActuallyUsed > queryGasLimit
+	}
+
+	for _, tc := range testCases {
+		for _, ctxType := range ctxTypes {
+			t.Run(fmt.Sprintf("%s: %d - %d", ctxType, tc.queryGasLimit, tc.gasActuallyUsed), func(t *testing.T) {
+				app := getQueryBaseapp(t)
+				baseapp.SetQueryGasLimit(tc.queryGasLimit)(app)
+				ctx := ctxType.GetCtx(t, app)
+
+				// query gas limit should have no effect when CtxType != QueryCtx
+				f := func() { ctx.GasMeter().ConsumeGas(tc.gasActuallyUsed, "test") }
+				if tc.shouldQueryErr && ctxType == QueryCtx {
+					require.Panics(t, f)
+				} else {
+					require.NotPanics(t, f)
+				}
+			})
+		}
+	}
+}
+
+func TestGetMaximumBlockGas(t *testing.T) {
+	suite := NewBaseAppSuite(t)
+	suite.baseApp.InitChain(abci.RequestInitChain{})
+	ctx := suite.baseApp.NewContext(true, tmproto.Header{})
+>>>>>>> 8dc41d645 (feat: Add gas limits for queries (#454))
 
 	m := snapshottypes.Metadata{ChunkHashes: [][]byte{{1}, {2}, {3}}}
 	metadata, err := m.Marshal()
