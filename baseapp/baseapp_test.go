@@ -617,7 +617,7 @@ func TestQueryGasLimit(t *testing.T) {
 		{queryGasLimit: 100, gasActuallyUsed: 150, shouldQueryErr: true},  // gasActuallyUsed > queryGasLimit
 		{queryGasLimit: 0, gasActuallyUsed: 50, shouldQueryErr: false},    // fuzzing with queryGasLimit = 0
 		{queryGasLimit: 0, gasActuallyUsed: 0, shouldQueryErr: false},     // both queryGasLimit and gasActuallyUsed are 0
-		{queryGasLimit: 200, gasActuallyUsed: 200, shouldQueryErr: false}, // gasActuallyUsed == queryGasLimit
+		{queryGasLimit: 200, gasActuallyUsed: 200, shouldQueryErr: true},  // gasActuallyUsed > queryGasLimit
 		{queryGasLimit: 100, gasActuallyUsed: 1000, shouldQueryErr: true}, // gasActuallyUsed > queryGasLimit
 	}
 
@@ -629,10 +629,11 @@ func TestQueryGasLimit(t *testing.T) {
 				ctx := ctxType.GetCtx(t, app)
 
 				// query gas limit should have no effect when CtxType != QueryCtx
+				f := func() { ctx.GasMeter().ConsumeGas(tc.gasActuallyUsed, "test") }
 				if tc.shouldQueryErr && ctxType == QueryCtx {
-					require.Panics(t, func() { ctx.GasMeter().ConsumeGas(tc.gasActuallyUsed, "test") })
+					require.Panics(t, f)
 				} else {
-					require.NotPanics(t, func() { ctx.GasMeter().ConsumeGas(tc.gasActuallyUsed, "test") })
+					require.NotPanics(t, f)
 				}
 			})
 		}
