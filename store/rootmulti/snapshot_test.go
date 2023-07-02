@@ -128,7 +128,7 @@ func TestMultistoreSnapshot_Checksum(t *testing.T) {
 			"71a0b594863b63f6341092ceee1a8d508722af4bed2db1fb3f1c58775b95459c",
 			"0864b7d52db6d2e6fee11db2399d042b52179221012eb20f969e28843a2e20ad",
 			"7e57a64b4a344e58fa95549f07a784a1247dca38a7db5b034ee2bd2f2011936f",
-			"534b87533ca86f404b59c34f0dc451b36c02a2dacfc51abf2863668bd40e0d04",
+			"396883880eb125b55f0b880e0bcdb59b4b5ea6d07631e1e8fef8353df748e2b8",
 		}},
 	}
 	for _, tc := range testcases {
