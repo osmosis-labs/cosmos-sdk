@@ -127,14 +127,8 @@ func NewBaseKeeper(
 // WithMintCoinsRestriction restricts the bank Keeper used within a specific module to
 // have restricted permissions on minting speicified denoms.
 func (k BaseKeeper) WithMintCoinsRestriction(NewRestrictionFn BankMintingRestrictionFn) BaseKeeper {
-	// this allows nesting restriction functions
-	oldRestrictionFn := k.mintCoinsRestrictionFn
 	k.mintCoinsRestrictionFn = func(ctx sdk.Context, coins sdk.Coins) error {
 		err := NewRestrictionFn(ctx, coins)
-		if err != nil {
-			return err
-		}
-		err = oldRestrictionFn(ctx, coins)
 		if err != nil {
 			return err
 		}
