@@ -3,6 +3,7 @@ package baseapp
 import (
 	"context"
 	"strconv"
+	"sync"
 
 	gogogrpc "github.com/gogo/protobuf/grpc"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -24,7 +25,13 @@ func (app *BaseApp) GRPCQueryRouter() *GRPCQueryRouter { return app.grpcQueryRou
 func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server) {
 	// Define an interceptor for all gRPC queries: this interceptor will create
 	// a new sdk.Context, and pass it into the query handler.
+
+	var lock = new(sync.Mutex)
+
 	interceptor := func(grpcCtx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		lock.Lock()         // Lock before accessing shared resources
+		defer lock.Unlock() // Ensure the lock will be unlocked even if the function panics
+
 		// If there's some metadata in the context, retrieve it.
 		md, ok := metadata.FromIncomingContext(grpcCtx)
 		if !ok {
