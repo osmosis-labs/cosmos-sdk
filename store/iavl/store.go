@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -39,6 +40,7 @@ var (
 // Store Implements types.KVStore and CommitKVStore.
 type Store struct {
 	tree Tree
+	mu   sync.Mutex
 }
 
 // LoadStore returns an IAVL Store as a CommitKVStore. Internally, it will load the
@@ -110,6 +112,9 @@ func UnsafeNewStore(tree *iavl.MutableTree) *Store {
 // been pruned, an empty immutable IAVL tree will be used.
 // Any mutable operations executed will result in a panic.
 func (st *Store) GetImmutable(version int64) (*Store, error) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
+
 	if !st.VersionExists(version) {
 		return &Store{tree: &immutableTree{&iavl.ImmutableTree{}}}, nil
 	}
@@ -127,6 +132,8 @@ func (st *Store) GetImmutable(version int64) (*Store, error) {
 // Commit commits the current store state and returns a CommitID with the new
 // version and hash.
 func (st *Store) Commit() types.CommitID {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "commit")
 
 	hash, version, err := st.tree.SaveVersion()
@@ -142,6 +149,8 @@ func (st *Store) Commit() types.CommitID {
 
 // LastCommitID implements Committer.
 func (st *Store) LastCommitID() types.CommitID {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	hash, err := st.tree.Hash()
 	if err != nil {
 		panic(err)
@@ -167,36 +176,50 @@ func (st *Store) GetPruning() pruningtypes.PruningOptions {
 
 // VersionExists returns whether or not a given version is stored.
 func (st *Store) VersionExists(version int64) bool {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return st.tree.VersionExists(version)
 }
 
 // GetAllVersions returns all versions in the iavl tree
 func (st *Store) GetAllVersions() []int {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return st.tree.AvailableVersions()
 }
 
 // Implements Store.
 func (st *Store) GetStoreType() types.StoreType {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return types.StoreTypeIAVL
 }
 
 // Implements Store.
 func (st *Store) CacheWrap() types.CacheWrap {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return cachekv.NewStore(st)
 }
 
 // CacheWrapWithTrace implements the Store interface.
 func (st *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return cachekv.NewStore(tracekv.NewStore(st, w, tc))
 }
 
 // CacheWrapWithListeners implements the CacheWrapper interface.
 func (st *Store) CacheWrapWithListeners(storeKey types.StoreKey, listeners []types.WriteListener) types.CacheWrap {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return cachekv.NewStore(listenkv.NewStore(st, storeKey, listeners))
 }
 
 // Implements types.KVStore.
 func (st *Store) Set(key, value []byte) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
 	st.tree.Set(key, value)
@@ -204,6 +227,8 @@ func (st *Store) Set(key, value []byte) {
 
 // Implements types.KVStore.
 func (st *Store) Get(key []byte) []byte {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "get")
 	value, err := st.tree.Get(key)
 	if err != nil {
@@ -214,6 +239,8 @@ func (st *Store) Get(key []byte) []byte {
 
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "has")
 	has, err := st.tree.Has(key)
 	if err != nil {
@@ -224,6 +251,8 @@ func (st *Store) Has(key []byte) (exists bool) {
 
 // Implements types.KVStore.
 func (st *Store) Delete(key []byte) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "delete")
 	st.tree.Remove(key)
 }
@@ -232,12 +261,16 @@ func (st *Store) Delete(key []byte) {
 // is returned if any single version is invalid or the delete fails. All writes
 // happen in a single batch with a single commit.
 func (st *Store) DeleteVersions(versions ...int64) error {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return st.tree.DeleteVersions(versions...)
 }
 
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
 // version, or the latest version below it. Any versions greater than targetVersion will be deleted.
 func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	return st.tree.LoadVersionForOverwriting(targetVersion)
 }
 
@@ -246,6 +279,8 @@ func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
 // goroutine.
 // CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	iterator, err := st.tree.Iterator(start, end, true)
 	if err != nil {
 		panic(err)
@@ -258,6 +293,8 @@ func (st *Store) Iterator(start, end []byte) types.Iterator {
 // goroutine.
 // CONTRACT: There must be no writes to the store while an iterator is not closed.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	iterator, err := st.tree.Iterator(start, end, false)
 	if err != nil {
 		panic(err)
@@ -268,11 +305,15 @@ func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
 // SetInitialVersion sets the initial version of the IAVL tree. It is used when
 // starting a new chain at an arbitrary height.
 func (st *Store) SetInitialVersion(version int64) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	st.tree.SetInitialVersion(uint64(version))
 }
 
 // Exports the IAVL store at the given version, returning an iavl.Exporter for the tree.
 func (st *Store) Export(version int64) (*iavl.Exporter, error) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	istore, err := st.GetImmutable(version)
 	if err != nil {
 		return nil, fmt.Errorf("iavl export failed for version %v: %w", version, err)
@@ -286,6 +327,8 @@ func (st *Store) Export(version int64) (*iavl.Exporter, error) {
 
 // Import imports an IAVL tree at the given version, returning an iavl.Importer for importing.
 func (st *Store) Import(version int64) (*iavl.Importer, error) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	tree, ok := st.tree.(*iavl.MutableTree)
 	if !ok {
 		return nil, errors.New("iavl import failed: unable to find mutable tree")
@@ -315,6 +358,8 @@ func getHeight(tree Tree, req abci.RequestQuery) int64 {
 // if you care to have the latest data to see a tx results, you must
 // explicitly set the height you want to see
 func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
+	st.mu.Lock()
+	defer st.mu.Unlock()
 	defer telemetry.MeasureSince(time.Now(), "store", "iavl", "query")
 
 	if len(req.Data) == 0 {
