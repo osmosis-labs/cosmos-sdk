@@ -24,6 +24,11 @@ type KVStoreTx struct {
 	address sdk.AccAddress
 }
 
+func (msg *KVStoreTx) GetAuthorizer() sdk.Authorizer {
+	//TODO implement me
+	panic("implement me")
+}
+
 // testPubKey is a dummy implementation of PubKey used for testing.
 type testPubKey struct {
 	address sdk.AccAddress

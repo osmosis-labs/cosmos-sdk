@@ -3,6 +3,7 @@ package tx
 import (
 	"bytes"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/tx/authorizers"
 
 	"github.com/cosmos/gogoproto/proto"
 	protov2 "google.golang.org/protobuf/proto"
@@ -49,6 +50,7 @@ var (
 	_ ante.HasExtensionOptionsTx = &wrapper{}
 	_ ExtensionOptionsTxBuilder  = &wrapper{}
 	_ tx.TipTx                   = &wrapper{}
+	// ToDo: Add authorizer as an interface here?
 )
 
 // ExtensionOptionsTxBuilder defines a TxBuilder that can also set extensions.
@@ -554,4 +556,8 @@ func (w *wrapper) AddAuxSignerData(data tx.AuxSignerData) error {
 	w.setSignatureAtIndex(signerIndex, data.Sig)
 
 	return nil
+}
+
+func (w *wrapper) GetAuthorizer() sdk.Authorizer {
+	return authorizers.ClassicAuthorizer{}
 }

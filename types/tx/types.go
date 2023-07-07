@@ -2,7 +2,6 @@ package tx
 
 import (
 	"fmt"
-
 	protov2 "google.golang.org/protobuf/proto"
 
 	errorsmod "cosmossdk.io/errors"

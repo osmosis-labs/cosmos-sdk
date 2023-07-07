@@ -157,6 +157,11 @@ func TestDirectModeHandler_nonDIRECT_MODE(t *testing.T) {
 
 type nonProtoTx int
 
+func (npt *nonProtoTx) GetAuthorizer() sdk.Authorizer {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (npt *nonProtoTx) GetMsgs() []sdk.Msg                    { return nil }
 func (npt *nonProtoTx) GetMsgsV2() ([]protov2.Message, error) { return nil, nil }
 func (npt *nonProtoTx) ValidateBasic() error                  { return nil }

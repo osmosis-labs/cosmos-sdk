@@ -54,6 +54,11 @@ type testTx struct {
 	strAddress string
 }
 
+func (tx testTx) GetAuthorizer() sdk.Authorizer {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (tx testTx) GetSigners() ([][]byte, error) { panic("not implemented") }
 
 func (tx testTx) GetPubKeys() ([]cryptotypes.PubKey, error) { panic("not implemented") }
@@ -86,6 +91,11 @@ func (tx testTx) String() string {
 
 type sigErrTx struct {
 	getSigs func() ([]txsigning.SignatureV2, error)
+}
+
+func (t sigErrTx) GetAuthorizer() sdk.Authorizer {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (sigErrTx) Size() int64 { return 0 }

@@ -6,13 +6,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"google.golang.org/protobuf/types/known/anypb"
-
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	txsigning "cosmossdk.io/x/tx/signing"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	kmultisig "github.com/cosmos/cosmos-sdk/crypto/keys/multisig"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -95,7 +92,7 @@ func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 				"pubKey does not match signer address %s with signer index: %d", signerStrs[i], i)
 		}
 
-		acc, err := GetSignerAcc(ctx, spkd.ak, signers[i])
+		acc, err := authsigning.GetSignerAcc(ctx, spkd.ak, signers[i])
 		if err != nil {
 			return ctx, err
 		}
@@ -181,7 +178,7 @@ func (sgcd SigGasConsumeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simula
 	}
 
 	for i, sig := range sigs {
-		signerAcc, err := GetSignerAcc(ctx, sgcd.ak, signers[i])
+		signerAcc, err := authsigning.GetSignerAcc(ctx, sgcd.ak, signers[i])
 		if err != nil {
 			return ctx, err
 		}
@@ -229,27 +226,6 @@ func NewSigVerificationDecorator(ak AccountKeeper, signModeHandler *txsigning.Ha
 	}
 }
 
-// OnlyLegacyAminoSigners checks SignatureData to see if all
-// signers are using SIGN_MODE_LEGACY_AMINO_JSON. If this is the case
-// then the corresponding SignatureV2 struct will not have account sequence
-// explicitly set, and we should skip the explicit verification of sig.Sequence
-// in the SigVerificationDecorator's AnteHandler function.
-func OnlyLegacyAminoSigners(sigData signing.SignatureData) bool {
-	switch v := sigData.(type) {
-	case *signing.SingleSignatureData:
-		return v.SignMode == signing.SignMode_SIGN_MODE_LEGACY_AMINO_JSON
-	case *signing.MultiSignatureData:
-		for _, s := range v.Signatures {
-			if !OnlyLegacyAminoSigners(s) {
-				return false
-			}
-		}
-		return true
-	default:
-		return false
-	}
-}
-
 func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
 	sigTx, ok := tx.(authsigning.Tx)
 	if !ok {
@@ -268,72 +244,15 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		return ctx, err
 	}
 
-	// check that signer length and signature length are the same
-	if len(sigs) != len(signers) {
-		return ctx, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "invalid number of signer;  expected: %d, got %d", len(signers), len(sigs))
+	adaptableTx, ok := tx.(authsigning.V2AdaptableTx)
+	if !ok {
+		return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
 	}
+	txData := adaptableTx.GetSigningTxData()
 
-	for i, sig := range sigs {
-		acc, err := GetSignerAcc(ctx, svd.ak, signers[i])
-		if err != nil {
-			return ctx, err
-		}
-
-		// retrieve pubkey
-		pubKey := acc.GetPubKey()
-		if !simulate && pubKey == nil {
-			return ctx, errorsmod.Wrap(sdkerrors.ErrInvalidPubKey, "pubkey on account is not set")
-		}
-
-		// Check account sequence number.
-		if sig.Sequence != acc.GetSequence() {
-			return ctx, errorsmod.Wrapf(
-				sdkerrors.ErrWrongSequence,
-				"account sequence mismatch, expected %d, got %d", acc.GetSequence(), sig.Sequence,
-			)
-		}
-
-		// retrieve signer data
-		genesis := ctx.BlockHeight() == 0
-		chainID := ctx.ChainID()
-		var accNum uint64
-		if !genesis {
-			accNum = acc.GetAccountNumber()
-		}
-
-		// no need to verify signatures on recheck tx
-		if !simulate && !ctx.IsReCheckTx() {
-			anyPk, _ := codectypes.NewAnyWithValue(pubKey)
-
-			signerData := txsigning.SignerData{
-				Address:       acc.GetAddress().String(),
-				ChainID:       chainID,
-				AccountNumber: accNum,
-				Sequence:      acc.GetSequence(),
-				PubKey: &anypb.Any{
-					TypeUrl: anyPk.TypeUrl,
-					Value:   anyPk.Value,
-				},
-			}
-			adaptableTx, ok := tx.(authsigning.V2AdaptableTx)
-			if !ok {
-				return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
-			}
-			txData := adaptableTx.GetSigningTxData()
-			err = authsigning.VerifySignature(ctx, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
-			if err != nil {
-				var errMsg string
-				if OnlyLegacyAminoSigners(sig.Data) {
-					// If all signers are using SIGN_MODE_LEGACY_AMINO, we rely on VerifySignature to check account sequence number,
-					// and therefore communicate sequence number as a potential cause of error.
-					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
-				} else {
-					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
-				}
-				return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
-
-			}
-		}
+	err = authsigning.ValidateSignature(ctx, sigs, signers, txData, simulate, svd.ak, svd.signModeHandler)
+	if err != nil {
+		return ctx, err
 	}
 
 	return next(ctx, tx, simulate)
@@ -481,16 +400,6 @@ func ConsumeMultisignatureVerificationGas(
 	}
 
 	return nil
-}
-
-// GetSignerAcc returns an account for a given address that is expected to sign
-// a transaction.
-func GetSignerAcc(ctx sdk.Context, ak AccountKeeper, addr sdk.AccAddress) (sdk.AccountI, error) {
-	if acc := ak.GetAccount(ctx, addr); acc != nil {
-		return acc, nil
-	}
-
-	return nil, errorsmod.Wrapf(sdkerrors.ErrUnknownAddress, "account %s does not exist", addr)
 }
 
 // CountSubKeys counts the total number of keys for a multi-sig public key.
