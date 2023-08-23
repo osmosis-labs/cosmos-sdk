@@ -35,8 +35,8 @@ import (
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
 // SimApp testing.
-var DefaultConsensusParams = &tmproto.ConsensusParams{
-	Block: &tmproto.BlockParams{
+var DefaultConsensusParams = &abci.ConsensusParams{
+	Block: &abci.BlockParams{
 		MaxBytes: 200000,
 		MaxGas:   2000000,
 	},
@@ -51,7 +51,7 @@ var DefaultConsensusParams = &tmproto.ConsensusParams{
 		},
 	},
 	Version: &tmproto.VersionParams{
-		App: 0, // must be 0 during chain initialization.
+		AppVersion: 0, // must be 0 during chain initialization.
 	},
 }
 
