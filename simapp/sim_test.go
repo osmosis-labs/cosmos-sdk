@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -291,7 +291,7 @@ func TestAppStateDeterminism(t *testing.T) {
 		for j := 0; j < numTimesToRunPerSeed; j++ {
 			var logger log.Logger
 			if FlagVerboseValue {
-				logger = log.TestingLogger()
+				logger = log.NewTestLogger(t)
 			} else {
 				logger = log.NewNopLogger()
 			}

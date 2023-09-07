@@ -80,6 +80,11 @@ const (
 	FlagLogFormat = "log_format"
 )
 
+const (
+	OutputFormatJSON = "json"
+	OutputFormatText = "text"
+)
+
 // LineBreak can be included in a command list to provide a blank line
 // to help with readability
 var LineBreak = &cobra.Command{Run: func(*cobra.Command, []string) {}}

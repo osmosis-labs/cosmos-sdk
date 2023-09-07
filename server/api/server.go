@@ -7,15 +7,16 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/log"
+	tmrpcserver "github.com/cometbft/cometbft/rpc/jsonrpc/server"
 	"github.com/gogo/gateway"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/tendermint/tendermint/libs/log"
-	tmrpcserver "github.com/tendermint/tendermint/rpc/jsonrpc/server"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server/config"
+	servercmtlog "github.com/cosmos/cosmos-sdk/server/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 	"github.com/cosmos/cosmos-sdk/types/rest"
@@ -111,11 +112,11 @@ func (s *Server) Start(cfg config.Config) error {
 
 	if cfg.API.EnableUnsafeCORS {
 		allowAllCORS := handlers.CORS(handlers.AllowedHeaders([]string{"Content-Type"}))
-		return tmrpcserver.Serve(s.listener, allowAllCORS(h), s.logger, tmCfg)
+		return tmrpcserver.Serve(s.listener, allowAllCORS(h), servercmtlog.CometLoggerWrapper{Logger: s.logger}, tmCfg)
 	}
 
 	s.logger.Info("starting API server...")
-	return tmrpcserver.Serve(s.listener, s.Router, s.logger, tmCfg)
+	return tmrpcserver.Serve(s.listener, s.Router, servercmtlog.CometLoggerWrapper{Logger: s.logger}, tmCfg)
 }
 
 // Close closes the API server.

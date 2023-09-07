@@ -1,12 +1,11 @@
 package baseapp_test
 
 import (
-	"os"
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -23,7 +22,7 @@ func TestRegisterMsgService(t *testing.T) {
 
 	// Create an encoding config that doesn't register testdata Msg services.
 	encCfg := simapp.MakeTestEncodingConfig()
-	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
+	app := baseapp.NewBaseApp("test", log.NewTestLogger(t), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)
 	require.Panics(t, func() {
 		testdata.RegisterMsgServer(
@@ -46,7 +45,7 @@ func TestRegisterMsgServiceTwice(t *testing.T) {
 	// Setup baseapp.
 	db := dbm.NewMemDB()
 	encCfg := simapp.MakeTestEncodingConfig()
-	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
+	app := baseapp.NewBaseApp("test", log.NewTestLogger(t), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)
 	testdata.RegisterInterfaces(encCfg.InterfaceRegistry)
 
@@ -72,7 +71,7 @@ func TestMsgService(t *testing.T) {
 	encCfg := simapp.MakeTestEncodingConfig()
 	testdata.RegisterInterfaces(encCfg.InterfaceRegistry)
 	db := dbm.NewMemDB()
-	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
+	app := baseapp.NewBaseApp("test", log.NewTestLogger(t), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)
 	testdata.RegisterMsgServer(
 		app.MsgServiceRouter(),

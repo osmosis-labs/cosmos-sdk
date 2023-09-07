@@ -8,8 +8,8 @@ import (
 
 	"github.com/tendermint/tendermint/types"
 
+	"cosmossdk.io/log"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"

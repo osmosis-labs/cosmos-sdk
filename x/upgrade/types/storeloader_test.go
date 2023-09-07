@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -27,8 +27,8 @@ func useUpgradeLoader(height int64, upgrades *store.StoreUpgrades) func(*baseapp
 	}
 }
 
-func defaultLogger() log.Logger {
-	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
+func defaultLogger(t *testing.T) log.Logger {
+	return log.NewTestLogger(t).With("module", "sdk/app")
 }
 
 func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
@@ -121,7 +121,7 @@ func TestSetLoader(t *testing.T) {
 			// load the app with the existing db
 			opts := []func(*baseapp.BaseApp){baseapp.SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing))}
 
-			origapp := baseapp.NewBaseApp(t.Name(), defaultLogger(), db, nil, opts...)
+			origapp := baseapp.NewBaseApp(t.Name(), defaultLogger(t), db, nil, opts...)
 			origapp.SetParamStore(&mock.ParamStore{Db: db})
 			origapp.MountStores(sdk.NewKVStoreKey(tc.origStoreKey))
 			err := origapp.LoadLatestVersion()
@@ -138,7 +138,7 @@ func TestSetLoader(t *testing.T) {
 			}
 
 			// load the new app with the original app db
-			app := baseapp.NewBaseApp(t.Name(), defaultLogger(), db, nil, opts...)
+			app := baseapp.NewBaseApp(t.Name(), defaultLogger(t), db, nil, opts...)
 			app.SetParamStore(&mock.ParamStore{Db: db})
 			app.MountStores(sdk.NewKVStoreKey(tc.loadStoreKey))
 			err = app.LoadLatestVersion()

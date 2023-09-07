@@ -10,6 +10,7 @@ import (
 	"runtime/pprof"
 	"time"
 
+	servercmtlog "github.com/cosmos/cosmos-sdk/server/log"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/server"
 	tcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
@@ -193,7 +194,7 @@ func startStandAlone(ctx *Context, appCreator types.AppCreator) error {
 		return fmt.Errorf("error creating listener: %v", err)
 	}
 
-	svr.SetLogger(ctx.Logger.With("module", "abci-server"))
+	svr.SetLogger(servercmtlog.CometLoggerWrapper{Logger: ctx.Logger.With("module", "abci-server")})
 
 	err = svr.Start()
 	if err != nil {

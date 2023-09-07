@@ -1,7 +1,7 @@
 package capability_test
 
 import (
-	"github.com/tendermint/tendermint/libs/log"
+	"cosmossdk.io/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 

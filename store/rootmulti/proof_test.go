@@ -1,8 +1,9 @@
 package rootmulti
 
 import (
-	"github.com/tendermint/tendermint/libs/log"
 	"testing"
+
+	"cosmossdk.io/log"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

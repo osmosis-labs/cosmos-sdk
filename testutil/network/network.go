@@ -15,10 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	"github.com/stretchr/testify/require"
-	tmcfg "github.com/tendermint/tendermint/config"
-	tmflags "github.com/tendermint/tendermint/libs/cli/flags"
-	"github.com/tendermint/tendermint/libs/log"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/node"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
@@ -243,8 +241,7 @@ func New(t *testing.T, cfg Config) *Network {
 
 		logger := log.NewNopLogger()
 		if cfg.EnableLogging {
-			logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
-			logger, _ = tmflags.ParseLogLevel("info", logger, tmcfg.DefaultLogLevel)
+			logger = log.NewLogger(os.Stdout)
 		}
 
 		ctx.Logger = logger

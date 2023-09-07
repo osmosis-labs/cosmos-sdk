@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -48,17 +48,17 @@ type setupConfig struct {
 	pruningOpts       pruningtypes.PruningOptions
 }
 
-func defaultLogger() log.Logger {
-	return log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "sdk/app")
+func defaultLogger(t *testing.T) log.Logger {
+	return log.NewTestLogger(t).With("module", "sdk/app")
 }
 
-func newBaseApp(name string, options ...func(*BaseApp)) *BaseApp {
+func newBaseApp(t *testing.T, name string, options ...func(*BaseApp)) *BaseApp {
 	db := dbm.NewMemDB()
-	return newBaseAppWithDB(name, db, options...)
+	return newBaseAppWithDB(t, name, db, options...)
 }
 
-func newBaseAppWithDB(name string, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
-	logger := defaultLogger()
+func newBaseAppWithDB(t *testing.T, name string, db dbm.DB, options ...func(*BaseApp)) *BaseApp {
+	logger := defaultLogger(t)
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 	return NewBaseApp(name, logger, db, testTxDecoder(codec), options...)
@@ -86,7 +86,7 @@ func aminoTxEncoder() sdk.TxEncoder {
 
 // simple one store baseapp
 func setupBaseApp(t *testing.T, options ...func(*BaseApp)) (*BaseApp, error) {
-	app := newBaseApp(t.Name(), options...)
+	app := newBaseApp(t, t.Name(), options...)
 	require.Equal(t, t.Name(), app.Name())
 
 	app.MountStores(capKey1, capKey2)
@@ -181,7 +181,7 @@ func TestMountStores(t *testing.T) {
 // Test that we can make commits and then reload old versions.
 // Test that LoadLatestVersion actually does.
 func TestLoadVersion(t *testing.T) {
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	pruningOpt := SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing))
 	db := dbm.NewMemDB()
 	name := t.Name()
@@ -302,7 +302,7 @@ func TestSetLoader(t *testing.T) {
 			if tc.setLoader != nil {
 				opts = append(opts, tc.setLoader)
 			}
-			app := NewBaseApp(t.Name(), defaultLogger(), db, nil, opts...)
+			app := NewBaseApp(t.Name(), defaultLogger(t), db, nil, opts...)
 			app.SetParamStore(&mock.ParamStore{Db: db})
 			app.MountStores(sdk.NewKVStoreKey(tc.loadStoreKey))
 			err := app.LoadLatestVersion()
@@ -321,7 +321,7 @@ func TestSetLoader(t *testing.T) {
 }
 
 func TestVersionSetterGetter(t *testing.T) {
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	pruningOpt := SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningDefault))
 	db := dbm.NewMemDB()
 	name := t.Name()
@@ -441,7 +441,7 @@ func testLoadVersionHelper(t *testing.T, app *BaseApp, expectedHeight int64, exp
 }
 
 func TestOptionFunction(t *testing.T) {
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	db := dbm.NewMemDB()
 	bap := NewBaseApp("starting name", logger, db, nil, testChangeNameHelper("new name"))
 	require.Equal(t, bap.name, "new name", "BaseApp should have had name changed via option function")
@@ -459,7 +459,7 @@ func TestTxDecoder(t *testing.T) {
 	codec := codec.NewLegacyAmino()
 	registerTestCodec(codec)
 
-	app := newBaseApp(t.Name())
+	app := newBaseApp(t, t.Name())
 	tx := newTxCounter(1, 0)
 	txBytes := codec.MustMarshal(tx)
 
@@ -472,7 +472,7 @@ func TestTxDecoder(t *testing.T) {
 
 // Test that Info returns the latest committed state.
 func TestInfo(t *testing.T) {
-	app := newBaseApp(t.Name())
+	app := newBaseApp(t, t.Name())
 	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 	app.InitChain(abci.RequestInitChain{})
 
@@ -536,7 +536,7 @@ func TestBaseAppOptionSeal(t *testing.T) {
 
 func TestSetMinGasPrices(t *testing.T) {
 	minGasPrices := sdk.DecCoins{sdk.NewInt64DecCoin("stake", 5000)}
-	app := newBaseApp(t.Name(), SetMinGasPrices(minGasPrices.String()))
+	app := newBaseApp(t, t.Name(), SetMinGasPrices(minGasPrices.String()))
 	require.Equal(t, minGasPrices, app.minGasPrices)
 }
 
@@ -545,7 +545,7 @@ func TestInitChainer(t *testing.T) {
 	// keep the db and logger ourselves so
 	// we can reload the same  app later
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	app := NewBaseApp(name, logger, db, nil)
 	app.SetParamStore(&mock.ParamStore{Db: db})
 	capKey := sdk.NewKVStoreKey("main")
@@ -628,7 +628,7 @@ func TestInitChain_AppVersionSetToZero(t *testing.T) {
 
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	app := NewBaseApp(name, logger, db, nil)
 	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
@@ -650,7 +650,7 @@ func TestInitChain_AppVersionSetToZero(t *testing.T) {
 func TestInitChain_NonZeroAppVersionInRequestPanic(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	app := NewBaseApp(name, logger, db, nil)
 	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
@@ -672,7 +672,7 @@ func TestInitChain_NonZeroAppVersionInRequestPanic(t *testing.T) {
 func TestInitChain_WithInitialHeight(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	app := NewBaseApp(name, logger, db, nil)
 	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
@@ -689,7 +689,7 @@ func TestInitChain_WithInitialHeight(t *testing.T) {
 func TestBeginBlock_WithInitialHeight(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	app := NewBaseApp(name, logger, db, nil)
 	app.SetParamStore(&mock.ParamStore{Db: dbm.NewMemDB()})
 
@@ -2259,7 +2259,7 @@ func TestWithRouter(t *testing.T) {
 func TestBaseApp_EndBlock(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 
 	cp := &abci.ConsensusParams{
 		Block: &abci.BlockParams{
@@ -2291,7 +2291,7 @@ func TestBaseApp_EndBlock(t *testing.T) {
 func TestBaseApp_Init_PruningAndSnapshot(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 
 	snapshotStore, err := snapshots.NewStore(dbm.NewMemDB(), snaphotstestutil.GetTempDir(t))
 	require.NoError(t, err)
@@ -2452,7 +2452,7 @@ func TestBaseApp_Init_PruningAndSnapshot(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc.bapp.SetParamStore(&mock.ParamStore{db})
+		tc.bapp.SetParamStore(&mock.ParamStore{Db: db})
 
 		// Init and validate
 		require.Equal(t, tc.expectedErr, tc.bapp.init())
@@ -2494,7 +2494,7 @@ func TestBaseApp_Init_AppVersion(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			db := dbm.NewMemDB()
-			app := newBaseAppWithDB(t.Name(), db)
+			app := newBaseAppWithDB(t, t.Name(), db)
 
 			if tc.protocolVersion != versionNotSet {
 				err := app.cms.SetAppVersion(tc.protocolVersion)
@@ -2502,7 +2502,7 @@ func TestBaseApp_Init_AppVersion(t *testing.T) {
 			}
 
 			// recreate app
-			app = newBaseAppWithDB(t.Name(), db)
+			app = newBaseAppWithDB(t, t.Name(), db)
 
 			require.NoError(t, app.init())
 

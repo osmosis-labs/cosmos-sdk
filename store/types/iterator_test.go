@@ -1,8 +1,9 @@
 package types_test
 
 import (
-	"github.com/tendermint/tendermint/libs/log"
 	"testing"
+
+	"cosmossdk.io/log"
 
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"

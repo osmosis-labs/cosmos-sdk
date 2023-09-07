@@ -2,11 +2,10 @@ package baseapp_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -54,7 +53,7 @@ func TestRegisterQueryServiceTwice(t *testing.T) {
 	// Setup baseapp.
 	db := dbm.NewMemDB()
 	encCfg := simapp.MakeTestEncodingConfig()
-	app := baseapp.NewBaseApp("test", log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, encCfg.TxConfig.TxDecoder())
+	app := baseapp.NewBaseApp("test", log.NewTestLogger(t), db, encCfg.TxConfig.TxDecoder())
 	app.SetInterfaceRegistry(encCfg.InterfaceRegistry)
 	testdata.RegisterInterfaces(encCfg.InterfaceRegistry)
 

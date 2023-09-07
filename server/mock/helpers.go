@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"testing"
 
+	"cosmossdk.io/log"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 // SetupApp returns an application as well as a clean-up function
 // to be used to quickly setup a test case with an app
-func SetupApp() (abci.Application, func(), error) {
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).
-		With("module", "mock")
+func SetupApp(t *testing.T) (abci.Application, func(), error) {
+	logger := log.NewTestLogger(t)
 	rootDir, err := ioutil.TempDir("", "mock-sdk")
 	if err != nil {
 		return nil, nil, err

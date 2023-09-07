@@ -13,9 +13,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/log"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
-	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -127,7 +127,7 @@ func setupApp(t *testing.T, tempDir string) (*simapp.SimApp, context.Context, *t
 		t.Fatalf("error creating config folder: %s", err)
 	}
 
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	logger := log.NewTestLogger(t)
 	db := dbm.NewMemDB()
 	encCfg := simapp.MakeTestEncodingConfig()
 	app := simapp.NewSimApp(logger, db, nil, true, map[int64]bool{}, tempDir, 0, encCfg, simapp.EmptyAppOptions{})

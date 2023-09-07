@@ -3,14 +3,15 @@ package cmd_test
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

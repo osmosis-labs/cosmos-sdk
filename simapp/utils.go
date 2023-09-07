@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 
-	"github.com/tendermint/tendermint/libs/log"
+	"cosmossdk.io/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -29,7 +30,7 @@ func SetupSimulation(dirPrefix, dbName string) (simtypes.Config, dbm.DB, string,
 
 	var logger log.Logger
 	if FlagVerboseValue {
-		logger = log.TestingLogger()
+		logger = log.NewLogger(os.Stdout)
 	} else {
 		logger = log.NewNopLogger()
 	}

@@ -8,8 +8,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/golang/mock/gomock"
-	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

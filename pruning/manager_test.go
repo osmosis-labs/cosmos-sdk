@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/tendermint/tendermint/libs/log"
+	"cosmossdk.io/log"
 	db "github.com/tendermint/tm-db"
 )
 

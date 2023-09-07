@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/pruning"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	iavltree "github.com/cosmos/iavl"
@@ -16,7 +17,6 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/proto/tendermint/crypto"
 	dbm "github.com/tendermint/tm-db"
 

@@ -9,11 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
+	tmlog "github.com/cometbft/cometbft/libs/log"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	abci_server "github.com/tendermint/tendermint/abci/server"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -168,7 +169,7 @@ func TestEmptyState(t *testing.T) {
 
 func TestStartStandAlone(t *testing.T) {
 	home := t.TempDir()
-	logger := log.NewNopLogger()
+	logger := tmlog.NewTMLogger(tmlog.NewSyncWriter(os.Stdout))
 	interfaceRegistry := types.NewInterfaceRegistry()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	err := genutiltest.ExecInitCmd(testMbm, home, marshaler)

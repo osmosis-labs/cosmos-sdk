@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/snapshots/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/tendermint/tendermint/libs/log"
+	"cosmossdk.io/log"
 )
 
 // Manager manages snapshot and restore operations for an app, making sure only a single
@@ -24,12 +24,12 @@ import (
 // Although the ABCI interface (and this manager) passes chunks as byte slices, the internal
 // snapshot/restore APIs use IO streams (i.e. chan io.ReadCloser), for two reasons:
 //
-// 1) In the future, ABCI should support streaming. Consider e.g. InitChain during chain
-//    upgrades, which currently passes the entire chain state as an in-memory byte slice.
-//    https://github.com/tendermint/tendermint/issues/5184
+//  1. In the future, ABCI should support streaming. Consider e.g. InitChain during chain
+//     upgrades, which currently passes the entire chain state as an in-memory byte slice.
+//     https://github.com/tendermint/tendermint/issues/5184
 //
-// 2) io.ReadCloser streams automatically propagate IO errors, and can pass arbitrary
-//    errors via io.Pipe.CloseWithError().
+//  2. io.ReadCloser streams automatically propagate IO errors, and can pass arbitrary
+//     errors via io.Pipe.CloseWithError().
 type Manager struct {
 	// store is the snapshot store where all completed snapshots are persisted.
 	store *Store

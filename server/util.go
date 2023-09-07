@@ -14,14 +14,13 @@ import (
 	"syscall"
 	"time"
 
+	"cosmossdk.io/log"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	tmcfg "github.com/tendermint/tendermint/config"
-	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -41,7 +40,7 @@ const ServerContextKey = sdk.ContextKey("server.context")
 type Context struct {
 	Viper  *viper.Viper
 	Config *tmcfg.Config
-	Logger tmlog.Logger
+	Logger log.Logger
 }
 
 // ErrorCode contains the exit code for server exit.
@@ -57,11 +56,11 @@ func NewDefaultContext() *Context {
 	return NewContext(
 		viper.New(),
 		tmcfg.DefaultConfig(),
-		ZeroLogWrapper{log.Logger},
+		log.NewLogger(os.Stdout),
 	)
 }
 
-func NewContext(v *viper.Viper, config *tmcfg.Config, logger tmlog.Logger) *Context {
+func NewContext(v *viper.Viper, config *tmcfg.Config, logger log.Logger) *Context {
 	return &Context{v, config, logger}
 }
 
@@ -138,22 +137,47 @@ func InterceptConfigsPreRunHandler(cmd *cobra.Command, customAppConfigTemplate s
 		return err
 	}
 
-	var logWriter io.Writer
-	if strings.ToLower(serverCtx.Viper.GetString(flags.FlagLogFormat)) == tmcfg.LogFormatPlain {
-		logWriter = zerolog.ConsoleWriter{Out: os.Stderr}
-	} else {
-		logWriter = os.Stderr
-	}
-
-	logLvlStr := serverCtx.Viper.GetString(flags.FlagLogLevel)
-	logLvl, err := zerolog.ParseLevel(logLvlStr)
+	logger, err := CreateSDKLogger(serverCtx, cmd.OutOrStdout())
 	if err != nil {
-		return fmt.Errorf("failed to parse log level (%s): %w", logLvlStr, err)
+		return err
 	}
-
-	serverCtx.Logger = ZeroLogWrapper{zerolog.New(logWriter).Level(logLvl).With().Timestamp().Logger()}
+	serverCtx.Logger = logger.With(log.ModuleKey, "server")
 
 	return SetCmdServerContext(cmd, serverCtx)
+}
+
+// CreateSDKLogger creates a the default SDK logger.
+// It reads the log level and format from the server context.
+func CreateSDKLogger(ctx *Context, out io.Writer) (log.Logger, error) {
+	var opts []log.Option
+	if ctx.Viper.GetString(flags.FlagLogFormat) == flags.OutputFormatJSON {
+		opts = append(opts, log.OutputJSONOption())
+	}
+
+	// check and set filter level or keys for the logger if any
+	logLvlStr := ctx.Viper.GetString(flags.FlagLogLevel)
+	if logLvlStr == "" {
+		return log.NewLogger(out, opts...), nil
+	}
+
+	logLvl, err := zerolog.ParseLevel(logLvlStr)
+	switch {
+	case err != nil:
+		// If the log level is not a valid zerolog level, then we try to parse it as a key filter.
+		filterFunc, err := log.ParseLogLevel(logLvlStr)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, log.FilterOption(filterFunc))
+	default:
+		opts = append(opts, log.LevelOption(logLvl))
+	}
+
+	// Check if the CometBFT flag for trace logging is set and enable stack traces if so.
+	opts = append(opts, log.TraceOption(ctx.Viper.GetBool("trace"))) // cmtcli.TraceFlag
+
+	return log.NewLogger(out, opts...), nil
 }
 
 // GetServerContextFromCmd returns a Context from a command or an empty Context

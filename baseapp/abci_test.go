@@ -18,7 +18,7 @@ import (
 )
 
 func TestGetBlockRentionHeight(t *testing.T) {
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	db := dbm.NewMemDB()
 	name := t.Name()
 
@@ -131,7 +131,7 @@ func TestGetBlockRentionHeight(t *testing.T) {
 func TestBaseAppCreateQueryContextRejectsNegativeHeights(t *testing.T) {
 	t.Parallel()
 
-	logger := defaultLogger()
+	logger := defaultLogger(t)
 	db := dbm.NewMemDB()
 	name := t.Name()
 	app := NewBaseApp(name, logger, db, nil)
