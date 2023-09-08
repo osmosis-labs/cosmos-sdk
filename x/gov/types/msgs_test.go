@@ -25,6 +25,7 @@ func init() {
 
 // test ValidateBasic for MsgCreateValidator
 func TestMsgSubmitProposal(t *testing.T) {
+	RegisterProtoLocallyIfNotRegistered()
 	tests := []struct {
 		title, description string
 		isExpedited        bool

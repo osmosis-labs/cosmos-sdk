@@ -1,6 +1,7 @@
 package types
 
 import (
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	proto "github.com/gogo/protobuf/proto"
 )
 
@@ -72,5 +73,8 @@ func RegisterProtoLocallyIfNotRegistered() {
 		proto.RegisterType((*QueryTallyResultResponse)(nil), "cosmos.gov.v1beta1.QueryTallyResultResponse")
 
 		proto.RegisterFile("cosmos/gov/v1beta1/query.proto", fileDescriptor_e35c0d133e91c0a2)
+
+		RegisterLegacyAminoCodec(amino)
+		cryptocodec.RegisterCrypto(amino)
 	}
 }
