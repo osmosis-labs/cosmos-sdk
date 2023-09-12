@@ -2,13 +2,14 @@ package rootmulti
 
 import (
 	"fmt"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"io"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/pruning"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
@@ -998,7 +999,7 @@ func (rs *Store) GetCommitInfoFromDb(ver int64) (*types.CommitInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get commit info")
 	} else if bz == nil {
-		return nil, errors.New("no commit info found")
+		return nil, errors.New("no fcommit info found")
 	}
 
 	cInfo := &types.CommitInfo{}
