@@ -150,7 +150,6 @@ func (msg MsgCreateValidator) UnpackInterfaces(unpacker codectypes.AnyUnpacker) 
 }
 
 // NewMsgEditValidator creates a new MsgEditValidator instance
-//
 //nolint:interfacer
 func NewMsgEditValidator(valAddr sdk.ValAddress, description Description, newRate *sdk.Dec, newMinSelfDelegation *sdk.Int) *MsgEditValidator {
 	return &MsgEditValidator{
@@ -209,7 +208,6 @@ func (msg MsgEditValidator) ValidateBasic() error {
 }
 
 // NewMsgDelegate creates a new MsgDelegate instance.
-//
 //nolint:interfacer
 func NewMsgDelegate(delAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk.Coin) *MsgDelegate {
 	return &MsgDelegate{
@@ -261,7 +259,6 @@ func (msg MsgDelegate) ValidateBasic() error {
 }
 
 // NewMsgBeginRedelegate creates a new MsgBeginRedelegate instance.
-//
 //nolint:interfacer
 func NewMsgBeginRedelegate(
 	delAddr sdk.AccAddress, valSrcAddr, valDstAddr sdk.ValAddress, amount sdk.Coin,
@@ -320,7 +317,6 @@ func (msg MsgBeginRedelegate) ValidateBasic() error {
 }
 
 // NewMsgUndelegate creates a new MsgUndelegate instance.
-//
 //nolint:interfacer
 func NewMsgUndelegate(delAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk.Coin) *MsgUndelegate {
 	return &MsgUndelegate{

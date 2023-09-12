@@ -12,22 +12,15 @@ import (
 // of it, updating unbonding delegations & redelegations appropriately
 //
 // CONTRACT:
-//
-//	slashFactor is non-negative
-//
+//    slashFactor is non-negative
 // CONTRACT:
-//
-//	Infraction was committed equal to or less than an unbonding period in the past,
-//	so all unbonding delegations and redelegations from that height are stored
-//
+//    Infraction was committed equal to or less than an unbonding period in the past,
+//    so all unbonding delegations and redelegations from that height are stored
 // CONTRACT:
-//
-//	Slash will not slash unbonded validators (for the above reason)
-//
+//    Slash will not slash unbonded validators (for the above reason)
 // CONTRACT:
-//
-//	Infraction was committed at the current height or at a past height,
-//	not at a height in the future
+//    Infraction was committed at the current height or at a past height,
+//    not at a height in the future
 func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor sdk.Dec) {
 	logger := k.Logger(ctx)
 
@@ -37,7 +30,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	// Amount of slashing = slash slashFactor * power at time of infraction
 	amount := k.TokensFromConsensusPower(ctx, power)
-	slashAmountDec := sdk.NewDecFromInt(amount).Mul(slashFactor)
+	slashAmountDec := amount.ToDec().Mul(slashFactor)
 	slashAmount := slashAmountDec.TruncateInt()
 
 	// ref https://github.com/cosmos/cosmos-sdk/issues/1348
@@ -115,7 +108,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 
 	// we need to calculate the *effective* slash fraction for distribution
 	if validator.Tokens.IsPositive() {
-		effectiveFraction := sdk.NewDecFromInt(tokensToBurn).QuoRoundUp(sdk.NewDecFromInt(validator.Tokens))
+		effectiveFraction := tokensToBurn.ToDec().QuoRoundUp(validator.Tokens.ToDec())
 		// possible if power has changed
 		if effectiveFraction.GT(sdk.OneDec()) {
 			effectiveFraction = sdk.OneDec()
