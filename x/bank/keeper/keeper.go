@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -183,12 +184,12 @@ func (k BaseKeeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr 
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
 	}
 
-	err := k.BlockBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
+	err := k.BlockBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt, wasmvmtypes.CosmosMsg{})
 	if err != nil {
 		return err
 	}
 	// call the TrackBeforeSend hooks and the BlockBeforeSend hooks
-	k.TrackBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt)
+	k.TrackBeforeSend(ctx, delegatorAddr, moduleAccAddr, amt, wasmvmtypes.CosmosMsg{})
 
 	balances := sdk.NewCoins()
 
@@ -239,12 +240,12 @@ func (k BaseKeeper) UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAdd
 	}
 
 	// call the TrackBeforeSend hooks and the BlockBeforeSend hooks
-	err := k.BlockBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
+	err := k.BlockBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt, wasmvmtypes.CosmosMsg{})
 	if err != nil {
 		return err
 	}
 
-	k.TrackBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt)
+	k.TrackBeforeSend(ctx, moduleAccAddr, delegatorAddr, amt, wasmvmtypes.CosmosMsg{})
 
 	err = k.subUnlockedCoins(ctx, moduleAccAddr, amt)
 	if err != nil {

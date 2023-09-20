@@ -1,6 +1,7 @@
 package types
 
 import (
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -35,6 +36,6 @@ type AccountKeeper interface {
 
 // BankHooks event hooks for bank sends
 type BankHooks interface {
-	TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins)       // Must be before any send is executed
-	BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error // Must be before any send is executed
+	TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins, cosmosMsg wasmvmtypes.CosmosMsg)       // Must be before any send is executed
+	BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins, cosmosMsg wasmvmtypes.CosmosMsg) error // Must be before any send is executed
 }

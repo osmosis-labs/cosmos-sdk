@@ -10,7 +10,7 @@ import (
 
 func TestImmutableTreePanics(t *testing.T) {
 	t.Parallel()
-	immTree := iavl.NewImmutableTree(dbm.NewMemDB(), 100, false)
+	immTree := iavl.NewImmutableTree(dbm.NewMemDB(), 100)
 	it := &immutableTree{immTree}
 	require.Panics(t, func() { it.Set([]byte{}, []byte{}) })
 	require.Panics(t, func() { it.Remove([]byte{}) })

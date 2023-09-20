@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -152,7 +153,7 @@ func (k BaseSendKeeper) SendCoinsWithoutBlockHook(ctx sdk.Context, fromAddr sdk.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	// BlockBeforeSend hook should always be called before the TrackBeforeSend hook.
-	err := k.BlockBeforeSend(ctx, fromAddr, toAddr, amt)
+	err := k.BlockBeforeSend(ctx, fromAddr, toAddr, amt, wasmvmtypes.CosmosMsg{})
 	if err != nil {
 		return err
 	}
@@ -163,7 +164,7 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 // sendCoins has the internal logic for sending coins.
 func (k BaseSendKeeper) sendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
 	// call the TrackBeforeSend hooks
-	k.TrackBeforeSend(ctx, fromAddr, toAddr, amt)
+	k.TrackBeforeSend(ctx, fromAddr, toAddr, amt, wasmvmtypes.CosmosMsg{})
 
 	err := k.subUnlockedCoins(ctx, fromAddr, amt)
 	if err != nil {
@@ -211,9 +212,9 @@ func (k BaseSendKeeper) SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, 
 	totalAmt := sdk.Coins{}
 	for i, amt := range amts {
 		// make sure to trigger the BeforeSend hooks for all the sends that are about to occur
-		k.TrackBeforeSend(ctx, fromAddr, toAddrs[i], amts[i])
+		k.TrackBeforeSend(ctx, fromAddr, toAddrs[i], amts[i], wasmvmtypes.CosmosMsg{})
 
-		err := k.BlockBeforeSend(ctx, fromAddr, toAddrs[i], amts[i])
+		err := k.BlockBeforeSend(ctx, fromAddr, toAddrs[i], amts[i], wasmvmtypes.CosmosMsg{})
 		if err != nil {
 			return err
 		}

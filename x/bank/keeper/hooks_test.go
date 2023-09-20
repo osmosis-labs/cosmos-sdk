@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -21,7 +22,7 @@ var _ types.BankHooks = &MockBankHooksReceiver{}
 type MockBankHooksReceiver struct{}
 
 // Mock BlockBeforeSend bank hook that doesn't allow the sending of exactly 100 coins of any denom.
-func (h *MockBankHooksReceiver) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
+func (h *MockBankHooksReceiver) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins, cosmosMsg wasmvmtypes.CosmosMsg) error {
 	for _, coin := range amount {
 		if coin.Amount.Equal(sdk.NewInt(100)) {
 			return fmt.Errorf("not allowed; expected %v, got: %v", 100, coin.Amount)
@@ -37,7 +38,7 @@ var (
 )
 
 // Mock TrackBeforeSend bank hook that simply tracks the sending of exactly 50 coins of any denom.
-func (h *MockBankHooksReceiver) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) {
+func (h *MockBankHooksReceiver) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins, cosmosMsg wasmvmtypes.CosmosMsg) {
 	for _, coin := range amount {
 		if coin.Amount.Equal(sdk.NewInt(50)) {
 			countTrackBeforeSend += 1
