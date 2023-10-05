@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
@@ -136,6 +137,13 @@ func (k Keeper) CalculateDelegationRewards(ctx sdk.Context, val stakingtypes.Val
 	// calculate rewards for final period
 	rewards = rewards.Add(k.calculateDelegationRewardsBetween(ctx, val, startingPeriod, endingPeriod, stake)...)
 	return rewards
+}
+
+// Dummy for wasmd v0.41.0
+// UNFORKINGTODO: Determine how we want to go about fixing this
+// For some reason wasmd expects DelegationRewards (a query) as a keeper, AND its never used.
+func (k Keeper) DelegationRewards(context.Context, *types.QueryDelegationRewardsRequest) (*types.QueryDelegationRewardsResponse, error) {
+	return nil, nil
 }
 
 func (k Keeper) withdrawDelegationRewards(ctx sdk.Context, val stakingtypes.ValidatorI, del stakingtypes.DelegationI) (sdk.Coins, error) {
