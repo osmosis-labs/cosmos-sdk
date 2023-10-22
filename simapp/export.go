@@ -2,7 +2,10 @@ package simapp
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -29,8 +32,13 @@ func (app *SimApp) ExportAppStateAndValidators(
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
-	appState, err := json.MarshalIndent(genState, "", "  ")
+	genStateDir, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
+	// Stream the data from the files in genStateDir when marshalling the AppState
+	appState, err := streamAndMarshalAppState(genStateDir)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
@@ -42,6 +50,39 @@ func (app *SimApp) ExportAppStateAndValidators(
 		Height:          height,
 		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
 	}, err
+}
+
+func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
+	genesisData := make(map[string]json.RawMessage)
+
+	err := filepath.Walk(genStateDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			data, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+
+			moduleName := filepath.Base(path)
+			genesisData[moduleName] = json.RawMessage(data)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	appState, err := json.MarshalIndent(genesisData, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return appState, nil
 }
 
 // prepare for fresh start at zero height

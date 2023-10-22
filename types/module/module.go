@@ -31,6 +31,8 @@ package module
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"sort"
 
 	"github.com/gorilla/mux"
@@ -337,25 +339,33 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 	}
 }
 
-// ExportGenesis performs export genesis functionality for modules
-func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) map[string]json.RawMessage {
-	return m.ExportGenesisForModules(ctx, cdc, []string{})
-}
+// // ExportGenesis performs export genesis functionality for modules
+// func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) map[string]json.RawMessage {
+// 	return m.ExportGenesisForModules(ctx, cdc, []string{})
+// }
 
 // ExportGenesisForModules performs export genesis functionality for modules
-func (m *Manager) ExportGenesisForModules(ctx sdk.Context, cdc codec.JSONCodec, modulesToExport []string) map[string]json.RawMessage {
-	genesisData := make(map[string]json.RawMessage)
-	if len(modulesToExport) == 0 {
-		for _, moduleName := range m.OrderExportGenesis {
-			genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
-		}
-	} else {
-		for _, moduleName := range modulesToExport {
-			genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
+func (m *Manager) ExportGenesisForModules(ctx sdk.Context, cdc codec.JSONCodec, modulesToExport []string) (string, error) {
+	tmpDir, err := ioutil.TempDir("", "genesis")
+	if err != nil {
+		return "", err
+	}
+
+	modules := m.OrderExportGenesis
+	if len(modulesToExport) > 0 {
+		modules = modulesToExport
+	}
+
+	for _, moduleName := range modules {
+		data := m.Modules[moduleName].ExportGenesis(ctx, cdc)
+		tmpFile := filepath.Join(tmpDir, moduleName)
+		err := ioutil.WriteFile(tmpFile, data, 0644)
+		if err != nil {
+			return "", err
 		}
 	}
 
-	return genesisData
+	return tmpDir, nil
 }
 
 // assertNoForgottenModules checks that we didn't forget any modules in the
