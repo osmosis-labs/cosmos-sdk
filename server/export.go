@@ -70,10 +70,14 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			jailAllowedAddrs, _ := cmd.Flags().GetStringSlice(FlagJailAllowedAddrs)
 			modulesToExport, _ := cmd.Flags().GetStringSlice(FlagModulesToExport)
 
+			fmt.Println("sdk exporting genesis file...")
+
 			exported, err := appExporter(serverCtx.Logger, db, traceWriter, height, forZeroHeight, jailAllowedAddrs, serverCtx.Viper, modulesToExport)
 			if err != nil {
 				return fmt.Errorf("error exporting state: %v", err)
 			}
+
+			fmt.Println("sdk GenesisDocFromFile...")
 
 			doc, err := tmtypes.GenesisDocFromFile(serverCtx.Config.GenesisFile())
 			if err != nil {
@@ -99,6 +103,8 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				},
 			}
 
+			fmt.Println("sdk Marshal...")
+
 			// NOTE: Tendermint uses a custom JSON decoder for GenesisDoc
 			// (except for stuff inside AppState). Inside AppState, we're free
 			// to encode as protobuf or amino.
@@ -107,7 +113,29 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return err
 			}
 
+			fmt.Println("sdk print...")
+
 			cmd.Println(string(sdk.MustSortJSON(encoded)))
+			// Open a file for writing
+			file, err := os.Create("output.json")
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			// Write the encoded data to the file
+			_, err = file.Write(encoded)
+			if err != nil {
+				return err
+			}
+
+			// Ensure everything is written to disk before continuing
+			err = file.Sync()
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("Data successfully written to output.json")
 			return nil
 		},
 	}
