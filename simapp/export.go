@@ -2,6 +2,7 @@ package simapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -38,6 +39,7 @@ func (app *SimApp) ExportAppStateAndValidators(
 	}
 
 	// Stream the data from the files in genStateDir when marshalling the AppState
+	fmt.Println("streamAndMarshalAppState")
 	appState, err := streamAndMarshalAppState(genStateDir)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
@@ -56,6 +58,8 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 	genesisData := make(map[string]json.RawMessage)
 
 	err := filepath.Walk(genStateDir, func(path string, info os.FileInfo, err error) error {
+		fmt.Println("filepath.Walk", path)
+		fmt.Println("filepath.Walk", info)
 		if err != nil {
 			return err
 		}
@@ -77,6 +81,7 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 		return nil, err
 	}
 
+	fmt.Println("json.MarshalIndent")
 	appState, err := json.MarshalIndent(genesisData, "", "  ")
 	if err != nil {
 		return nil, err

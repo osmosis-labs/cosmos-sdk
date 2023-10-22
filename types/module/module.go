@@ -364,7 +364,7 @@ func (m *Manager) ExportGenesisForModules(ctx sdk.Context, cdc codec.JSONCodec, 
 		fmt.Println("Exporting genesis for module", moduleName)
 		data := m.Modules[moduleName].ExportGenesis(ctx, cdc)
 		tmpFile := filepath.Join(tmpDir, moduleName)
-		fmt.Println("Writing genesis for module", moduleName, "to", tmpFile)
+		fmt.Println("Start writing genesis for module", moduleName, "to", tmpFile)
 
 		// Open the file for writing with the same permissions as ioutil.WriteFile
 		f, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
@@ -398,6 +398,7 @@ func (m *Manager) ExportGenesisForModules(ctx sdk.Context, cdc codec.JSONCodec, 
 
 		// Manually trigger garbage collection (use sparingly)
 		goruntime.GC()
+		fmt.Println("Done writing genesis for module", moduleName, "to", tmpFile)
 	}
 
 	return tmpDir, nil
