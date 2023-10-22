@@ -29,9 +29,11 @@ needlessly defining many placeholder functions
 package module
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 
@@ -39,6 +41,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	goruntime "runtime"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -361,10 +365,39 @@ func (m *Manager) ExportGenesisForModules(ctx sdk.Context, cdc codec.JSONCodec, 
 		data := m.Modules[moduleName].ExportGenesis(ctx, cdc)
 		tmpFile := filepath.Join(tmpDir, moduleName)
 		fmt.Println("Writing genesis for module", moduleName, "to", tmpFile)
-		err := ioutil.WriteFile(tmpFile, data, 0644)
+
+		// Open the file for writing with the same permissions as ioutil.WriteFile
+		f, err := os.OpenFile(tmpFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			return "", err
 		}
+
+		// Use a buffered writer to write the data to the file
+		w := bufio.NewWriter(f)
+		_, err = w.Write(data)
+		if err != nil {
+			f.Close() // Ignore the error from Close as we already have an error
+			return "", err
+		}
+
+		// Ensure all data is written to the file
+		err = w.Flush()
+		if err != nil {
+			f.Close() // Ignore the error from Close as we already have an error
+			return "", err
+		}
+
+		// Close the file
+		err = f.Close()
+		if err != nil {
+			return "", err
+		}
+
+		// Release the data for garbage collection
+		data = nil
+
+		// Manually trigger garbage collection (use sparingly)
+		goruntime.GC()
 	}
 
 	return tmpDir, nil
