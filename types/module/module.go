@@ -357,8 +357,10 @@ func (m *Manager) ExportGenesisForModules(ctx sdk.Context, cdc codec.JSONCodec, 
 	}
 
 	for _, moduleName := range modules {
+		fmt.Println("Exporting genesis for module", moduleName)
 		data := m.Modules[moduleName].ExportGenesis(ctx, cdc)
 		tmpFile := filepath.Join(tmpDir, moduleName)
+		fmt.Println("Writing genesis for module", moduleName, "to", tmpFile)
 		err := ioutil.WriteFile(tmpFile, data, 0644)
 		if err != nil {
 			return "", err
