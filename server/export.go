@@ -14,7 +14,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -113,9 +112,8 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return err
 			}
 
-			fmt.Println("sdk print...")
+			fmt.Println("sdk pprint...")
 
-			cmd.Println(string(sdk.MustSortJSON(encoded)))
 			// Open a file for writing
 			file, err := os.Create("output.json")
 			if err != nil {
