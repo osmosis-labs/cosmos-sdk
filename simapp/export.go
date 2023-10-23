@@ -71,7 +71,9 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 			}
 
 			// Skip if data is empty
+			fmt.Println("check if skip empty file", path)
 			if len(data) == 0 {
+				fmt.Println("skipping empty file", path)
 				return nil
 			}
 
