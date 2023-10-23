@@ -70,6 +70,11 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 				return err
 			}
 
+			// Skip if data is empty
+			if len(data) == 0 {
+				return nil
+			}
+
 			moduleName := filepath.Base(path)
 			genesisData[moduleName] = json.RawMessage(data)
 		}
