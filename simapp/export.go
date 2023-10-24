@@ -15,6 +15,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
@@ -89,7 +90,7 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 	}
 
 	fmt.Println("json.MarshalIndent")
-	appState, err := json.MarshalIndent(genesisData, "", "  ")
+	appState, err := jsoniter.MarshalIndent(genesisData, "", "  ")
 	if err != nil {
 		return nil, err
 	}
