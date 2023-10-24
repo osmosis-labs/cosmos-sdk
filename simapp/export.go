@@ -1,7 +1,6 @@
 package simapp
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -15,7 +14,6 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	jsoniter "github.com/json-iterator/go"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
@@ -56,11 +54,18 @@ func (app *SimApp) ExportAppStateAndValidators(
 }
 
 func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
-	genesisData := make(map[string]json.RawMessage)
+	tempFile, err := ioutil.TempFile("", "genesis")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tempFile.Name())
 
-	err := filepath.Walk(genStateDir, func(path string, info os.FileInfo, err error) error {
-		fmt.Println("filepath.Walks", path)
-		fmt.Println("filepath.Walks", info)
+	_, err = tempFile.Write([]byte("{\n"))
+	if err != nil {
+		return nil, err
+	}
+
+	err = filepath.Walk(genStateDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -72,14 +77,15 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 			}
 
 			// Skip if data is empty
-			fmt.Println("check if skip empty file", path)
 			if len(data) == 0 {
-				fmt.Println("skipping empty file", path)
 				return nil
 			}
 
 			moduleName := filepath.Base(path)
-			genesisData[moduleName] = json.RawMessage(data)
+			_, err = tempFile.Write([]byte(fmt.Sprintf(`"%s": %s,`, moduleName, string(data))))
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -89,8 +95,19 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Println("json.MarshalIndent")
-	appState, err := jsoniter.MarshalIndent(genesisData, "", "  ")
+	fmt.Println("streamAndMarshalAppState: tempFile.Name()=", tempFile.Name())
+	_, err = tempFile.Write([]byte("\n}"))
+	if err != nil {
+		return nil, err
+	}
+
+	err = tempFile.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("reading tempFile")
+	appState, err := ioutil.ReadFile(tempFile.Name())
 	if err != nil {
 		return nil, err
 	}
