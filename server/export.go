@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -112,7 +113,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return err
 			}
 
-			fmt.Println("sdk pprint...")
+			fmt.Println("sdk ppprint...")
 
 			// Open a file for writing
 			file, err := os.Create("output.json")
@@ -121,8 +122,17 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			}
 			defer file.Close()
 
+			// Create a buffered writer from the file
+			bufferedWriter := bufio.NewWriter(file)
+
 			// Write the encoded data to the file
-			_, err = file.Write(encoded)
+			_, err = bufferedWriter.Write(encoded)
+			if err != nil {
+				return err
+			}
+
+			// Flush any remaining data to the file
+			err = bufferedWriter.Flush()
 			if err != nil {
 				return err
 			}

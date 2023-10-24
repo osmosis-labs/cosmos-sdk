@@ -58,8 +58,8 @@ func streamAndMarshalAppState(genStateDir string) ([]byte, error) {
 	genesisData := make(map[string]json.RawMessage)
 
 	err := filepath.Walk(genStateDir, func(path string, info os.FileInfo, err error) error {
-		fmt.Println("filepath.Walk", path)
-		fmt.Println("filepath.Walk", info)
+		fmt.Println("filepath.Walks", path)
+		fmt.Println("filepath.Walks", info)
 		if err != nil {
 			return err
 		}
