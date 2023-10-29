@@ -8,6 +8,7 @@ import (
 
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"github.com/cosmos/gogoproto/proto"
+	"golang.org/x/exp/slices"
 	protov2 "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -56,14 +57,9 @@ func NewReflectionService() (*ReflectionService, error) {
 		return true
 	})
 
-	// UNFORKINGTODO: sort not working with following error:
-	// 	../go/pkg/mod/github.com/osmosis-labs/cosmos-sdk@v0.47.6-0.20231005201857-17a6e642571a/runtime/services/reflection.go:60:28:
-	// type func(x *descriptorpb.FileDescriptorProto, y *descriptorpb.FileDescriptorProto) bool of func(x, y *descriptorpb.FileDescriptorProto)
-	// bool {…} does not match inferred type func(a *descriptorpb.FileDescriptorProto, b *descriptorpb.FileDescriptorProto) int for func(a E, b E) int
-	// make: *** [build] Error 1
-	// slices.SortFunc(fds.File, func(x, y *descriptorpb.FileDescriptorProto) bool {
-	// 	return *x.Name < *y.Name
-	// })
+	slices.SortFunc(fds.File, func(x, y *descriptorpb.FileDescriptorProto) bool {
+		return *x.Name < *y.Name
+	})
 
 	return &ReflectionService{files: fds}, nil
 }
