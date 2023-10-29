@@ -6,6 +6,8 @@ import (
 
 var (
 	_ sdk.Msg = &MsgCreateVestingAccount{}
+	_ sdk.Msg = &MsgCreateClawbackVestingAccount{}
+	_ sdk.Msg = &MsgClawback{}
 	_ sdk.Msg = &MsgCreatePermanentLockedAccount{}
 	_ sdk.Msg = &MsgCreatePeriodicVestingAccount{}
 )
@@ -18,6 +20,25 @@ func NewMsgCreateVestingAccount(fromAddr, toAddr sdk.AccAddress, amount sdk.Coin
 		Amount:      amount,
 		EndTime:     endTime,
 		Delayed:     delayed,
+	}
+}
+
+func NewMsgCreateClawbackVestingAccount(fromAddr, toAddr sdk.AccAddress, startTime int64, lockupPeriods, vestingPeriods []Period, merge bool) *MsgCreateClawbackVestingAccount {
+	return &MsgCreateClawbackVestingAccount{
+		FromAddress:    fromAddr.String(),
+		ToAddress:      toAddr.String(),
+		StartTime:      startTime,
+		LockupPeriods:  lockupPeriods,
+		VestingPeriods: vestingPeriods,
+		Merge:          merge,
+	}
+}
+
+func NewMsgClawback(funderAddress, address, destAddress string) *MsgClawback {
+	return &MsgClawback{
+		FunderAddress: funderAddress,
+		Address:       address,
+		DestAddress:   destAddress,
 	}
 }
 
