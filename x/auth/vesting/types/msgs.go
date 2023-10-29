@@ -8,6 +8,8 @@ var (
 	_ sdk.Msg = &MsgCreateVestingAccount{}
 	_ sdk.Msg = &MsgCreatePermanentLockedAccount{}
 	_ sdk.Msg = &MsgCreatePeriodicVestingAccount{}
+	_ sdk.Msg = &MsgClawback{}
+	_ sdk.Msg = &MsgCreateClawbackVestingAccount{}
 )
 
 // NewMsgCreateVestingAccount returns a reference to a new MsgCreateVestingAccount.
@@ -37,5 +39,30 @@ func NewMsgCreatePeriodicVestingAccount(fromAddr, toAddr sdk.AccAddress, startTi
 		ToAddress:      toAddr.String(),
 		StartTime:      startTime,
 		VestingPeriods: periods,
+	}
+}
+
+// NewMsgClawback returns a reference to a new MsgClawback.
+func NewMsgClawback(funder, addr, dest sdk.AccAddress) *MsgClawback {
+	var destString string
+	if dest != nil {
+		destString = dest.String()
+	}
+	return &MsgClawback{
+		FunderAddress: funder.String(),
+		Address:       addr.String(),
+		DestAddress:   destString,
+	}
+}
+
+// NewMsgCreateClawbackVestingAccount returns a reference to a new MsgCreateClawbackVestingAccount.
+func NewMsgCreateClawbackVestingAccount(fromAddr, toAddr sdk.AccAddress, startTime int64, lockupPeriods, vestingPeriods []Period, merge bool) *MsgCreateClawbackVestingAccount {
+	return &MsgCreateClawbackVestingAccount{
+		FromAddress:    fromAddr.String(),
+		ToAddress:      toAddr.String(),
+		StartTime:      startTime,
+		LockupPeriods:  lockupPeriods,
+		VestingPeriods: vestingPeriods,
+		Merge:          merge,
 	}
 }

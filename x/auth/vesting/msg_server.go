@@ -226,6 +226,79 @@ func (s msgServer) CreatePeriodicVestingAccount(goCtx context.Context, msg *type
 	return &types.MsgCreatePeriodicVestingAccountResponse{}, nil
 }
 
+func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *types.MsgCreateClawbackVestingAccount) (*types.MsgCreateClawbackVestingAccountResponse, error) {
+	from, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		return nil, err
+	}
+	to, err := sdk.AccAddressFromBech32(msg.ToAddress)
+	if err != nil {
+		return nil, err
+	}
+	if err := sdk.VerifyAddressFormat(from); err != nil {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address: %s", err)
+	}
+
+	if err := sdk.VerifyAddressFormat(to); err != nil {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address: %s", err)
+	}
+
+	lockupCoins := sdk.NewCoins()
+	for i, period := range msg.LockupPeriods {
+		if period.Length < 1 {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid period length of %d in period %d, length must be greater than 0", period.Length, i)
+		}
+		lockupCoins = lockupCoins.Add(period.Amount...)
+	}
+
+	vestingCoins := sdk.NewCoins()
+	for i, period := range msg.VestingPeriods {
+		if period.Length < 1 {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid period length of %d in period %d, length must be greater than 0", period.Length, i)
+		}
+		vestingCoins = vestingCoins.Add(period.Amount...)
+	}
+
+	// If both schedules are present, the must describe the same total amount.
+	// IsEqual can panic, so use (a == b) <=> (a <= b && b <= a).
+	if len(msg.LockupPeriods) > 0 && len(msg.VestingPeriods) > 0 &&
+		!(lockupCoins.IsAllLTE(vestingCoins) && vestingCoins.IsAllLTE(lockupCoins)) {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "vesting and lockup schedules must have same total coins")
+	}
+
+	return &types.MsgCreateClawbackVestingAccountResponse{}, nil
+}
+
+func (s msgServer) Clawback(goCtx context.Context, msg *types.MsgClawback) (*types.MsgClawbackResponse, error) {
+	funder, err := sdk.AccAddressFromBech32(msg.GetFunderAddress())
+	if err != nil {
+		return nil, err
+	}
+	if err := sdk.VerifyAddressFormat(funder); err != nil {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid funder address: %s", err)
+	}
+
+	addr, err := sdk.AccAddressFromBech32(msg.GetAddress())
+	if err != nil {
+		return nil, err
+	}
+	if err := sdk.VerifyAddressFormat(addr); err != nil {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid account address: %s", err)
+	}
+
+	if msg.GetDestAddress() != "" {
+		dest, err := sdk.AccAddressFromBech32(msg.GetDestAddress())
+		if err != nil {
+			return nil, err
+		}
+		if err := sdk.VerifyAddressFormat(dest); err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid destination address: %s", err)
+		}
+	}
+
+	return &types.MsgClawbackResponse{}, nil
+}
+
 func validateAmount(amount sdk.Coins) error {
 	if !amount.IsValid() {
 		return sdkerrors.ErrInvalidCoins.Wrap(amount.String())
