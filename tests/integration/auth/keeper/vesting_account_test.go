@@ -9,64 +9,25 @@ import (
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/v3/assert"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	"github.com/cosmos/cosmos-sdk/x/auth/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	vesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
-	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	tmtime "github.com/cometbft/cometbft/types/time"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 var (
 	stakeDenom = "stake"
 	feeDenom   = "fee"
 )
-
-type fixture struct {
-	ctx sdk.Context
-	app *runtime.App
-
-	bankKeeper        bankkeeper.Keeper
-	accountKeeper     keeper.AccountKeeper
-	slashingKeeper    slashingkeeper.Keeper
-	stakingKeeper     *stakingkeeper.Keeper
-	interfaceRegistry codectypes.InterfaceRegistry
-}
-
-func initFixture(t assert.TestingT) *fixture {
-	f := &fixture{}
-	var accountKeeper keeper.AccountKeeper
-
-	app, err := simtestutil.Setup(testutil.AppConfig,
-		&accountKeeper,
-		&f.interfaceRegistry,
-		&f.accountKeeper,
-		&f.bankKeeper,
-		&f.slashingKeeper,
-		&f.stakingKeeper,
-	)
-	assert.NilError(t, err)
-
-	f.ctx = app.BaseApp.NewContextLegacy(false, tmproto.Header{Height: 1})
-	f.app = app
-	f.accountKeeper = accountKeeper
-
-	return f
-}
 
 func TestAddGrantClawbackVestingAcc(t *testing.T) {
 	c := sdk.NewCoins
@@ -201,10 +162,19 @@ func TestClawback(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, "stake", bondDenom)
 
-			bacc, origCoins := initBaseAccount()
-			_, _, funder := testdata.KeyTestPubAddr()
+			// Set up funder
+			origCoins := sdk.Coins{sdk.NewInt64Coin(feeDenom, 1000), sdk.NewInt64Coin(stakeDenom, 100)}
+			_, _, to := testdata.KeyTestPubAddr()
+			bacc := types.NewBaseAccountWithAddress(to)
+			addrDel := sdk.AccAddress([]byte("addr"))
+			acc := app.AccountKeeper.NewAccountWithAddress(ctx, addrDel)
+			app.AccountKeeper.SetAccount(ctx, acc)
+			funder := acc.GetAddress()
+
+			// create a clawback vesting account
 			va := vesting.NewClawbackVestingAccount(bacc, funder, origCoins, now.Unix(), lockupPeriods, vestingPeriods)
 			addr := va.GetAddress()
+			app.AccountKeeper.NewAccount(ctx, va)
 			app.AccountKeeper.SetAccount(ctx, va)
 
 			// fund the vesting account
@@ -248,7 +218,7 @@ func createValidator(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers i
 	pks := simtestutil.CreateTestPubKeys(1)
 	cdc := app.AppCodec() //simapp.MakeTestEncodingConfig().Marshaler
 
-	authority := authtypes.NewModuleAddress("gov")
+	authority := types.NewModuleAddress("gov")
 	app.StakingKeeper = stakingkeeper.NewKeeper(cdc, runtime.NewKVStoreService(app.GetKey(stakingtypes.StoreKey)), app.AccountKeeper, app.BankKeeper, authority.String(), addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr), addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr))
 
 	val, err := stakingtypes.NewValidator(valAddrs[0].String(), pks[0], stakingtypes.Description{})
