@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -294,7 +295,23 @@ func (suite *KeeperTestSuite) TestQueryTotalSupply() {
 
 	expectedTotalSupply := genesisSupply.Add(testCoins...)
 	suite.Require().Equal(1, len(res.Supply))
-	suite.Require().Equal(res.Supply, expectedTotalSupply)
+	suite.Require().Equal(expectedTotalSupply, res.Supply)
+
+	// test total supply query with supply offset
+	suite.bankKeeper.AddSupplyOffset(ctx, "test", math.NewInt(-100000000))
+	res, err = queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+
+	suite.Require().Equal(expectedTotalSupply.Sub(sdk.NewCoins(sdk.NewInt64Coin("test", 100000000))...), res.Supply)
+
+	// make sure query without offsets hasn't changed
+	res2, err := queryClient.TotalSupplyWithoutOffset(gocontext.Background(), &types.QueryTotalSupplyWithoutOffsetRequest{})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res2)
+
+	suite.Require().Equal(expectedTotalSupply, res2.Supply)
+
 }
 
 func (suite *KeeperTestSuite) TestQueryTotalSupplyOf() {
@@ -315,11 +332,20 @@ func (suite *KeeperTestSuite) TestQueryTotalSupplyOf() {
 	suite.Require().NotNil(res)
 	suite.Require().Equal(test1Supply, res.Amount)
 
-	// total supply bogus denom
-	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: "bogus"})
+	// test total supply of query with supply offset
+	suite.bankKeeper.AddSupplyOffset(ctx, "test1", math.NewInt(-1000000))
+	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test1Supply.Denom})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
-	suite.Require().Equal(sdk.NewInt64Coin("bogus", 0), res.Amount)
+
+	suite.Require().Equal(test1Supply.Sub(sdk.NewInt64Coin("test1", 1000000)), res.Amount)
+
+	// make sure query without offsets hasn't changed
+	res2, err := queryClient.SupplyOfWithoutOffset(gocontext.Background(), &types.QuerySupplyOfWithoutOffsetRequest{Denom: test1Supply.Denom})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res2)
+
+	suite.Require().Equal(test1Supply, res2.Amount)
 }
 
 func (suite *KeeperTestSuite) TestQueryParams() {

@@ -23,6 +23,7 @@ const (
 var (
 	SupplyKey           = collections.NewPrefix(0)
 	DenomMetadataPrefix = collections.NewPrefix(1)
+
 	// BalancesPrefix is the prefix for the account balances store. We use a byte
 	// (instead of `[]byte("balances")` to save some disk space).
 	BalancesPrefix     = collections.NewPrefix(2)
@@ -32,6 +33,8 @@ var (
 
 	// ParamsKey is the prefix for x/bank parameters
 	ParamsKey = collections.NewPrefix(5)
+
+	SupplyOffsetKey = collections.NewPrefix(136)
 )
 
 // BalanceValueCodec is a codec for encoding bank balances in a backwards compatible way.
