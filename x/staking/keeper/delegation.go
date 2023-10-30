@@ -1155,11 +1155,11 @@ func (k Keeper) Undelegate(
 // This function is a combination of Undelegate and CompleteUnbonding,
 // but skips the creation and deletion of UnbondingDelegationEntry
 func (k Keeper) InstantUndelegate(
-	ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, sharesAmount sdk.Dec,
+	ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, sharesAmount math.LegacyDec,
 ) (sdk.Coins, error) {
 
-	validator, found := k.GetValidator(ctx, valAddr)
-	if !found {
+	validator, err := k.GetValidator(ctx, valAddr)
+	if err != nil {
 		return nil, types.ErrNoDelegatorForAddress
 	}
 
@@ -1168,7 +1168,11 @@ func (k Keeper) InstantUndelegate(
 		return nil, err
 	}
 
-	bondDenom := k.GetParams(ctx).BondDenom
+	stakingParams, err := k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	bondDenom := stakingParams.BondDenom
 
 	amt := sdk.NewCoin(bondDenom, returnAmount)
 	res := sdk.NewCoins(amt)

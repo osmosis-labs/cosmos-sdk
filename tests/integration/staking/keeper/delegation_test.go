@@ -115,39 +115,52 @@ func TestUnbondingDelegationsMaxEntries(t *testing.T) {
 }
 
 func TestInstantUndelegate(t *testing.T) {
-	_, app, ctx := createTestInput(t)
+	t.Parallel()
+	f := initFixture(t)
 
-	delAddrs := simapp.AddTestAddrsIncremental(app, ctx, 1, sdk.NewInt(10000))
-	valAddrs := simtestutil.ConvertAddrsToValAddrs(delAddrs)
+	ctx := f.sdkCtx
 
-	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
-	notBondedPool := app.StakingKeeper.GetNotBondedPool(ctx)
+	initTokens := f.stakingKeeper.TokensFromConsensusPower(ctx, int64(1000))
+	assert.NilError(t, f.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))))
 
-	require.NoError(t, banktestutil.FundModuleAccount(app.BankKeeper, ctx, notBondedPool.GetName(), sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), startTokens))))
-	app.AccountKeeper.SetModuleAccount(ctx, notBondedPool)
+	addrDel := sdk.AccAddress([]byte("addr"))
+	accAmt := math.NewInt(10000)
+	bondDenom, err := f.stakingKeeper.BondDenom(ctx)
+	assert.NilError(t, err)
+
+	initCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, accAmt))
+	assert.NilError(t, f.bankKeeper.MintCoins(ctx, types.ModuleName, initCoins))
+	assert.NilError(t, f.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addrDel, initCoins))
+	addrVal := sdk.ValAddress(addrDel)
+
+	startTokens := f.stakingKeeper.TokensFromConsensusPower(ctx, 10)
+
+	notBondedPool := f.stakingKeeper.GetNotBondedPool(ctx)
+
+	assert.NilError(t, banktestutil.FundModuleAccount(ctx, f.bankKeeper, notBondedPool.GetName(), sdk.NewCoins(sdk.NewCoin(bondDenom, startTokens))))
+	f.accountKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	// create a validator and a delegator to that validator
-	// note this validator starts not-bonded
-	validator := testutil.NewValidator(t, valAddrs[0], PKs[0])
+	validator := testutil.NewValidator(t, addrVal, PKs[0])
 
 	validator, issuedShares := validator.AddTokensFromDel(startTokens)
-	require.Equal(t, startTokens, issuedShares.RoundInt())
+	assert.DeepEqual(t, startTokens, issuedShares.RoundInt())
 
-	validator = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validator, true)
+	validator = keeper.TestingUpdateValidator(f.stakingKeeper, ctx, validator, true)
+	assert.Assert(math.IntEq(t, startTokens, validator.BondedTokens()))
+	assert.Assert(t, validator.IsBonded())
 
-	delegation := types.NewDelegation(delAddrs[0], valAddrs[0], issuedShares)
-	app.StakingKeeper.SetDelegation(ctx, delegation)
+	delegation := types.NewDelegation(addrDel.String(), addrVal.String(), issuedShares)
+	assert.NilError(t, f.stakingKeeper.SetDelegation(ctx, delegation))
 
-	bondTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 6)
+	bondTokens := f.stakingKeeper.TokensFromConsensusPower(ctx, 6)
+	oldBal := f.bankKeeper.GetBalance(ctx, addrDel, bondDenom)
 
-	oldBal := app.BankKeeper.GetBalance(ctx, delAddrs[0], app.StakingKeeper.BondDenom(ctx))
+	res, err := f.stakingKeeper.InstantUndelegate(ctx, addrDel, addrVal, math.LegacyNewDecFromInt(bondTokens))
+	assert.NilError(t, err)
 
-	res, err := app.StakingKeeper.InstantUndelegate(ctx, delAddrs[0], valAddrs[0], sdk.NewDecFromInt(bondTokens))
-	require.NoError(t, err)
+	assert.DeepEqual(t, res, sdk.NewCoins(sdk.NewCoin(bondDenom, bondTokens)))
 
-	require.Equal(t, res, sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), bondTokens)))
-
-	newBal := app.BankKeeper.GetBalance(ctx, delAddrs[0], app.StakingKeeper.BondDenom(ctx))
-
-	require.Equal(t, oldBal.Add(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), bondTokens)), newBal)
+	newBal := f.bankKeeper.GetBalance(ctx, addrDel, bondDenom)
+	assert.DeepEqual(t, oldBal.Add(sdk.NewCoin(bondDenom, bondTokens)), newBal)
 }
