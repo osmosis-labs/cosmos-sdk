@@ -28,6 +28,7 @@ const (
 	Threshold             = "threshold"
 	ExpeditedThreshold    = "expedited_threshold"
 	Veto                  = "veto"
+	MinDepositRatio       = "min_deposit_ratio"
 
 	// ExpeditedThreshold must be at least as large as the regular Threshold
 	// Therefore, we use this break out point in randomization.
@@ -94,6 +95,11 @@ func GenVeto(r *rand.Rand) math.LegacyDec {
 	return sdk.NewDecWithPrec(int64(simulation.RandIntBetween(r, 250, 334)), 3)
 }
 
+// GenMinDepositRatio returns randomized DepositMinRatio
+func GenMinDepositRatio(r *rand.Rand) sdk.Dec {
+	return sdk.MustNewDecFromStr("0.01")
+}
+
 // RandomizedGenState generates a random GenesisState for gov
 func RandomizedGenState(simState *module.SimulationState) {
 	startingProposalID := uint64(simState.Rand.Intn(100))
@@ -158,9 +164,15 @@ func RandomizedGenState(simState *module.SimulationState) {
 		func(r *rand.Rand) { veto = GenVeto(r) },
 	)
 
+	var minDepositRatio sdk.Dec
+	simState.AppParams.GetOrGenerate(
+		simState.Cdc, MinDepositRatio, &minDepositRatio, simState.Rand,
+		func(r *rand.Rand) { minDepositRatio = GenMinDepositRatio(r) },
+	)
+
 	govGenesis := v1.NewGenesisState(
 		startingProposalID,
-		v1.NewParams(minDeposit, expeditedMinDeposit, depositPeriod, votingPeriod, expeditedVotingPeriod, quorum.String(), threshold.String(), expitedVotingThreshold.String(), veto.String(), minInitialDepositRatio.String(), simState.Rand.Intn(2) == 0, simState.Rand.Intn(2) == 0, simState.Rand.Intn(2) == 0),
+		v1.NewParams(minDeposit, expeditedMinDeposit, depositPeriod, votingPeriod, expeditedVotingPeriod, quorum.String(), threshold.String(), expitedVotingThreshold.String(), veto.String(), minInitialDepositRatio.String(), simState.Rand.Intn(2) == 0, simState.Rand.Intn(2) == 0, simState.Rand.Intn(2) == 0, minDepositRatio.String()),
 	)
 
 	bz, err := json.MarshalIndent(&govGenesis, "", " ")

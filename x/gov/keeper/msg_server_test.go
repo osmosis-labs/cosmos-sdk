@@ -18,7 +18,7 @@ func (suite *KeeperTestSuite) TestSubmitProposalReq() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	initialDeposit := coins
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 	bankMsg := &banktypes.MsgSend{
@@ -144,7 +144,7 @@ func (suite *KeeperTestSuite) TestVoteReq() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 	bankMsg := &banktypes.MsgSend{
 		FromAddress: govAcct.String(),
@@ -266,7 +266,7 @@ func (suite *KeeperTestSuite) TestVoteWeightedReq() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 	bankMsg := &banktypes.MsgSend{
 		FromAddress: govAcct.String(),
@@ -388,8 +388,9 @@ func (suite *KeeperTestSuite) TestDepositReq() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
+
 	bankMsg := &banktypes.MsgSend{
 		FromAddress: govAcct.String(),
 		ToAddress:   proposer.String(),
@@ -459,7 +460,7 @@ func (suite *KeeperTestSuite) TestLegacyMsgSubmitProposal() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	initialDeposit := coins
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 
@@ -509,7 +510,7 @@ func (suite *KeeperTestSuite) TestLegacyMsgVote() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 	bankMsg := &banktypes.MsgSend{
 		FromAddress: govAcct.String(),
@@ -621,7 +622,7 @@ func (suite *KeeperTestSuite) TestLegacyVoteWeighted() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 	bankMsg := &banktypes.MsgSend{
 		FromAddress: govAcct.String(),
@@ -733,7 +734,7 @@ func (suite *KeeperTestSuite) TestLegacyMsgDeposit() {
 	addrs := suite.addrs
 	proposer := addrs[0]
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100000)))
 	minDeposit := suite.govKeeper.GetParams(suite.ctx).MinDeposit
 	bankMsg := &banktypes.MsgSend{
 		FromAddress: govAcct.String(),
