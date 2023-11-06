@@ -8,11 +8,13 @@ import (
 
 	"cosmossdk.io/math"
 
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
 	"github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnbondingDelegationsMaxEntries(t *testing.T) {
@@ -112,4 +114,47 @@ func TestUnbondingDelegationsMaxEntries(t *testing.T) {
 	newNotBonded = f.bankKeeper.GetBalance(ctx, f.stakingKeeper.GetNotBondedPool(ctx).GetAddress(), bondDenom).Amount
 	assert.Assert(math.IntEq(t, newBonded, oldBonded.SubRaw(1)))
 	assert.Assert(math.IntEq(t, newNotBonded, oldNotBonded.AddRaw(1)))
+}
+
+func TestInstantUndelegate(t *testing.T) {
+	t.Parallel()
+	f := initFixture(t)
+	ctx := f.sdkCtx
+
+	delAddrs := simtestutil.AddTestAddrsIncremental(f.bankKeeper, f.stakingKeeper, ctx, 1, math.NewInt(10000))
+	valAddrs := simtestutil.ConvertAddrsToValAddrs(delAddrs)
+
+	startTokens := f.stakingKeeper.TokensFromConsensusPower(ctx, 10)
+	notBondedPool := f.stakingKeeper.GetNotBondedPool(ctx)
+
+	bondDenom, err := f.stakingKeeper.BondDenom(ctx)
+	assert.NilError(t, err)
+
+	assert.NilError(t, banktestutil.FundModuleAccount(f.sdkCtx, f.bankKeeper, notBondedPool.GetName(), sdk.NewCoins(sdk.NewCoin(bondDenom, startTokens))))
+	f.accountKeeper.SetModuleAccount(ctx, notBondedPool)
+
+	// create a validator and a delegator to that validator
+	// note this validator starts not-bonded
+	validator := testutil.NewValidator(t, valAddrs[0], PKs[0])
+
+	validator, issuedShares := validator.AddTokensFromDel(startTokens)
+	require.Equal(t, startTokens, issuedShares.RoundInt())
+
+	validator = keeper.TestingUpdateValidator(f.stakingKeeper, ctx, validator, true)
+
+	delegation := types.NewDelegation(delAddrs[0].String(), valAddrs[0].String(), issuedShares)
+	f.stakingKeeper.SetDelegation(ctx, delegation)
+
+	bondTokens := f.stakingKeeper.TokensFromConsensusPower(ctx, 6)
+
+	oldBal := f.bankKeeper.GetBalance(ctx, delAddrs[0], bondDenom)
+
+	res, err := f.stakingKeeper.InstantUndelegate(ctx, delAddrs[0], valAddrs[0], math.LegacyNewDecFromInt(bondTokens))
+	require.NoError(t, err)
+
+	require.Equal(t, res, sdk.NewCoins(sdk.NewCoin(bondDenom, bondTokens)))
+
+	newBal := f.bankKeeper.GetBalance(ctx, delAddrs[0], bondDenom)
+
+	require.Equal(t, oldBal.Add(sdk.NewCoin(bondDenom, bondTokens)), newBal)
 }
