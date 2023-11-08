@@ -10,7 +10,7 @@ import (
 
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
-	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -378,7 +378,7 @@ func TestMsgSetSendEnabled(t *testing.T) {
 		[]sdk.Msg{
 			types.NewMsgSetSendEnabled(govAddr, nil, nil),
 		},
-		sdk.Coins{{Denom: "foocoin", Amount: sdkmath.NewInt(5)}},
+		sdk.Coins{{Denom: "foocoin", Amount: math.NewInt(5)}},
 		addr1Str,
 		"set default send enabled to true",
 		"Change send enabled",

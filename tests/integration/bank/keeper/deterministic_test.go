@@ -270,7 +270,7 @@ func TestGRPCQueryTotalSupply(t *testing.T) {
 	assert.NilError(t, f.bankKeeper.MintCoins(f.ctx, minttypes.ModuleName, coins))
 
 	req := &banktypes.QueryTotalSupplyRequest{}
-	testdata.DeterministicIterations(f.ctx, t, req, f.queryClient.TotalSupply, 150, false)
+	testdata.DeterministicIterations(f.ctx, t, req, f.queryClient.TotalSupply, 2174, false)
 }
 
 func TestGRPCQueryTotalSupplyOf(t *testing.T) {
@@ -293,7 +293,7 @@ func TestGRPCQueryTotalSupplyOf(t *testing.T) {
 
 	assert.NilError(t, f.bankKeeper.MintCoins(f.ctx, minttypes.ModuleName, sdk.NewCoins(coin)))
 	req := &banktypes.QuerySupplyOfRequest{Denom: coin.GetDenom()}
-	testdata.DeterministicIterations(f.ctx, t, req, f.queryClient.SupplyOf, 1021, false)
+	testdata.DeterministicIterations(f.ctx, t, req, f.queryClient.SupplyOf, 2033, false)
 }
 
 func TestGRPCQueryParams(t *testing.T) {
