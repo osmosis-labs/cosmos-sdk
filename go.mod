@@ -139,7 +139,7 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/jhump/protoreflect => github.com/jhump/protoreflect v1.9.0
 
-	github.com/tendermint/tendermint => github.com/osmosis-labs/tendermint-informal v0.34.22-0.20231109094628-352c66afc0c4
+	github.com/tendermint/tendermint => github.com/osmosis-labs/tendermint-informal v0.34.22-0.20231109102738-90945b0bc57c
 	github.com/tendermint/tm-db => github.com/osmosis-labs/tm-db v0.6.5-0.20210911033928-ba9154613417
 
 	// latest grpc doesn't work with with our modified proto compiler, so we need to enforce
