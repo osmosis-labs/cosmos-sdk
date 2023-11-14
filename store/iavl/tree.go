@@ -23,18 +23,16 @@ type (
 		Set(key, value []byte) (bool, error)
 		Remove(key []byte) ([]byte, bool, error)
 		SaveVersion() ([]byte, int64, error)
-		DeleteVersion(version int64) error
-		DeleteVersions(versions ...int64) error
+
 		Version() int64
 		Hash() []byte
 		VersionExists(version int64) bool
 		GetVersioned(key []byte, version int64) ([]byte, error)
 		GetImmutable(version int64) (*iavl.ImmutableTree, error)
 		SetInitialVersion(version uint64)
-		Iterator(start, end []byte, ascending bool) types.Iterator
+		Iterator(start, end []byte, ascending bool) (types.Iterator, error)
 		AvailableVersions() []int
-		LoadVersionForOverwriting(targetVersion int64) (int64, error)
-		LazyLoadVersionForOverwriting(targetVersion int64) (int64, error)
+		LoadVersionForOverwriting(targetVersion int64) error
 	}
 
 	// immutableTree is a simple wrapper around a reference to an iavl.ImmutableTree
@@ -93,10 +91,7 @@ func (it *immutableTree) AvailableVersions() []int {
 	return []int{}
 }
 
-func (it *immutableTree) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
+func (it *immutableTree) LoadVersionForOverwriting(targetVersion int64) error {
 	panic("cannot call 'LoadVersionForOverwriting' on an immutable IAVL tree")
 }
 
-func (it *immutableTree) LazyLoadVersionForOverwriting(targetVersion int64) (int64, error) {
-	panic("cannot call 'LazyLoadVersionForOverwriting' on an immutable IAVL tree")
-}
