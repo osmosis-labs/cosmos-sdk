@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/cosmos/cosmos-sdk/store/pruning/types"
@@ -210,6 +210,43 @@ func (m *Manager) LoadPruningHeights(db dbm.DB) error {
 	}
 
 	return nil
+}
+
+// GetPruningHeight returns the height which can prune upto if it is able to prune at the given height.
+func (m *Manager) GetPruningHeight(height int64) int64 {
+	if m.opts.GetPruningStrategy() == types.PruningNothing {
+		return 0
+	}
+	if m.opts.Interval <= 0 {
+		return 0
+	}
+
+	if height%int64(m.opts.Interval) != 0 || height <= int64(m.opts.KeepRecent) {
+		return 0
+	}
+
+	// Consider the snapshot height
+	pruneHeight := height - 1 - int64(m.opts.KeepRecent) // we should keep the current height at least
+
+	m.pruneSnapshotHeightsMx.RLock()
+	defer m.pruneSnapshotHeightsMx.RUnlock()
+
+	// snapshotInterval is zero, indicating that all heights can be pruned
+	if m.snapshotInterval <= 0 {
+		return pruneHeight
+	}
+
+	if len(m.pruneSnapshotHeights) == 0 { // the length should be greater than zero
+		return 0
+	}
+
+	// the snapshot `m.pruneSnapshotHeights[0]` is already operated,
+	// so we can prune upto `m.pruneSnapshotHeights[0] + int64(m.snapshotInterval) - 1`
+	snHeight := m.pruneSnapshotHeights[0] + int64(m.snapshotInterval) - 1
+	if snHeight < pruneHeight {
+		return snHeight
+	}
+	return pruneHeight
 }
 
 func loadPruningHeights(db dbm.DB) ([]int64, error) {

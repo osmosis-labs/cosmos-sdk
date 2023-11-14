@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 

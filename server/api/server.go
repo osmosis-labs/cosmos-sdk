@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	tmrpcserver "github.com/cometbft/cometbft/rpc/jsonrpc/server"
 	gateway "github.com/cosmos/gogogateway"
 	"github.com/gorilla/handlers"

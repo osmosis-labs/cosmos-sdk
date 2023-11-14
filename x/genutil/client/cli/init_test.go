@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	abci_server "github.com/cometbft/cometbft/abci/server"
 	"github.com/cometbft/cometbft/libs/cli"
-	"github.com/cometbft/cometbft/libs/log"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"

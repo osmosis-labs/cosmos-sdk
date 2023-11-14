@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	protoio "github.com/cosmos/gogoproto/io"
@@ -588,38 +588,22 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
-	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
-	if !rs.pruningManager.ShouldPruneAtHeight(version) {
-		return nil
-	}
-	rs.logger.Info("prune start", "height", version)
-	defer rs.logger.Info("prune end", "height", version)
-	return rs.PruneStores(true, nil)
+	pruneHeight := rs.pruningManager.GetPruningHeight(version)
+	rs.logger.Debug("prune start", "height", version)
+	defer rs.logger.Debug("prune end", "height", version)
+	return rs.PruneStores(pruneHeight)
 }
 
 // PruneStores prunes the specific heights of the multi store.
 // If clearPruningManager is true, the pruning manager will return the pruning heights,
 // and they are appended to the pruningHeights to be pruned.
-func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (err error) {
-	if clearPruningManager {
-		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
-		if err != nil {
-			return err
-		}
-
-		if len(heights) == 0 {
-			rs.logger.Debug("no heights to be pruned from pruning manager")
-		}
-
-		pruningHeights = append(pruningHeights, heights...)
-	}
-
-	if len(pruningHeights) == 0 {
-		rs.logger.Debug("no heights need to be pruned")
+func (rs *Store) PruneStores(pruningHeight int64) (err error) {
+	if pruningHeight <= 0 {
+		rs.logger.Debug("pruning skipped, height is less than or equal to 0")
 		return nil
 	}
 
-	rs.logger.Debug("pruning store", "heights", pruningHeights)
+	rs.logger.Debug("pruning store", "heights", pruningHeight)
 
 	for key, store := range rs.stores {
 		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
@@ -632,7 +616,7 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 
 		store = rs.GetCommitKVStore(key)
 
-		err := store.(*iavl.Store).DeleteVersions(pruningHeights...)
+		err := store.(*iavl.Store).DeleteVersionsTo(pruningHeight)
 		if err == nil {
 			continue
 		}
@@ -944,9 +928,9 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		var err error
 
 		if params.initialVersion == 0 {
-			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.lazyLoading, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.iavlCacheSize, rs.iavlDisableFastNode)
 		} else {
-			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, rs.lazyLoading, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
 		}
 
 		if err != nil {

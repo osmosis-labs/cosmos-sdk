@@ -22,8 +22,8 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
+	tmlog "cosmossdk.io/log"
 	"cosmossdk.io/math"
-	tmlog "github.com/cometbft/cometbft/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/testutil/configurator"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
