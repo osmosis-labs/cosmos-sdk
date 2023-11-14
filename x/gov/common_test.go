@@ -6,6 +6,8 @@ import (
 	"sort"
 	"testing"
 
+	"cosmossdk.io/depinject"
+	cmtlog "cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -109,15 +111,17 @@ func createTestSuite(t *testing.T) suite {
 	res := suite{}
 
 	app, err := simtestutil.SetupWithConfiguration(
-		configurator.NewAppConfig(
-			configurator.ParamsModule(),
-			configurator.AuthModule(),
-			configurator.StakingModule(),
-			configurator.BankModule(),
-			configurator.GovModule(),
-			configurator.ConsensusModule(),
-		),
-		simtestutil.DefaultStartUpConfig(),
+		depinject.Configs(
+			configurator.NewAppConfig(
+				configurator.ParamsModule(),
+				configurator.AuthModule(),
+				configurator.StakingModule(),
+				configurator.BankModule(),
+				configurator.GovModule(),
+				configurator.ConsensusModule(),
+			),
+			depinject.Supply(cmtlog.NewNopLogger()),
+		), simtestutil.DefaultStartUpConfig(),
 		&res.AccountKeeper, &res.BankKeeper, &res.GovKeeper, &res.StakingKeeper,
 	)
 	require.NoError(t, err)

@@ -1,7 +1,6 @@
 package pruning_test
 
 import (
-	"container/list"
 	"errors"
 	"fmt"
 	"testing"
@@ -281,43 +280,18 @@ func TestLoadSnapshotPruningHeights(t *testing.T) {
 	manager.SetOptions(types.NewPruningOptions(types.PruningDefault))
 
 	testcases := map[string]struct {
-		flushedPruningHeights            []int64
-		getFlushedPruningSnapshotHeights func() *list.List
+		getFlushedPruningSnapshotHeights func() []int64
 		expectedResult                   error
 	}{
-		"negative pruningHeight - error": {
-			flushedPruningHeights: []int64{10, 0, -1},
-			expectedResult:        &pruning.NegativeHeightsError{Height: -1},
-		},
 		"negative snapshotPruningHeight - error": {
-			getFlushedPruningSnapshotHeights: func() *list.List {
-				l := list.New()
-				l.PushBack(int64(5))
-				l.PushBack(int64(-2))
-				l.PushBack(int64(3))
-				return l
+			getFlushedPruningSnapshotHeights: func() []int64 {
+				return []int64{5, -2, 3}
 			},
 			expectedResult: &pruning.NegativeHeightsError{Height: -2},
 		},
-		"both have negative - pruningHeight error": {
-			flushedPruningHeights: []int64{10, 0, -1},
-			getFlushedPruningSnapshotHeights: func() *list.List {
-				l := list.New()
-				l.PushBack(int64(5))
-				l.PushBack(int64(-2))
-				l.PushBack(int64(3))
-				return l
-			},
-			expectedResult: &pruning.NegativeHeightsError{Height: -1},
-		},
-		"both non-negative - success": {
-			flushedPruningHeights: []int64{10, 0, 3},
-			getFlushedPruningSnapshotHeights: func() *list.List {
-				l := list.New()
-				l.PushBack(int64(5))
-				l.PushBack(int64(0))
-				l.PushBack(int64(3))
-				return l
+		"non-negative - success": {
+			getFlushedPruningSnapshotHeights: func() []int64 {
+				return []int64{5, 0, 3}
 			},
 		},
 	}
@@ -325,13 +299,9 @@ func TestLoadSnapshotPruningHeights(t *testing.T) {
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
 			db := db.NewMemDB()
-			if tc.flushedPruningHeights != nil {
-				err = db.Set(pruning.PruneHeightsKey, pruning.Int64SliceToBytes(tc.flushedPruningHeights))
-				require.NoError(t, err)
-			}
 
 			if tc.getFlushedPruningSnapshotHeights != nil {
-				err = db.Set(pruning.PruneSnapshotHeightsKey, pruning.ListToBytes(tc.getFlushedPruningSnapshotHeights()))
+				err = db.Set(pruning.PruneSnapshotHeightsKey, pruning.Int64SliceToBytes(tc.getFlushedPruningSnapshotHeights()))
 				require.NoError(t, err)
 			}
 

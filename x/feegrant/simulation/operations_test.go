@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -38,7 +40,11 @@ type SimTestSuite struct {
 
 func (suite *SimTestSuite) SetupTest() {
 	var err error
-	suite.app, err = simtestutil.Setup(testutil.AppConfig,
+	suite.app, err = simtestutil.Setup(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&suite.feegrantKeeper,
 		&suite.bankKeeper,
 		&suite.accountKeeper,

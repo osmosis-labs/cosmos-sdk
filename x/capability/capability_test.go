@@ -3,6 +3,8 @@ package capability_test
 import (
 	"testing"
 
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/suite"
@@ -38,7 +40,11 @@ func (suite *CapabilityTestSuite) SetupTest() {
 		ba.MountStores(suite.memKey)
 	}
 
-	app, err := simtestutil.SetupWithConfiguration(testutil.AppConfig,
+	app, err := simtestutil.SetupWithConfiguration(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		startupCfg,
 		&suite.cdc,
 		&suite.keeper,
