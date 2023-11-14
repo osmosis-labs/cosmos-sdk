@@ -3,7 +3,7 @@
 package kv
 
 import (
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 )
 
 // ReadonlyStore is an interface for readonly access to a kv-store.

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	db "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
+	db "github.com/cosmos/cosmos-db"
 	protoio "github.com/cosmos/gogoproto/io"
 	"github.com/stretchr/testify/require"
 

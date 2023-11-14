@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	db "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
+	db "github.com/cosmos/cosmos-db"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 

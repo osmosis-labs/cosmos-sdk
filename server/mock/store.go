@@ -3,7 +3,7 @@ package mock
 import (
 	"io"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 	protoio "github.com/cosmos/gogoproto/io"
 
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
@@ -131,10 +131,6 @@ func (ms multiStore) SetIAVLCacheSize(size int) {
 }
 
 func (ms multiStore) SetIAVLDisableFastNode(disable bool) {
-	panic("not implemented")
-}
-
-func (ms multiStore) SetLazyLoading(bool) {
 	panic("not implemented")
 }
 
