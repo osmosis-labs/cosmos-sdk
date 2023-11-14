@@ -81,7 +81,7 @@ func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKe
 	if err != nil {
 		return nil, err
 	}
-
+	istore.tree.(*immutableTree)
 	if logger != nil {
 		logger.Debug("Finished loading IAVL tree")
 	}
