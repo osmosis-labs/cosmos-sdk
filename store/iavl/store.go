@@ -6,11 +6,11 @@ import (
 	"io"
 	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	tmcrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 	ics23 "github.com/confio/ics23/go"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/iavl"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
@@ -52,10 +52,7 @@ func LoadStore(db dbm.DB, logger log.Logger, key types.StoreKey, id types.Commit
 // provided DB. An error is returned if the version fails to load, or if called with a positive
 // version on an empty tree.
 func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, lazyLoading bool, initialVersion uint64, cacheSize int, disableFastNode bool) (types.CommitKVStore, error) {
-	tree, err := iavl.NewMutableTreeWithOpts(db, cacheSize, &iavl.Options{InitialVersion: initialVersion}, disableFastNode)
-	if err != nil {
-		return nil, err
-	}
+	tree := iavl.NewMutableTree(db, cacheSize, disableFastNode, logger, iavl.InitialVersionOption(initialVersion))
 
 	isUpgradeable, err := tree.IsUpgradeable()
 	if err != nil {
