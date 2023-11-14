@@ -22,6 +22,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/server"
+	servercmtlog "github.com/cosmos/cosmos-sdk/server/log"
 	"github.com/cosmos/cosmos-sdk/server/mock"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -201,7 +202,7 @@ func TestEmptyState(t *testing.T) {
 
 func TestStartStandAlone(t *testing.T) {
 	home := t.TempDir()
-	logger := log.NewNopLogger()
+	logger := log.NewTestLogger(t)
 	interfaceRegistry := types.NewInterfaceRegistry()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	err := genutiltest.ExecInitCmd(testMbm, home, marshaler)
@@ -216,7 +217,7 @@ func TestStartStandAlone(t *testing.T) {
 	svr, err := abci_server.NewServer(svrAddr, "socket", app)
 	require.NoError(t, err, "error creating listener")
 
-	svr.SetLogger(logger.With("module", "abci-server"))
+	svr.SetLogger(servercmtlog.CometLoggerWrapper{Logger: logger.With("module", "abci-server")})
 	err = svr.Start()
 	require.NoError(t, err)
 

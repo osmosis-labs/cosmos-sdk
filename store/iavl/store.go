@@ -9,9 +9,9 @@ import (
 	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmcrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
-	ics23 "github.com/confio/ics23/go"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/iavl"
+	ics23 "github.com/cosmos/ics23/go"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
@@ -219,30 +219,31 @@ func (st *Store) Delete(key []byte) {
 // DeleteVersions deletes a series of versions from the MutableTree. An error
 // is returned if any single version is invalid or the delete fails. All writes
 // happen in a single batch with a single commit.
-func (st *Store) DeleteVersions(versions ...int64) error {
-	return st.tree.DeleteVersions(versions...)
+func (st *Store) DeleteVersionsTo(version int64) error {
+	return st.tree.DeleteVersionsTo(version)
 }
 
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
 // version, or the latest version below it. Any versions greater than targetVersion will be deleted.
-func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
+func (st *Store) LoadVersionForOverwriting(targetVersion int64) error {
 	return st.tree.LoadVersionForOverwriting(targetVersion)
-}
-
-// LazyLoadVersionForOverwriting is the lazy version of LoadVersionForOverwriting.
-func (st *Store) LazyLoadVersionForOverwriting(targetVersion int64) (int64, error) {
-	return st.tree.LazyLoadVersionForOverwriting(targetVersion)
 }
 
 // Implements types.KVStore.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	iterator := st.tree.Iterator(start, end, true)
+	iterator, err := st.tree.Iterator(start, end, true)
+	if err != nil {
+		panic(err)
+	}
 	return iterator
 }
 
 // Implements types.KVStore.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	iterator := st.tree.Iterator(start, end, false)
+	iterator, err := st.tree.Iterator(start, end, false)
+	if err != nil {
+		panic(err)
+	}
 	return iterator
 }
 

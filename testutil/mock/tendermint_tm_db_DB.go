@@ -85,6 +85,14 @@ func (m *MockDB) Get(arg0 []byte) ([]byte, error) {
 	return ret0, ret1
 }
 
+// NewBatchWithSize mocks base method.
+func (m *MockDB) NewBatchWithSize(arg0 int) db.Batch {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewBatchWithSize", arg0)
+	ret0, _ := ret[0].(db.Batch)
+	return ret0
+}
+
 // Get indicates an expected call of Get.
 func (mr *MockDBMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()

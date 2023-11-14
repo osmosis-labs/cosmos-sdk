@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
-	tmlog "cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
@@ -24,10 +23,6 @@ func useUpgradeLoader(height int64, upgrades *storetypes.StoreUpgrades) func(*ba
 	return func(app *baseapp.BaseApp) {
 		app.SetStoreLoader(UpgradeStoreLoader(height, upgrades))
 	}
-}
-
-func defaultLogger() log.Logger {
-	return tmlog.NewTMLogger(tmlog.NewSyncWriter(os.Stdout))
 }
 
 func initStore(t *testing.T, db dbm.DB, storeKey string, k, v []byte) {
@@ -121,7 +116,9 @@ func TestSetLoader(t *testing.T) {
 			// load the app with the existing db
 			opts := []func(*baseapp.BaseApp){baseapp.SetPruning(pruningtypes.NewPruningOptions(pruningtypes.PruningNothing))}
 
-			origapp := baseapp.NewBaseApp(t.Name(), log.NewNopLogger(), db, nil, opts...)
+			logger := log.NewTestLogger(t)
+
+			origapp := baseapp.NewBaseApp(t.Name(), logger.With("instance", "orig"), db, nil, opts...)
 			origapp.MountStores(sdk.NewKVStoreKey(tc.origStoreKey))
 			err := origapp.LoadLatestVersion()
 			require.Nil(t, err)
@@ -137,7 +134,7 @@ func TestSetLoader(t *testing.T) {
 			}
 
 			// load the new app with the original app db
-			app := baseapp.NewBaseApp(t.Name(), defaultLogger(), db, nil, opts...)
+			app := baseapp.NewBaseApp(t.Name(), logger.With("instance", "new"), db, nil, opts...)
 			app.MountStores(sdk.NewKVStoreKey(tc.loadStoreKey))
 			err = app.LoadLatestVersion()
 			require.Nil(t, err)

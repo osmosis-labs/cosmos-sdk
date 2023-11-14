@@ -183,7 +183,6 @@ func DefaultConfigWithAppConfig(appConfig depinject.Config) (Config, error) {
 			panic(err)
 		}
 		app := appBuilder.Build(
-			val.GetCtx().Logger,
 			dbm.NewMemDB(),
 			nil,
 			baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
@@ -390,7 +389,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 
 		logger := tmlog.NewNopLogger()
 		if cfg.EnableTMLogging {
-			logger = tmlog.NewTMLogger(tmlog.NewSyncWriter(os.Stdout))
+			logger = tmlog.NewLogger(os.Stdout)
 		}
 
 		ctx.Logger = logger

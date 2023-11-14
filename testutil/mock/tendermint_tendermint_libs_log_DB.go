@@ -68,6 +68,14 @@ func (mr *MockLoggerMockRecorder) Error(arg0 interface{}, arg1 ...interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockLogger)(nil).Error), varargs...)
 }
 
+// Impl mocks base method.
+func (m *MockLogger) Impl() interface{} {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Impl")
+	ret0, _ := ret[0].(interface{})
+	return ret0
+}
+
 // Info mocks base method.
 func (m *MockLogger) Info(arg0 string, arg1 ...interface{}) {
 	m.ctrl.T.Helper()

@@ -30,6 +30,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
+	servercmtlog "github.com/cosmos/cosmos-sdk/server/log"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -239,7 +240,7 @@ func startStandAlone(ctx *Context, appCreator types.AppCreator) error {
 		return fmt.Errorf("error creating listener: %v", err)
 	}
 
-	svr.SetLogger(ctx.Logger.With("module", "abci-server"))
+	svr.SetLogger(servercmtlog.CometLoggerWrapper{Logger: ctx.Logger.With("module", "abci-server")})
 
 	err = svr.Start()
 	if err != nil {
@@ -325,7 +326,7 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 			genDocProvider,
 			node.DefaultDBProvider,
 			node.DefaultMetricsProvider(cfg.Instrumentation),
-			ctx.Logger,
+			servercmtlog.CometLoggerWrapper{Logger: ctx.Logger},
 		)
 		if err != nil {
 			return err

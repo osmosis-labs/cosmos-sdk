@@ -42,6 +42,14 @@ func (m *MockDB) Close() error {
 	return ret0
 }
 
+// NewBatchWithSize mocks base method.
+func (m *MockDB) NewBatchWithSize(arg0 int) db.Batch {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewBatchWithSize", arg0)
+	ret0, _ := ret[0].(db.Batch)
+	return ret0
+}
+
 // Close indicates an expected call of Close.
 func (mr *MockDBMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
