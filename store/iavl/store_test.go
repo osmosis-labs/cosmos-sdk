@@ -7,9 +7,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 
-	dbm "github.com/cometbft/cometbft-db"
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/iavl"
 	"github.com/stretchr/testify/require"
 
@@ -34,8 +34,7 @@ func randBytes(numBytes int) []byte {
 
 // make a tree with data from above and save it
 func newAlohaTree(t *testing.T, db dbm.DB) (*iavl.MutableTree, types.CommitID) {
-	tree, err := iavl.NewMutableTree(db, cacheSize, false)
-	require.NoError(t, err)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 
 	for k, v := range treeData {
 		tree.Set([]byte(k), []byte(v))
@@ -280,10 +279,8 @@ func TestIAVLIterator(t *testing.T) {
 }
 
 func TestIAVLReverseIterator(t *testing.T) {
-	db := dbm.NewMemDB()
 
-	tree, err := iavl.NewMutableTree(db, cacheSize, false)
-	require.NoError(t, err)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 
 	iavlStore := UnsafeNewStore(tree)
 
@@ -314,9 +311,7 @@ func TestIAVLReverseIterator(t *testing.T) {
 }
 
 func TestIAVLPrefixIterator(t *testing.T) {
-	db := dbm.NewMemDB()
-	tree, err := iavl.NewMutableTree(db, cacheSize, false)
-	require.NoError(t, err)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 
 	iavlStore := UnsafeNewStore(tree)
 

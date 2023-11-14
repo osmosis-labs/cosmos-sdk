@@ -142,10 +142,7 @@ func (st *Store) Commit() types.CommitID {
 
 // LastCommitID implements Committer.
 func (st *Store) LastCommitID() types.CommitID {
-	hash, err := st.tree.Hash()
-	if err != nil {
-		panic(err)
-	}
+	hash := st.tree.Hash()
 
 	return types.CommitID{
 		Version: st.tree.Version(),
@@ -246,19 +243,13 @@ func (st *Store) LazyLoadVersionForOverwriting(targetVersion int64) (int64, erro
 
 // Implements types.KVStore.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	iterator, err := st.tree.Iterator(start, end, true)
-	if err != nil {
-		panic(err)
-	}
+	iterator := st.tree.Iterator(start, end, true)
 	return iterator
 }
 
 // Implements types.KVStore.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	iterator, err := st.tree.Iterator(start, end, false)
-	if err != nil {
-		panic(err)
-	}
+	iterator := st.tree.Iterator(start, end, false)
 	return iterator
 }
 
