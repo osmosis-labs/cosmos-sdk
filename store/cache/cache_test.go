@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
+	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/iavl"
 	"github.com/stretchr/testify/require"
 
@@ -15,11 +16,10 @@ import (
 )
 
 func TestGetOrSetStoreCache(t *testing.T) {
-	db := dbm.NewMemDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
-	tree := iavl.NewMutableTree(db, 100, false)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 	store := iavlstore.UnsafeNewStore(tree)
 	store2 := mngr.GetStoreCache(sKey, store)
 
@@ -28,11 +28,10 @@ func TestGetOrSetStoreCache(t *testing.T) {
 }
 
 func TestUnwrap(t *testing.T) {
-	db := dbm.NewMemDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
-	tree := iavl.NewMutableTree(db, 100, false)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 	store := iavlstore.UnsafeNewStore(tree)
 	_ = mngr.GetStoreCache(sKey, store)
 
@@ -41,11 +40,10 @@ func TestUnwrap(t *testing.T) {
 }
 
 func TestStoreCache(t *testing.T) {
-	db := dbm.NewMemDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
-	tree := iavl.NewMutableTree(db, 100, false)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 	store := iavlstore.UnsafeNewStore(tree)
 	kvStore := mngr.GetStoreCache(sKey, store)
 
@@ -67,11 +65,10 @@ func TestStoreCache(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
-	db := dbm.NewMemDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
-	tree := iavl.NewMutableTree(db, 100, false)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 	store := iavlstore.UnsafeNewStore(tree)
 	store2 := mngr.GetStoreCache(sKey, store)
 
@@ -87,11 +84,10 @@ func TestReset(t *testing.T) {
 }
 
 func TestCacheWrap(t *testing.T) {
-	db := dbm.NewMemDB()
 	mngr := cache.NewCommitKVStoreCacheManager(cache.DefaultCommitKVStoreCacheSize)
 
 	sKey := types.NewKVStoreKey("test")
-	tree := iavl.NewMutableTree(db, 100, false)
+	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 	store := iavlstore.UnsafeNewStore(tree)
 
 	cacheWrapper := mngr.GetStoreCache(sKey, store).CacheWrap()
