@@ -64,7 +64,6 @@ type Store struct {
 	storesParams        map[types.StoreKey]storeParams
 	stores              map[types.StoreKey]types.CommitKVStore
 	keysByName          map[string]types.StoreKey
-	lazyLoading         bool
 	initialVersion      int64
 	removalMap          map[types.StoreKey]bool
 	traceWriter         io.Writer
@@ -123,11 +122,6 @@ func (rs *Store) SetIAVLCacheSize(cacheSize int) {
 
 func (rs *Store) SetIAVLDisableFastNode(disableFastNode bool) {
 	rs.iavlDisableFastNode = disableFastNode
-}
-
-// SetLazyLoading sets if the iavl store should be loaded lazily or not
-func (rs *Store) SetLazyLoading(lazyLoading bool) {
-	rs.lazyLoading = lazyLoading
 }
 
 // GetStoreType implements Store.
