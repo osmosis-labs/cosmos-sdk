@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"sync"
 
-	db "github.com/cometbft/cometbft-db"
+	db "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/cosmos/cosmos-sdk/snapshots/types"

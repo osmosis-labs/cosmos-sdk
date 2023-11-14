@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -54,7 +53,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	err := depinject.Inject(testutil.AppConfig, &interfaceRegistry, &bankKeeper, &appBuilder, &cdc)
 	s.NoError(err)
 
-	app := appBuilder.Build(log.NewNopLogger(), dbm.NewMemDB(), nil)
+	app := appBuilder.Build(dbm.NewMemDB(), nil)
 	err = app.Load(true)
 	s.NoError(err)
 

@@ -3,7 +3,7 @@ package mock
 import (
 	"io"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 	protoio "github.com/cosmos/gogoproto/io"
 
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"

@@ -15,15 +15,15 @@ import (
 	"testing"
 	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cometbft/cometbft/node"
 	tmclient "github.com/cometbft/cometbft/rpc/client"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
+	tmlog "cosmossdk.io/log"
 	"cosmossdk.io/math"
-	tmlog "github.com/cometbft/cometbft/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/testutil/configurator"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"

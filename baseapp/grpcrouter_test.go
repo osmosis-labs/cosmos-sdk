@@ -2,12 +2,10 @@ package baseapp_test
 
 import (
 	"context"
-	"os"
 	"sync"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
@@ -59,7 +57,7 @@ func TestRegisterQueryServiceTwice(t *testing.T) {
 	err := depinject.Inject(makeMinimalConfig(), &appBuilder)
 	require.NoError(t, err)
 	db := dbm.NewMemDB()
-	app := appBuilder.Build(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil)
+	app := appBuilder.Build(db, nil)
 
 	// First time registering service shouldn't panic.
 	require.NotPanics(t, func() {

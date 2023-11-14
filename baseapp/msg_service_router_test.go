@@ -1,13 +1,11 @@
 package baseapp_test
 
 import (
-	"os"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
@@ -29,7 +27,7 @@ func TestRegisterMsgService(t *testing.T) {
 	)
 	err := depinject.Inject(makeMinimalConfig(), &appBuilder, &registry)
 	require.NoError(t, err)
-	app := appBuilder.Build(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), dbm.NewMemDB(), nil)
+	app := appBuilder.Build(dbm.NewMemDB(), nil)
 
 	require.Panics(t, func() {
 		testdata.RegisterMsgServer(
@@ -58,7 +56,7 @@ func TestRegisterMsgServiceTwice(t *testing.T) {
 	err := depinject.Inject(makeMinimalConfig(), &appBuilder, &registry)
 	require.NoError(t, err)
 	db := dbm.NewMemDB()
-	app := appBuilder.Build(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil)
+	app := appBuilder.Build(db, nil)
 	testdata.RegisterInterfaces(registry)
 
 	// First time registering service shouldn't panic.
@@ -88,7 +86,7 @@ func TestMsgService(t *testing.T) {
 	)
 	err := depinject.Inject(makeMinimalConfig(), &appBuilder, &cdc, &interfaceRegistry)
 	require.NoError(t, err)
-	app := appBuilder.Build(log.NewNopLogger(), dbm.NewMemDB(), nil)
+	app := appBuilder.Build(dbm.NewMemDB(), nil)
 
 	// patch in TxConfig instead of using an output from x/auth/tx
 	txConfig := authtx.NewTxConfig(cdc, authtx.DefaultSignModes)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 

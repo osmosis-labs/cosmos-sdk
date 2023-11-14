@@ -8,12 +8,13 @@ import (
 	"strings"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/jsonpb"
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	baseapptestutil "github.com/cosmos/cosmos-sdk/baseapp/testutil"
 	"github.com/cosmos/cosmos-sdk/snapshots"
@@ -43,7 +44,7 @@ func TestABCI_Info(t *testing.T) {
 func TestABCI_InitChain(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := log.NewTestLogger(t)
 	app := baseapp.NewBaseApp(name, logger, db, nil, baseapp.SetChainID("test-chain-id"))
 
 	capKey := sdk.NewKVStoreKey("main")
@@ -128,7 +129,7 @@ func TestABCI_InitChain(t *testing.T) {
 func TestABCI_InitChain_WithInitialHeight(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := log.NewTestLogger(t)
 	app := baseapp.NewBaseApp(name, logger, db, nil)
 
 	app.InitChain(
@@ -144,7 +145,7 @@ func TestABCI_InitChain_WithInitialHeight(t *testing.T) {
 func TestABCI_BeginBlock_WithInitialHeight(t *testing.T) {
 	name := t.Name()
 	db := dbm.NewMemDB()
-	logger := defaultLogger()
+	logger := log.NewTestLogger(t)
 	app := baseapp.NewBaseApp(name, logger, db, nil)
 
 	app.InitChain(
@@ -568,7 +569,7 @@ func TestABCI_ApplySnapshotChunk(t *testing.T) {
 func TestABCI_EndBlock(t *testing.T) {
 	db := dbm.NewMemDB()
 	name := t.Name()
-	logger := defaultLogger()
+	logger := log.NewTestLogger(t)
 
 	cp := &tmproto.ConsensusParams{
 		Block: &tmproto.BlockParams{
@@ -1213,7 +1214,7 @@ func TestABCI_Query(t *testing.T) {
 }
 
 func TestABCI_GetBlockRetentionHeight(t *testing.T) {
-	logger := defaultLogger()
+	logger := log.NewTestLogger(t)
 	db := dbm.NewMemDB()
 	name := t.Name()
 
