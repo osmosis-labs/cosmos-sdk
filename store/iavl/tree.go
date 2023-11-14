@@ -26,12 +26,12 @@ type (
 		DeleteVersion(version int64) error
 		DeleteVersions(versions ...int64) error
 		Version() int64
-		Hash() ([]byte, error)
+		Hash() []byte
 		VersionExists(version int64) bool
 		GetVersioned(key []byte, version int64) ([]byte, error)
 		GetImmutable(version int64) (*iavl.ImmutableTree, error)
 		SetInitialVersion(version uint64)
-		Iterator(start, end []byte, ascending bool) (types.Iterator, error)
+		Iterator(start, end []byte, ascending bool) types.Iterator
 		AvailableVersions() []int
 		LoadVersionForOverwriting(targetVersion int64) (int64, error)
 		LazyLoadVersionForOverwriting(targetVersion int64) (int64, error)
