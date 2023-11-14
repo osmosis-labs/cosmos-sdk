@@ -21,10 +21,6 @@ import (
 	"github.com/spf13/viper"
 
 	"cosmossdk.io/log"
-<<<<<<< HEAD
-=======
-	tmlog "cosmossdk.io/log"
->>>>>>> ae63edb1fb8609aa84522c89fc953f1fae7df7c8
 	tmcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmtypes "github.com/cometbft/cometbft/types"
