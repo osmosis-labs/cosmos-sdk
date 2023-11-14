@@ -14,6 +14,7 @@ import (
 
 	"cosmossdk.io/depinject"
 
+	"cosmossdk.io/log"
 	baseapptestutil "github.com/cosmos/cosmos-sdk/baseapp/testutil"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -80,7 +81,7 @@ func TestBaseApp_BlockGas(t *testing.T) {
 			err               error
 		)
 
-		appConfig := depinject.Configs(makeTestConfig())
+		appConfig := depinject.Configs(makeTestConfig(), depinject.Supply(log.NewNopLogger()))
 
 		err = depinject.Inject(appConfig,
 			&bankKeeper,

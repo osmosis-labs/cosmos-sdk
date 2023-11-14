@@ -33,7 +33,7 @@ func (a *AppBuilder) Build(
 		baseAppOptions = append(baseAppOptions, option)
 	}
 
-	bApp := baseapp.NewBaseApp(a.app.config.AppName, a.app.Logger(), db, nil, baseAppOptions...)
+	bApp := baseapp.NewBaseApp(a.app.config.AppName, a.app.logger, db, nil, baseAppOptions...)
 	bApp.SetMsgServiceRouter(a.app.msgServiceRouter)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)

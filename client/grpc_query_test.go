@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -50,7 +51,10 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	// TODO duplicated from testutils/sims/app_helpers.go
 	// need more composable startup options for simapp, this test needed a handle to the closed over genesis account
 	// to query balances
-	err := depinject.Inject(testutil.AppConfig, &interfaceRegistry, &bankKeeper, &appBuilder, &cdc)
+	err := depinject.Inject(depinject.Configs(
+		testutil.AppConfig,
+		depinject.Supply(log.NewNopLogger()),
+	), &interfaceRegistry, &bankKeeper, &appBuilder, &cdc)
 	s.NoError(err)
 
 	app := appBuilder.Build(dbm.NewMemDB(), nil)
