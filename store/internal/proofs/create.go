@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	ics23 "github.com/confio/ics23/go"
+	ics23 "github.com/cosmos/ics23/go"
 
 	sdkmaps "github.com/cosmos/cosmos-sdk/store/internal/maps"
 )
