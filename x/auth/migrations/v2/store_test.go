@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
@@ -54,7 +56,10 @@ func TestMigrateVestingAccounts(t *testing.T) {
 		stakingKeeper *stakingkeeper.Keeper
 	)
 	app, err := simtestutil.Setup(
-		authtestutil.AppConfig,
+		depinject.Configs(
+			authtestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&accountKeeper,
 		&bankKeeper,
 		&stakingKeeper,

@@ -27,8 +27,8 @@ type (
 		Hash() []byte
 		WorkingHash() []byte
 		VersionExists(version int64) bool
-		DeleteVersionsTo(version int64) error
 		GetVersioned(key []byte, version int64) ([]byte, error)
+		DeleteVersionsTo(version int64) error
 		GetImmutable(version int64) (*iavl.ImmutableTree, error)
 		SetInitialVersion(version uint64)
 		Iterator(start, end []byte, ascending bool) (types.Iterator, error)

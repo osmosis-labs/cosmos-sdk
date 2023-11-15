@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdktestutil "github.com/cosmos/cosmos-sdk/testutil"
@@ -12,7 +13,11 @@ import (
 
 func testComponents() (*codec.LegacyAmino, sdk.Context, storetypes.StoreKey, storetypes.StoreKey, paramskeeper.Keeper) {
 	var cdc codec.Codec
-	if err := depinject.Inject(testutil.AppConfig, &cdc); err != nil {
+	if err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc); err != nil {
 		panic(err)
 	}
 

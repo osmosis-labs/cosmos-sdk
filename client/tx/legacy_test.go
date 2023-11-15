@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client"
 	clienttestutil "github.com/cosmos/cosmos-sdk/client/testutil"
 	tx2 "github.com/cosmos/cosmos-sdk/client/tx"
@@ -70,7 +71,11 @@ func (s *TestSuite) SetupSuite() {
 		reg   codectypes.InterfaceRegistry
 		amino *codec.LegacyAmino
 	)
-	err := depinject.Inject(clienttestutil.TestConfig, &reg, &amino)
+	err := depinject.Inject(
+		depinject.Configs(
+			clienttestutil.TestConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &reg, &amino)
 	require.NoError(s.T(), err)
 
 	s.protoCfg = tx.NewTxConfig(codec.NewProtoCodec(reg), tx.DefaultSignModes)

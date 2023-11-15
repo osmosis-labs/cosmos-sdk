@@ -158,7 +158,11 @@ func DefaultConfigWithAppConfig(appConfig depinject.Config) (Config, error) {
 		interfaceRegistry codectypes.InterfaceRegistry
 	)
 
-	if err := depinject.Inject(appConfig,
+	if err := depinject.Inject(
+		depinject.Configs(
+			appConfig,
+			depinject.Supply(tmlog.NewNopLogger()),
+		),
 		&appBuilder,
 		&txConfig,
 		&cdc,
@@ -179,11 +183,14 @@ func DefaultConfigWithAppConfig(appConfig depinject.Config) (Config, error) {
 	cfg.AppConstructor = func(val ValidatorI) servertypes.Application {
 		// we build a unique app instance for every validator here
 		var appBuilder *runtime.AppBuilder
-		if err := depinject.Inject(appConfig, &appBuilder); err != nil {
+		if err := depinject.Inject(
+			depinject.Configs(
+				appConfig,
+				depinject.Supply(val.GetCtx().Logger),
+			), &appBuilder); err != nil {
 			panic(err)
 		}
 		app := appBuilder.Build(
-			val.GetCtx().Logger,
 			dbm.NewMemDB(),
 			nil,
 			baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
@@ -390,7 +397,7 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 
 		logger := tmlog.NewNopLogger()
 		if cfg.EnableTMLogging {
-			logger = tmlog.NewTMLogger(tmlog.NewSyncWriter(os.Stdout))
+			logger = tmlog.NewLogger(os.Stdout)
 		}
 
 		ctx.Logger = logger

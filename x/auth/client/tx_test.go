@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -62,7 +63,10 @@ func TestReadTxFromFile(t *testing.T) {
 		interfaceRegistry codectypes.InterfaceRegistry
 	)
 	err := depinject.Inject(
-		authtestutil.AppConfig,
+		depinject.Configs(
+			authtestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&interfaceRegistry,
 		&txCfg,
 	)
@@ -101,7 +105,10 @@ func TestBatchScanner_Scan(t *testing.T) {
 	t.Parallel()
 	var txGen client.TxConfig
 	err := depinject.Inject(
-		authtestutil.AppConfig,
+		depinject.Configs(
+			authtestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&txGen,
 	)
 	require.NoError(t, err)

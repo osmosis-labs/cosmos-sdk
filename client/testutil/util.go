@@ -9,6 +9,7 @@ import (
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	_ "github.com/cosmos/cosmos-sdk/runtime"
 )
@@ -26,7 +27,11 @@ var TestConfig = appconfig.Compose(&appv1alpha1.Config{
 
 func MakeTestCodec(t *testing.T) codec.Codec {
 	var cdc codec.Codec
-	err := depinject.Inject(TestConfig, &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			TestConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 	require.NoError(t, err)
 	return cdc
 }

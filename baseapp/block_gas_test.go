@@ -6,7 +6,6 @@ import (
 	"math"
 	"testing"
 
-	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -15,6 +14,7 @@ import (
 
 	"cosmossdk.io/depinject"
 
+	"cosmossdk.io/log"
 	baseapptestutil "github.com/cosmos/cosmos-sdk/baseapp/testutil"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -81,7 +81,8 @@ func TestBaseApp_BlockGas(t *testing.T) {
 			err               error
 		)
 
-		appConfig := depinject.Configs(makeTestConfig())
+		appConfig := depinject.Configs(
+			makeTestConfig(), depinject.Supply(log.NewNopLogger()))
 
 		err = depinject.Inject(appConfig,
 			&bankKeeper,
@@ -93,7 +94,7 @@ func TestBaseApp_BlockGas(t *testing.T) {
 			&appBuilder)
 		require.NoError(t, err)
 
-		bapp := appBuilder.Build(log.NewNopLogger(), dbm.NewMemDB(), nil)
+		bapp := appBuilder.Build(dbm.NewMemDB(), nil)
 		err = bapp.Load(true)
 		require.NoError(t, err)
 

@@ -20,6 +20,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	servercmtlog "github.com/cosmos/cosmos-sdk/server/log"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -176,7 +177,7 @@ func BootstrapStateCmd(appCreator types.AppCreator) *cobra.Command {
 					Period: cfg.StateSync.TrustPeriod,
 					Height: cfg.StateSync.TrustHeight,
 					Hash:   cfg.StateSync.TrustHashBytes(),
-				}, serverCtx.Logger.With("module", "light"))
+				}, servercmtlog.CometLoggerWrapper{Logger: serverCtx.Logger.With("module", "light")})
 			if err != nil {
 				return fmt.Errorf("failed to set up light client state provider: %w", err)
 			}

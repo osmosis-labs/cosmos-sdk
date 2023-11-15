@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
@@ -47,7 +49,10 @@ func TestMigrateMapAccAddressToAccNumberKey(t *testing.T) {
 	var accountKeeper keeper.AccountKeeper
 
 	app, err := simtestutil.Setup(
-		authtestutil.AppConfig,
+		depinject.Configs(
+			authtestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&accountKeeper,
 	)
 	require.NoError(t, err)
