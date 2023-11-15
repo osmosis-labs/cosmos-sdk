@@ -6,11 +6,11 @@ import (
 	"io"
 	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	tmcrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
-	ics23 "github.com/confio/ics23/go"
+	ics23 "github.com/cosmos/ics23/go"
 	"github.com/cosmos/iavl"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
@@ -43,19 +43,16 @@ type Store struct {
 // LoadStore returns an IAVL Store as a CommitKVStore. Internally, it will load the
 // store's version (id) from the provided DB. An error is returned if the version
 // fails to load, or if called with a positive version on an empty tree.
-func LoadStore(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, lazyLoading bool, cacheSize int, disableFastNode bool) (types.CommitKVStore, error) {
-	return LoadStoreWithInitialVersion(db, logger, key, id, lazyLoading, 0, cacheSize, disableFastNode)
+func LoadStore(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, cacheSize int, disableFastNode bool) (types.CommitKVStore, error) {
+	return LoadStoreWithInitialVersion(db, logger, key, id, 0, cacheSize, disableFastNode)
 }
 
 // LoadStoreWithInitialVersion returns an IAVL Store as a CommitKVStore setting its initialVersion
 // to the one given. Internally, it will load the store's version (id) from the
 // provided DB. An error is returned if the version fails to load, or if called with a positive
 // version on an empty tree.
-func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, lazyLoading bool, initialVersion uint64, cacheSize int, disableFastNode bool) (types.CommitKVStore, error) {
-	tree, err := iavl.NewMutableTreeWithOpts(db, cacheSize, &iavl.Options{InitialVersion: initialVersion}, disableFastNode)
-	if err != nil {
-		return nil, err
-	}
+func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKey, id types.CommitID, initialVersion uint64, cacheSize int, disableFastNode bool) (types.CommitKVStore, error) {
+	tree := iavl.NewMutableTree(db, cacheSize, disableFastNode, logger, iavl.InitialVersionOption(initialVersion))
 
 	isUpgradeable, err := tree.IsUpgradeable()
 	if err != nil {
@@ -68,20 +65,15 @@ func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKe
 			"store_key", key.String(),
 			"version", initialVersion,
 			"commit", fmt.Sprintf("%X", id),
-			"is_lazy", lazyLoading,
 		)
 	}
 
-	if lazyLoading {
-		_, err = tree.LazyLoadVersion(id.Version)
-	} else {
-		_, err = tree.LoadVersion(id.Version)
-	}
+	_, err = tree.LoadVersion(id.Version)
 
 	if err != nil {
 		return nil, err
 	}
-	istore.tree.(*immutableTree)
+
 	if logger != nil {
 		logger.Debug("Finished loading IAVL tree")
 	}
@@ -223,33 +215,34 @@ func (st *Store) Delete(key []byte) {
 	st.tree.Remove(key)
 }
 
-// DeleteVersions deletes a series of versions from the MutableTree. An error
+// DeleteVersionsTo deletes versions upto the given version from the MutableTree. An error
 // is returned if any single version is invalid or the delete fails. All writes
 // happen in a single batch with a single commit.
-func (st *Store) DeleteVersions(versions ...int64) error {
-	return st.tree.DeleteVersions(versions...)
+func (st *Store) DeleteVersionsTo(version int64) error {
+	return st.tree.DeleteVersionsTo(version)
 }
 
 // LoadVersionForOverwriting attempts to load a tree at a previously committed
-// version, or the latest version below it. Any versions greater than targetVersion will be deleted.
-func (st *Store) LoadVersionForOverwriting(targetVersion int64) (int64, error) {
+// version. Any versions greater than targetVersion will be deleted.
+func (st *Store) LoadVersionForOverwriting(targetVersion int64) error {
 	return st.tree.LoadVersionForOverwriting(targetVersion)
-}
-
-// LazyLoadVersionForOverwriting is the lazy version of LoadVersionForOverwriting.
-func (st *Store) LazyLoadVersionForOverwriting(targetVersion int64) (int64, error) {
-	return st.tree.LazyLoadVersionForOverwriting(targetVersion)
 }
 
 // Implements types.KVStore.
 func (st *Store) Iterator(start, end []byte) types.Iterator {
-	iterator := st.tree.Iterator(start, end, true)
+	iterator, err := st.tree.Iterator(start, end, true)
+	if err != nil {
+		panic(err)
+	}
 	return iterator
 }
 
 // Implements types.KVStore.
 func (st *Store) ReverseIterator(start, end []byte) types.Iterator {
-	iterator := st.tree.Iterator(start, end, false)
+	iterator, err := st.tree.Iterator(start, end, false)
+	if err != nil {
+		panic(err)
+	}
 	return iterator
 }
 
