@@ -165,7 +165,7 @@ func TestHandleHeight_Inputs(t *testing.T) {
 		},
 		"currentHeight is positive and equal to keep recent+1 - no kept": {
 			keepRecent + 1,
-			keepRecent + 1 - keepRecent,
+			0,
 			types.PruningEverything,
 		},
 		"currentHeight is positive and greater than keep recent+1 but not multiple of interval - no kept": {
