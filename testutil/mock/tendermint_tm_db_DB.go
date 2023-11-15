@@ -214,10 +214,3 @@ func (mr *MockDBMockRecorder) Stats() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stats", reflect.TypeOf((*MockDB)(nil).Stats))
 }
 
-// NewBatchWithSize mocks base method.
-func (m *MockDB) NewBatchWithSize(arg0 int) db.Batch {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewBatchWithSize", arg0)
-	ret0, _ := ret[0].(db.Batch)
-	return ret0
-}
