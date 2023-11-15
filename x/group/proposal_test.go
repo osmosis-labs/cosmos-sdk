@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	"github.com/cosmos/cosmos-sdk/x/group/testutil"
@@ -17,7 +18,11 @@ import (
 // multiple times into the same reference.
 func TestGogoUnmarshalProposal(t *testing.T) {
 	var cdc codec.Codec
-	err := depinject.Inject(testutil.AppConfig, &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 	require.NoError(t, err)
 
 	p1 := group.Proposal{Proposers: []string{"foo"}}

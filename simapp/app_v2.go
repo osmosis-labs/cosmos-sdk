@@ -201,7 +201,11 @@ func NewSimApp(
 		)
 	)
 
-	if err := depinject.Inject(appConfig,
+	if err := depinject.Inject(
+		depinject.Configs(
+			appConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&appBuilder,
 		&app.appCodec,
 		&app.legacyAmino,

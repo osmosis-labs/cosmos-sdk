@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -356,7 +357,11 @@ func TestDisplay(t *testing.T) {
 
 	require.NotEmpty(msig.String())
 	var cdc codec.Codec
-	err := depinject.Inject(configurator.NewAppConfig(), &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			configurator.NewAppConfig(),
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 	require.NoError(err)
 	bz, err := cdc.MarshalInterfaceJSON(msig)
 	require.NoError(err)

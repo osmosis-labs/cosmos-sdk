@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -25,7 +26,11 @@ func TestRegisterMsgService(t *testing.T) {
 		appBuilder *runtime.AppBuilder
 		registry   codectypes.InterfaceRegistry
 	)
-	err := depinject.Inject(makeMinimalConfig(), &appBuilder, &registry)
+	err := depinject.Inject(
+		depinject.Configs(
+			makeMinimalConfig(),
+			depinject.Supply(log.NewNopLogger()),
+		), &appBuilder, &registry)
 	require.NoError(t, err)
 	app := appBuilder.Build(dbm.NewMemDB(), nil)
 
@@ -53,7 +58,11 @@ func TestRegisterMsgServiceTwice(t *testing.T) {
 		appBuilder *runtime.AppBuilder
 		registry   codectypes.InterfaceRegistry
 	)
-	err := depinject.Inject(makeMinimalConfig(), &appBuilder, &registry)
+	err := depinject.Inject(
+		depinject.Configs(
+			makeMinimalConfig(),
+			depinject.Supply(log.NewNopLogger()),
+		), &appBuilder, &registry)
 	require.NoError(t, err)
 	db := dbm.NewMemDB()
 	app := appBuilder.Build(db, nil)
@@ -84,7 +93,11 @@ func TestMsgService(t *testing.T) {
 		cdc               codec.ProtoCodecMarshaler
 		interfaceRegistry codectypes.InterfaceRegistry
 	)
-	err := depinject.Inject(makeMinimalConfig(), &appBuilder, &cdc, &interfaceRegistry)
+	err := depinject.Inject(
+		depinject.Configs(
+			makeMinimalConfig(),
+			depinject.Supply(log.NewNopLogger()),
+		), &appBuilder, &cdc, &interfaceRegistry)
 	require.NoError(t, err)
 	app := appBuilder.Build(dbm.NewMemDB(), nil)
 

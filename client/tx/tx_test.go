@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	clienttestutil "github.com/cosmos/cosmos-sdk/client/testutil"
@@ -35,7 +36,11 @@ func newTestTxConfig(t *testing.T) (client.TxConfig, codec.Codec) {
 		pcdc codec.ProtoCodecMarshaler
 		cdc  codec.Codec
 	)
-	err := depinject.Inject(clienttestutil.TestConfig, &pcdc, &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			clienttestutil.TestConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &pcdc, &cdc)
 	require.NoError(t, err)
 	return authtx.NewTxConfig(pcdc, authtx.DefaultSignModes), cdc
 }

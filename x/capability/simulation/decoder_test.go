@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
@@ -17,7 +18,11 @@ import (
 
 func TestDecodeStore(t *testing.T) {
 	var cdc codec.Codec
-	err := depinject.Inject(testutil.AppConfig, &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 	require.NoError(t, err)
 
 	dec := simulation.NewDecodeStore(cdc)

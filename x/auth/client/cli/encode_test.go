@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -24,7 +25,10 @@ func TestGetCommandEncode(t *testing.T) {
 	)
 
 	err := depinject.Inject(
-		authtestutil.AppConfig,
+		depinject.Configs(
+			authtestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&txCfg,
 		&legacyAmino,
 		&codec,
@@ -64,7 +68,10 @@ func TestGetCommandDecode(t *testing.T) {
 	)
 
 	err := depinject.Inject(
-		authtestutil.AppConfig,
+		depinject.Configs(
+			authtestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&txCfg,
 		&legacyAmino,
 		&codec,

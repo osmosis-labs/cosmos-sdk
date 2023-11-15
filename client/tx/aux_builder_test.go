@@ -7,6 +7,7 @@ import (
 
 	_ "cosmossdk.io/api/cosmos/bank/v1beta1"
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	clienttestutil "github.com/cosmos/cosmos-sdk/client/testutil"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -24,7 +25,11 @@ func TestAuxTxBuilder(t *testing.T) {
 		reg codectypes.InterfaceRegistry
 		cdc codec.Codec
 	)
-	err := depinject.Inject(clienttestutil.TestConfig, &reg, &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			clienttestutil.TestConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &reg, &cdc)
 	bankModule := bank.AppModuleBasic{}
 
 	require.NoError(t, err)
