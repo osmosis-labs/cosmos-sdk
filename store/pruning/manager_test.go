@@ -253,18 +253,18 @@ func TestLoadPruningHeights(t *testing.T) {
 		getFlushedPruningSnapshotHeights func() []int64
 		expectedResult                   error
 	}{
-		"negative pruningHeight - error": {
+		"negative snapshotPruningHeight - error": {
 			getFlushedPruningSnapshotHeights: func() []int64 {
 				return []int64{5, -2, 3}
 			},
-			expectedResult:        &pruning.NegativeHeightsError{Height: -1},
+			expectedResult: &pruning.NegativeHeightsError{Height: -2},
 		},
-		"negative snapshotPruningHeight - error": {
+		"non-negative - success": {
 			getFlushedPruningSnapshotHeights: func() []int64 {
 				return []int64{5, 0, 3}
 			},
-			expectedResult: &pruning.NegativeHeightsError{Height: -2},
 		},
+
 	}
 
 	for name, tc := range testcases {
