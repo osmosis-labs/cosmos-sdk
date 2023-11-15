@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	db "github.com/cometbft/cometbft-db"
+	db "github.com/cosmos/cosmos-db"
 )
 
 // MockDB is a mock of DB interface.
@@ -417,4 +417,12 @@ func (m *MockIterator) Value() []byte {
 func (mr *MockIteratorMockRecorder) Value() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Value", reflect.TypeOf((*MockIterator)(nil).Value))
+}
+
+// NewBatchWithSize mocks base method.
+func (m *MockDB) NewBatchWithSize(arg0 int) db.Batch {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewBatchWithSize", arg0)
+	ret0, _ := ret[0].(db.Batch)
+	return ret0
 }
