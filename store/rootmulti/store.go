@@ -282,7 +282,7 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	rs.stores = newStores
 
 	// load any pruned heights we missed from disk to be pruned on the next run
-	if err := rs.pruningManager.LoadPruningHeights(rs.db); err != nil {
+	if err := rs.pruningManager.LoadPruningSnapshotHeights(rs.db); err != nil {
 		return err
 	}
 
@@ -1000,12 +1000,7 @@ func (rs *Store) RollbackToVersion(target int64) error {
 			// If the store is wrapped with an inter-block cache, we must first unwrap
 			// it to get the underlying IAVL store.
 			store = rs.GetCommitKVStore(key)
-			var err error
-			if rs.lazyLoading {
-				_, err = store.(*iavl.Store).LazyLoadVersionForOverwriting(target)
-			} else {
-				_, err = store.(*iavl.Store).LoadVersionForOverwriting(target)
-			}
+			err := store.(*iavl.Store).LoadVersionForOverwriting(target)
 			if err != nil {
 				return err
 			}

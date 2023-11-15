@@ -33,7 +33,7 @@ type ReadonlyStore interface {
 	ReverseIterator(start, end []byte) (Iterator, error)
 }
 
-// Iterator aliases github.com/cometbft/cometbft-db.Iterator.
+// Iterator aliases github.com/cosmos/cosmos-db.Iterator.
 type Iterator = dbm.Iterator
 
 // Store is an interface for writing to a kv-store.

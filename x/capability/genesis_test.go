@@ -1,6 +1,8 @@
 package capability_test
 
 import (
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -32,7 +34,13 @@ func (suite *CapabilityTestSuite) TestGenesis() {
 	// create new app that does not share persistent or in-memory state
 	// and initialize app from exported genesis state above.
 	var newKeeper *keeper.Keeper
-	newApp, err := simtestutil.SetupAtGenesis(testutil.AppConfig, &newKeeper)
+	newApp, err := simtestutil.SetupAtGenesis(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
+		&newKeeper,
+	)
 	suite.Require().NoError(err)
 
 	newSk1 := newKeeper.ScopeToModule(banktypes.ModuleName)

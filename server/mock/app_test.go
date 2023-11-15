@@ -14,7 +14,7 @@ import (
 )
 
 func TestInitApp(t *testing.T) {
-	app, closer, err := SetupApp()
+	app, closer, err := SetupApp(t)
 	// closer may need to be run, even when error in later stage
 	if closer != nil {
 		defer closer()
@@ -42,7 +42,7 @@ func TestInitApp(t *testing.T) {
 }
 
 func TestDeliverTx(t *testing.T) {
-	app, closer, err := SetupApp()
+	app, closer, err := SetupApp(t)
 	// closer may need to be run, even when error in later stage
 	if closer != nil {
 		defer closer()

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -19,7 +20,11 @@ import (
 
 func TestRandomizedGenState(t *testing.T) {
 	var cdc codec.Codec
-	err := depinject.Inject(testutil.AppConfig, &cdc)
+	err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 	require.NoError(t, err)
 
 	s := rand.NewSource(1)

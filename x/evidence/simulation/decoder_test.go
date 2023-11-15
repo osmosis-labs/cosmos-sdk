@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
@@ -20,7 +21,11 @@ import (
 func TestDecodeStore(t *testing.T) {
 	var evidenceKeeper keeper.Keeper
 
-	err := depinject.Inject(testutil.AppConfig, &evidenceKeeper)
+	err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &evidenceKeeper)
 	require.NoError(t, err)
 
 	dec := simulation.NewDecodeStore(evidenceKeeper)

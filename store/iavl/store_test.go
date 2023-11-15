@@ -37,13 +37,15 @@ func newAlohaTree(t *testing.T, db dbm.DB) (*iavl.MutableTree, types.CommitID) {
 	tree := iavl.NewMutableTree(dbm.NewMemDB(), 100, false, log.NewNopLogger())
 
 	for k, v := range treeData {
-		tree.Set([]byte(k), []byte(v))
+		_, err := tree.Set([]byte(k), []byte(v))
+		require.NoError(t, err)
 	}
 
 	for i := 0; i < nMoreData; i++ {
 		key := randBytes(12)
 		value := randBytes(50)
-		tree.Set(key, value)
+		_, err := tree.Set(key, value)
+		require.NoError(t, err)
 	}
 
 	hash, ver, err := tree.SaveVersion()
@@ -99,17 +101,17 @@ func TestLoadStore(t *testing.T) {
 	require.Equal(t, string(hcStore.Get([]byte("hello"))), "ciao")
 
 	// Querying a new store at some previous non-pruned height H
-	newHStore, err := LoadStore(db, log.NewNopLogger(), types.NewKVStoreKey("test"), cIDH, false, DefaultIAVLCacheSize, false)
+	newHStore, err := LoadStore(db, log.NewNopLogger(), types.NewKVStoreKey("test"), cIDH, DefaultIAVLCacheSize, false)
 	require.NoError(t, err)
 	require.Equal(t, string(newHStore.Get([]byte("hello"))), "hallo")
 
 	// Querying a new store at some previous pruned height Hp
-	newHpStore, err := LoadStore(db, log.NewNopLogger(), types.NewKVStoreKey("test"), cIDHp, false, DefaultIAVLCacheSize, false)
+	newHpStore, err := LoadStore(db, log.NewNopLogger(), types.NewKVStoreKey("test"), cIDHp, DefaultIAVLCacheSize, false)
 	require.NoError(t, err)
 	require.Equal(t, string(newHpStore.Get([]byte("hello"))), "hola")
 
 	// Querying a new store at current height H
-	newHcStore, err := LoadStore(db, log.NewNopLogger(), types.NewKVStoreKey("test"), cIDHc, false, DefaultIAVLCacheSize, false)
+	newHcStore, err := LoadStore(db, log.NewNopLogger(), types.NewKVStoreKey("test"), cIDHc, DefaultIAVLCacheSize, false)
 	require.NoError(t, err)
 	require.Equal(t, string(newHcStore.Get([]byte("hello"))), "ciao")
 }
@@ -374,8 +376,7 @@ func TestIAVLPrefixIterator(t *testing.T) {
 
 func TestIAVLReversePrefixIterator(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, err := iavl.NewMutableTree(db, cacheSize, false)
-	require.NoError(t, err)
+	tree := iavl.NewMutableTree(db, cacheSize, false, log.NewNopLogger())
 
 	iavlStore := UnsafeNewStore(tree)
 
@@ -442,8 +443,7 @@ func nextVersion(iavl *Store) {
 
 func TestIAVLNoPrune(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, err := iavl.NewMutableTree(db, cacheSize, false)
-	require.NoError(t, err)
+	tree := iavl.NewMutableTree(db, cacheSize, false, log.NewNopLogger())
 
 	iavlStore := UnsafeNewStore(tree)
 	nextVersion(iavlStore)

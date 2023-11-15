@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -17,7 +18,11 @@ import (
 
 func TestMigration(t *testing.T) {
 	var cdc codec.Codec
-	depinject.Inject(feegranttestutil.AppConfig, &cdc)
+	depinject.Inject(
+		depinject.Configs(
+			feegranttestutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 
 	feegrantKey := sdk.NewKVStoreKey(v2.ModuleName)
 	ctx := testutil.DefaultContext(feegrantKey, sdk.NewTransientStoreKey("transient_test"))

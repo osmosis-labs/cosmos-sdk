@@ -2,7 +2,6 @@ package pruning
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -80,7 +79,7 @@ Supported app-db-backend types include 'goleveldb', 'rocksdb', 'pebbledb'.`,
 				return err
 			}
 
-			logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+			logger := log.NewLogger(cmd.OutOrStdout())
 			app := appCreator(logger, db, nil, vp)
 			cms := app.CommitMultiStore()
 
@@ -94,19 +93,10 @@ Supported app-db-backend types include 'goleveldb', 'rocksdb', 'pebbledb'.`,
 				return fmt.Errorf("the database has no valid heights to prune, the latest height: %v", latestHeight)
 			}
 
-			var pruningHeights []int64
-			for height := int64(1); height < latestHeight; height++ {
-				if height < latestHeight-int64(pruningOptions.KeepRecent) {
-					pruningHeights = append(pruningHeights, height)
-				}
-			}
-			if len(pruningHeights) == 0 {
-				cmd.Println("no heights to prune")
-				return nil
-			}
-			cmd.Printf("pruning heights start from %v, end at %v\n", pruningHeights[0], pruningHeights[len(pruningHeights)-1])
+			pruningHeight := latestHeight - int64(pruningOptions.KeepRecent)
+			cmd.Printf("pruning heights up to %v\n", pruningHeight)
 
-			if err = rootMultiStore.PruneStores(false, pruningHeights); err != nil {
+			if err = rootMultiStore.PruneStores(pruningHeight); err != nil {
 				return err
 			}
 

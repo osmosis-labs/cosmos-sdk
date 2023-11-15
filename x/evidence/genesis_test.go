@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -29,7 +31,11 @@ type GenesisTestSuite struct {
 func (suite *GenesisTestSuite) SetupTest() {
 	var evidenceKeeper keeper.Keeper
 
-	app, err := simtestutil.Setup(testutil.AppConfig, &evidenceKeeper)
+	app, err := simtestutil.Setup(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &evidenceKeeper)
 	require.NoError(suite.T(), err)
 
 	suite.ctx = app.BaseApp.NewContext(false, tmproto.Header{Height: 1})

@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	clienttx "github.com/cosmos/cosmos-sdk/client/tx"
@@ -44,7 +45,11 @@ func TestBuilderWithAux(t *testing.T) {
 		txConfig          client.TxConfig
 	)
 
-	err := depinject.Inject(testutil.AppConfig,
+	err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		),
 		&interfaceRegistry,
 		&txConfig,
 	)

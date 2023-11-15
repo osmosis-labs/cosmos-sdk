@@ -10,6 +10,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
@@ -72,7 +73,11 @@ func TestBaseSequence(t *testing.T) {
 func TestBaseAccountMarshal(t *testing.T) {
 	var accountKeeper authkeeper.AccountKeeper
 
-	err := depinject.Inject(testutil.AppConfig, &accountKeeper)
+	err := depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &accountKeeper)
 	require.NoError(t, err)
 	_, pub, addr := testdata.KeyTestPubAddr()
 	acc := types.NewBaseAccountWithAddress(addr)

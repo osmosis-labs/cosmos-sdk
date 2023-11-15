@@ -11,10 +11,10 @@ import (
 
 // SetupApp returns an application as well as a clean-up function to be used to
 // quickly setup a test case with an app.
-func SetupApp() (abci.Application, func(), error) {
+func SetupApp(t *testing.T) (abci.Application, func(), error) {
 	var logger tmlog.Logger
 	if testing.Verbose() {
-		logger = tmlog.NewTMLogger(tmlog.NewSyncWriter(os.Stdout)).With("module", "mock")
+		logger = tmlog.NewTestLogger(t).With("module", "mock")
 	} else {
 		logger = tmlog.NewNopLogger()
 	}

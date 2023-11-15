@@ -3,8 +3,8 @@ package types_test
 import (
 	"testing"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/store/iavl"

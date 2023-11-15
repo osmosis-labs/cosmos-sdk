@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	proto "github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/require"
@@ -55,7 +56,11 @@ func TestValidateGenesisDuplicateAccounts(t *testing.T) {
 
 func TestGenesisAccountIterator(t *testing.T) {
 	var cdc codec.Codec
-	depinject.Inject(testutil.AppConfig, &cdc)
+	depinject.Inject(
+		depinject.Configs(
+			testutil.AppConfig,
+			depinject.Supply(log.NewNopLogger()),
+		), &cdc)
 
 	acc1 := types.NewBaseAccountWithAddress(sdk.AccAddress(addr1))
 	acc2 := types.NewBaseAccountWithAddress(sdk.AccAddress(addr2))
