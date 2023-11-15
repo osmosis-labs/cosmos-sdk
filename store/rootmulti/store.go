@@ -29,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/transient"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/store/wrapper"
 )
 
 const (
@@ -64,7 +65,6 @@ type Store struct {
 	storesParams        map[types.StoreKey]storeParams
 	stores              map[types.StoreKey]types.CommitKVStore
 	keysByName          map[string]types.StoreKey
-	lazyLoading         bool
 	initialVersion      int64
 	removalMap          map[types.StoreKey]bool
 	traceWriter         io.Writer
@@ -95,7 +95,7 @@ func NewStore(db dbm.DB, logger log.Logger) *Store {
 		keysByName:          make(map[string]types.StoreKey),
 		listeners:           make(map[types.StoreKey][]types.WriteListener),
 		removalMap:          make(map[types.StoreKey]bool),
-		pruningManager:      pruning.NewManager(db, logger),
+		pruningManager:      pruning.NewManager(wrapper.NewCosmosDB(db), logger),
 	}
 }
 
@@ -123,11 +123,6 @@ func (rs *Store) SetIAVLCacheSize(cacheSize int) {
 
 func (rs *Store) SetIAVLDisableFastNode(disableFastNode bool) {
 	rs.iavlDisableFastNode = disableFastNode
-}
-
-// SetLazyLoading sets if the iavl store should be loaded lazily or not
-func (rs *Store) SetLazyLoading(lazyLoading bool) {
-	rs.lazyLoading = lazyLoading
 }
 
 // GetStoreType implements Store.
@@ -287,8 +282,8 @@ func (rs *Store) loadVersion(ver int64, upgrades *types.StoreUpgrades) error {
 	rs.lastCommitInfo = cInfo
 	rs.stores = newStores
 
-	// load any pruned heights we missed from disk to be pruned on the next run
-	if err := rs.pruningManager.LoadPruningHeights(rs.db); err != nil {
+	// load any snapshot heights we missed from disk to be pruned on the next run
+	if err := rs.pruningManager.LoadSnapshotHeights(wrapper.NewCosmosDB(rs.db)); err != nil {
 		return err
 	}
 
@@ -335,9 +330,8 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 }
 
 // PruneSnapshotHeight prunes the given height according to the prune strategy.
-// If PruneNothing, this is a no-op.
-// If other strategy, this height is persisted until it is
-// less than <current height> - KeepRecent and <current height> % Interval == 0
+// If the strategy is PruneNothing, this is a no-op.
+// For other strategies, this height is persisted until the snapshot is operated.
 func (rs *Store) PruneSnapshotHeight(height int64) {
 	rs.pruningManager.HandleHeightSnapshot(height)
 }
@@ -594,38 +588,22 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
-	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
-	if !rs.pruningManager.ShouldPruneAtHeight(version) {
-		return nil
-	}
+	pruneHeight := rs.pruningManager.GetPruningHeight(version)
 	rs.logger.Info("prune start", "height", version)
 	defer rs.logger.Info("prune end", "height", version)
-	return rs.PruneStores(true, nil)
+	return rs.PruneStores(pruneHeight)
 }
 
 // PruneStores prunes the specific heights of the multi store.
 // If clearPruningManager is true, the pruning manager will return the pruning heights,
 // and they are appended to the pruningHeights to be pruned.
-func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (err error) {
-	if clearPruningManager {
-		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
-		if err != nil {
-			return err
-		}
-
-		if len(heights) == 0 {
-			rs.logger.Debug("no heights to be pruned from pruning manager")
-		}
-
-		pruningHeights = append(pruningHeights, heights...)
-	}
-
-	if len(pruningHeights) == 0 {
-		rs.logger.Debug("no heights need to be pruned")
+func (rs *Store) PruneStores(pruningHeight int64) (err error) {
+	if pruningHeight <= 0 {
+		rs.logger.Debug("pruning skipped, height is less than or equal to 0")
 		return nil
 	}
 
-	rs.logger.Debug("pruning store", "heights", pruningHeights)
+	rs.logger.Debug("pruning store", "heights", pruningHeight)
 
 	for key, store := range rs.stores {
 		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
@@ -638,14 +616,16 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 
 		store = rs.GetCommitKVStore(key)
 
-		err := store.(*iavl.Store).DeleteVersions(pruningHeights...)
+		err := store.(*iavl.Store).DeleteVersionsTo(pruningHeight)
 		if err == nil {
 			continue
 		}
 
-		if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
+		if errors.Is(err, iavltree.ErrVersionDoesNotExist) {
 			return err
 		}
+
+		rs.logger.Error("failed to prune store", "key", key, "err", err)
 	}
 	return nil
 }
@@ -950,9 +930,9 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		var err error
 
 		if params.initialVersion == 0 {
-			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.lazyLoading, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.iavlCacheSize, rs.iavlDisableFastNode)
 		} else {
-			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, rs.lazyLoading, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
 		}
 
 		if err != nil {
@@ -1022,12 +1002,8 @@ func (rs *Store) RollbackToVersion(target int64) error {
 			// If the store is wrapped with an inter-block cache, we must first unwrap
 			// it to get the underlying IAVL store.
 			store = rs.GetCommitKVStore(key)
-			var err error
-			if rs.lazyLoading {
-				_, err = store.(*iavl.Store).LazyLoadVersionForOverwriting(target)
-			} else {
-				_, err = store.(*iavl.Store).LoadVersionForOverwriting(target)
-			}
+
+			_, err := store.(*iavl.Store).LoadVersionForOverwriting(target)
 			if err != nil {
 				return err
 			}
