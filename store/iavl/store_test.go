@@ -36,7 +36,8 @@ func randBytes(numBytes int) []byte {
 
 // make a tree with data from above and save it
 func newAlohaTree(t *testing.T, db dbm.DB) (*iavl.MutableTree, types.CommitID) {
-	dbt := wrapper.NewCosmosDB(dbm.NewMemDB())
+	t.Helper()
+	dbt := wrapper.NewCosmosDB(db)
 	tree := iavl.NewMutableTree(dbt, cacheSize, false, sdklog.NewTestLogger(t))
 
 	for k, v := range treeData {
