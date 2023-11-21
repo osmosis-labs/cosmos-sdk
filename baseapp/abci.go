@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cosmos/gogoproto/proto"
+	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"google.golang.org/grpc/codes"
@@ -19,6 +19,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
+	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -43,8 +44,6 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	// req.InitialHeight is 1 by default.
 	initHeader := tmproto.Header{ChainID: req.ChainId, Time: req.Time}
 
-	app.logger.Info("InitChain", "initialHeight", req.InitialHeight, "chainID", req.ChainId)
-
 	// If req.InitialHeight is > 1, then we set the initial version in the
 	// stores.
 	if req.InitialHeight > 1 {
@@ -56,11 +55,9 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 		}
 	}
 
-	// initialize states with a correct header
+	// initialize the deliver state and check state with a correct header
 	app.setDeliverState(initHeader)
 	app.setCheckState(initHeader)
-	app.setPrepareProposalState(initHeader)
-	app.setProcessProposalState(initHeader)
 
 	if err := app.SetAppVersion(initialAppVersion); err != nil {
 		panic(err)
@@ -70,10 +67,10 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	// done after the deliver state and context have been set as it's persisted
 	// to state.
 	if req.ConsensusParams != nil {
-		// When InitChain is called, the app version should either be absent and
-		// determined by the application or set to 0. Panic if it's not.
-		if req.ConsensusParams.Version != nil && req.ConsensusParams.Version.App != initialAppVersion {
-			panic(AppVersionError{Actual: req.ConsensusParams.Version.App, Initial: initialAppVersion})
+		// When InitChain is called, the app version should either be absent and determined by the application
+		// or set to 0. Panic if it's not.
+		if req.ConsensusParams.Version != nil && req.ConsensusParams.Version.AppVersion != initialAppVersion {
+			panic(AppVersionError{Actual: req.ConsensusParams.Version.AppVersion, Initial: initialAppVersion})
 		}
 
 		app.StoreConsensusParams(app.deliverState.ctx, req.ConsensusParams)
@@ -151,6 +148,12 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 	}
 }
 
+// SetOption implements the ABCI interface.
+func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOption) {
+	// TODO: Implement!
+	return
+}
+
 // FilterPeerByAddrPort filters peers by address/port.
 func (app *BaseApp) FilterPeerByAddrPort(info string) abci.ResponseQuery {
 	if app.addrPeerFilter != nil {
@@ -198,20 +201,21 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 
 	// add block gas meter
 	var gasMeter sdk.GasMeter
-	if maxGas := app.GetMaximumBlockGas(app.deliverState.ctx); maxGas > 0 {
+	if maxGas := app.getMaximumBlockGas(app.deliverState.ctx); maxGas > 0 {
 		gasMeter = sdk.NewGasMeter(maxGas)
 	} else {
 		gasMeter = sdk.NewInfiniteGasMeter()
 	}
 
 	// NOTE: header hash is not set in NewContext, so we manually set it here
+
 	app.deliverState.ctx = app.deliverState.ctx.
 		WithBlockGasMeter(gasMeter).
 		WithHeaderHash(req.Hash).
 		WithConsensusParams(app.GetConsensusParams(app.deliverState.ctx))
 
-	// We also set block gas meter to checkState in case the application needs to
-	// verify gas consumption during (Re)CheckTx.
+	// we also set block gas meter to checkState in case the application needs to
+	// verify gas consumption during (Re)CheckTx
 	if app.checkState != nil {
 		app.checkState.ctx = app.checkState.ctx.
 			WithBlockGasMeter(gasMeter).
@@ -245,59 +249,6 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	}
 
 	return res
-}
-
-// PrepareProposal implements the PrepareProposal ABCI method and returns a
-// ResponsePrepareProposal object to the client. The PrepareProposal method is
-// responsible for allowing the block proposer to perform application-dependent
-// work in a block before proposing it.
-//
-// Transactions can be modified, removed, or added by the application. Since the
-// application maintains its own local mempool, it will ignore the transactions
-// provided to it in RequestPrepareProposal. Instead, it will determine which
-// transactions to return based on the mempool's semantics and the MaxTxBytes
-// provided by the client's request.
-//
-// Note, there is no need to execute the transactions for validity as they have
-// already passed CheckTx.
-//
-// Ref: https://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-060-abci-1.0.md
-// Ref: https://github.com/tendermint/tendermint/blob/main/spec/abci/abci%2B%2B_basic_concepts.md
-func (app *BaseApp) PrepareProposal(req abci.RequestPrepareProposal) abci.ResponsePrepareProposal {
-	ctx := app.getContextForTx(runTxPrepareProposal, []byte{})
-	if app.prepareProposal == nil {
-		panic("PrepareProposal method not set")
-	}
-
-	return app.prepareProposal(ctx, req)
-}
-
-// ProcessProposal implements the ProcessProposal ABCI method and returns a
-// ResponseProcessProposal object to the client. The ProcessProposal method is
-// responsible for allowing execution of application-dependent work in a proposed
-// block. Note, the application defines the exact implementation details of
-// ProcessProposal. In general, the application must at the very least ensure
-// that all transactions are valid. If all transactions are valid, then we inform
-// Tendermint that the Status is ACCEPT. However, the application is also able
-// to implement optimizations such as executing the entire proposed block
-// immediately. It may even execute the block in parallel.
-//
-// Ref: https://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-060-abci-1.0.md
-// Ref: https://github.com/tendermint/tendermint/blob/main/spec/abci/abci%2B%2B_basic_concepts.md
-func (app *BaseApp) ProcessProposal(req abci.RequestProcessProposal) abci.ResponseProcessProposal {
-	if app.processProposal == nil {
-		panic("app.ProcessProposal is not set")
-	}
-
-	ctx := app.processProposalState.ctx.
-		WithVoteInfos(app.voteInfos).
-		WithBlockHeight(req.Height).
-		WithBlockTime(req.Time).
-		WithHeaderHash(req.Hash).
-		WithProposer(req.ProposerAddress).
-		WithConsensusParams(app.GetConsensusParams(app.processProposalState.ctx))
-
-	return app.processProposal(ctx, req)
 }
 
 // CheckTx implements the ABCI interface and executes a tx in CheckTx mode. In
@@ -386,6 +337,12 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	// The write to the DeliverTx state writes all state transitions to the root
 	// MultiStore (app.cms) so when Commit() is called is persists those values.
 	app.deliverState.ms.Write()
+
+	rms, ok := app.cms.(*rootmulti.Store)
+	if ok {
+		rms.SetCommitHeader(header)
+	}
+
 	commitID := app.cms.Commit()
 
 	// Reset the Check state to the latest committed.
@@ -393,8 +350,6 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	// NOTE: This is safe because Tendermint holds a lock on the mempool for
 	// Commit. Use the header from this latest block.
 	app.setCheckState(header)
-	app.setPrepareProposalState(header)
-	app.setProcessProposalState(header)
 
 	// empty/reset the deliver state
 	app.deliverState = nil
@@ -464,6 +419,10 @@ func (app *BaseApp) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	// when a client did not provide a query height, manually inject the latest
 	if req.Height == 0 {
 		req.Height = app.LastBlockHeight()
+	}
+
+	if req.Path == "/cosmos.tx.v1beta1.Service/BroadcastTx" {
+		return sdkerrors.QueryResultWithDebug(sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "can't route a broadcast tx message"), app.trace)
 	}
 
 	// handle gRPC routes first rather than calling splitPath because '/' characters
@@ -619,10 +578,28 @@ func (app *BaseApp) ApplySnapshotChunk(req abci.RequestApplySnapshotChunk) abci.
 	}
 }
 
+// This comes from ICA, and is made out of an abundance of caution.
+// Should be deleted during the next Osmosis major release, as we don't need this extra safety check.
+var stateMachineQueryList = []string{"/ibc.applications.transfer.v1.Query/DenomTrace", "/cosmos.auth.v1beta1.Query/Account", "/cosmos.auth.v1beta1.Query/Params", "/cosmos.bank.v1beta1.Query/Balance", "/cosmos.bank.v1beta1.Query/DenomMetadata", "/cosmos.bank.v1beta1.Query/Params", "/cosmos.bank.v1beta1.Query/SupplyOf", "/cosmos.distribution.v1beta1.Query/Params", "/cosmos.distribution.v1beta1.Query/DelegatorWithdrawAddress", "/cosmos.distribution.v1beta1.Query/ValidatorCommission", "/cosmos.gov.v1beta1.Query/Deposit", "/cosmos.gov.v1beta1.Query/Params", "/cosmos.gov.v1beta1.Query/Vote", "/cosmos.slashing.v1beta1.Query/Params", "/cosmos.slashing.v1beta1.Query/SigningInfo", "/cosmos.staking.v1beta1.Query/Delegation", "/cosmos.staking.v1beta1.Query/Params", "/cosmos.staking.v1beta1.Query/Validator", "/osmosis.epochs.v1beta1.Query/EpochInfos", "/osmosis.epochs.v1beta1.Query/CurrentEpoch", "/osmosis.gamm.v1beta1.Query/NumPools", "/osmosis.gamm.v1beta1.Query/TotalLiquidity", "/osmosis.gamm.v1beta1.Query/Pool", "/osmosis.gamm.v1beta1.Query/PoolParams", "/osmosis.gamm.v1beta1.Query/TotalPoolLiquidity", "/osmosis.gamm.v1beta1.Query/TotalShares", "/osmosis.gamm.v1beta1.Query/CalcJoinPoolShares", "/osmosis.gamm.v1beta1.Query/CalcExitPoolCoinsFromShares", "/osmosis.gamm.v1beta1.Query/CalcJoinPoolNoSwapShares", "/osmosis.gamm.v1beta1.Query/PoolType", "/osmosis.gamm.v2.Query/SpotPrice", "/osmosis.gamm.v1beta1.Query/EstimateSwapExactAmountIn", "/osmosis.gamm.v1beta1.Query/EstimateSwapExactAmountOut", "/osmosis.incentives.Query/ModuleToDistributeCoins", "/osmosis.incentives.Query/LockableDurations", "/osmosis.lockup.Query/ModuleBalance", "/osmosis.lockup.Query/ModuleLockedAmount", "/osmosis.lockup.Query/AccountUnlockableCoins", "/osmosis.lockup.Query/AccountUnlockingCoins", "/osmosis.lockup.Query/LockedDenom", "/osmosis.lockup.Query/LockedByID", "/osmosis.lockup.Query/NextLockID", "/osmosis.mint.v1beta1.Query/EpochProvisions", "/osmosis.mint.v1beta1.Query/Params", "/osmosis.poolincentives.v1beta1.Query/GaugeIds", "/osmosis.superfluid.Query/Params", "/osmosis.superfluid.Query/AssetType", "/osmosis.superfluid.Query/AllAssets", "/osmosis.superfluid.Query/AssetMultiplier", "/osmosis.poolmanager.v1beta1.Query/NumPools", "/osmosis.poolmanager.v1beta1.Query/EstimateSwapExactAmountIn", "/osmosis.poolmanager.v1beta1.Query/EstimateSwapExactAmountOut", "/osmosis.txfees.v1beta1.Query/FeeTokens", "/osmosis.txfees.v1beta1.Query/DenomSpotPrice", "/osmosis.txfees.v1beta1.Query/DenomPoolId", "/osmosis.txfees.v1beta1.Query/BaseDenom", "/osmosis.tokenfactory.v1beta1.Query/Params", "/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata", "/osmosis.twap.v1beta1.Query/ArithmeticTwap", "/osmosis.twap.v1beta1.Query/ArithmeticTwapToNow", "/osmosis.twap.v1beta1.Query/GeometricTwap", "/osmosis.twap.v1beta1.Query/GeometricTwapToNow", "/osmosis.twap.v1beta1.Query/Params", "/osmosis.downtimedetector.v1beta1.Query/RecoveredSinceDowntimeOfLength"}
+
+func queryListContainsReq(req abci.RequestQuery) bool {
+	for _, query := range stateMachineQueryList {
+		if req.Path == query {
+			return true
+		}
+	}
+	return false
+}
+
 func (app *BaseApp) handleQueryGRPC(handler GRPCQueryHandler, req abci.RequestQuery) abci.ResponseQuery {
-	ctx, err := app.CreateQueryContext(req.Height, req.Prove)
+	ctx, err := app.createQueryContext(req.Height, req.Prove)
 	if err != nil {
 		return sdkerrors.QueryResultWithDebug(err, app.trace)
+	}
+	// use infinite gas metering for potential state machine queries
+	// delete in next major release
+	if queryListContainsReq(req) {
+		ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
 	}
 
 	res, err := handler(ctx, req)
@@ -666,9 +643,9 @@ func checkNegativeHeight(height int64) error {
 	return nil
 }
 
-// CreateQueryContext creates a new sdk.Context for a query, taking as args
+// createQueryContext creates a new sdk.Context for a query, taking as args
 // the block height and whether the query needs a proof or not.
-func (app *BaseApp) CreateQueryContext(height int64, prove bool) (sdk.Context, error) {
+func (app *BaseApp) createQueryContext(height int64, prove bool) (sdk.Context, error) {
 	if err := checkNegativeHeight(height); err != nil {
 		return sdk.Context{}, err
 	}
@@ -700,10 +677,26 @@ func (app *BaseApp) CreateQueryContext(height int64, prove bool) (sdk.Context, e
 		return sdk.Context{}, fmt.Errorf("failed to load cache multi store for height %d: %w", height, err)
 	}
 
+	gasLimit := app.queryGasLimit
+	// arbitrarily declare that historical queries cause 2x gas load.
+	if height != lastBlockHeight {
+		gasLimit /= 2
+	}
+
 	// branch the commit-multistore for safety
 	ctx := sdk.NewContext(
 		cacheMS, app.checkState.ctx.BlockHeader(), true, app.logger,
-	).WithMinGasPrices(app.minGasPrices).WithBlockHeight(height)
+	).WithMinGasPrices(app.minGasPrices).WithBlockHeight(height).WithGasMeter(sdk.NewGasMeter(gasLimit))
+
+	if height != lastBlockHeight {
+		rms, ok := app.cms.(*rootmulti.Store)
+		if ok {
+			cInfo, err := rms.GetCommitInfoFromDB(height)
+			if cInfo != nil && err == nil {
+				ctx = ctx.WithBlockTime(cInfo.Timestamp)
+			}
+		}
+	}
 
 	return ctx, nil
 }
@@ -949,7 +942,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) abci.
 		return sdkerrors.QueryResultWithDebug(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "no custom querier found for route %s", path[1]), app.trace)
 	}
 
-	ctx, err := app.CreateQueryContext(req.Height, req.Prove)
+	ctx, err := app.createQueryContext(req.Height, req.Prove)
 	if err != nil {
 		return sdkerrors.QueryResultWithDebug(err, app.trace)
 	}

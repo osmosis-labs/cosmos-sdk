@@ -2,6 +2,7 @@ package rootmulti
 
 import (
 	"fmt"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"io"
 	"math"
 	"sort"
@@ -9,17 +10,16 @@ import (
 	"strings"
 	"sync"
 
-	protoio "github.com/cosmos/gogoproto/io"
-	gogotypes "github.com/cosmos/gogoproto/types"
+	"github.com/cosmos/cosmos-sdk/pruning"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	iavltree "github.com/cosmos/iavl"
+	protoio "github.com/gogo/protobuf/io"
+	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/proto/tendermint/crypto"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/cosmos/cosmos-sdk/pruning"
-	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store/cachemulti"
@@ -70,7 +70,8 @@ type Store struct {
 
 	interBlockCache types.MultiStorePersistentCache
 
-	listeners map[types.StoreKey][]types.WriteListener
+	listeners    map[types.StoreKey][]types.WriteListener
+	commitHeader tmproto.Header
 }
 
 var (
@@ -419,6 +420,7 @@ func (rs *Store) Commit() types.CommitID {
 	}
 
 	newCommitInfo := rs.commitStores(version, rs.stores)
+	newCommitInfo.Timestamp = rs.commitHeader.Time
 	rs.updateLatestCommitInfo(newCommitInfo, version)
 
 	err := rs.handlePruning(version)
@@ -435,6 +437,11 @@ func (rs *Store) Commit() types.CommitID {
 		Version: version,
 		Hash:    hash,
 	}
+}
+
+// SetCommitHeader sets the commit block header of the store.
+func (rs *Store) SetCommitHeader(h tmproto.Header) {
+	rs.commitHeader = h
 }
 
 // CacheWrap implements CacheWrapper/Store/CommitStore.

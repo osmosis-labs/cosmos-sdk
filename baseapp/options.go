@@ -3,6 +3,7 @@ package baseapp
 import (
 	"fmt"
 	"io"
+	"math"
 
 	dbm "github.com/tendermint/tm-db"
 
@@ -12,7 +13,6 @@ import (
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/mempool"
 )
 
 // File for storing in-package BaseApp optional functions,
@@ -31,6 +31,15 @@ func SetMinGasPrices(gasPricesStr string) func(*BaseApp) {
 	}
 
 	return func(bapp *BaseApp) { bapp.setMinGasPrices(gasPrices) }
+}
+
+// SetQueryGasLimit returns an option that sets a gas limit for queries.
+func SetQueryGasLimit(queryGasLimit uint64) func(*BaseApp) {
+	if queryGasLimit == 0 {
+		queryGasLimit = math.MaxUint64
+	}
+
+	return func(bapp *BaseApp) { bapp.queryGasLimit = queryGasLimit }
 }
 
 // SetHaltHeight returns a BaseApp option function that sets the halt block height.
@@ -74,21 +83,6 @@ func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {
 // SetSnapshot sets the snapshot store.
 func SetSnapshot(snapshotStore *snapshots.Store, opts snapshottypes.SnapshotOptions) func(*BaseApp) {
 	return func(app *BaseApp) { app.SetSnapshot(snapshotStore, opts) }
-}
-
-// SetPrepareProposal sets the PrepareProposal handler on the BaseApp.
-func SetPrepareProposal(handler sdk.PrepareProposalHandler) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetPrepareProposal(handler) }
-}
-
-// SetProcessProposal sets the ProcessProposal handler on the BaseApp.
-func SetProcessProposal(handler sdk.ProcessProposalHandler) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetProcessProposal(handler) }
-}
-
-// SetMempool sets the mempool on BaseApp.
-func SetMempool(mempool mempool.Mempool) func(*BaseApp) {
-	return func(app *BaseApp) { app.SetMempool(mempool) }
 }
 
 func (app *BaseApp) SetName(name string) {
@@ -141,7 +135,7 @@ func (app *BaseApp) SetDB(db dbm.DB) {
 
 func (app *BaseApp) SetCMS(cms store.CommitMultiStore) {
 	if app.sealed {
-		panic("SetCMS() on sealed BaseApp")
+		panic("SetEndBlocker() on sealed BaseApp")
 	}
 
 	app.cms = cms
@@ -252,50 +246,4 @@ func (app *BaseApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
 	app.interfaceRegistry = registry
 	app.grpcQueryRouter.SetInterfaceRegistry(registry)
 	app.msgServiceRouter.SetInterfaceRegistry(registry)
-}
-
-// SetMempool sets the application's mempool.
-func (app *BaseApp) SetMempool(m mempool.Mempool) {
-	if app.sealed {
-		panic("SetMempool() called on sealed BaseApp")
-	}
-
-	app.mempool = m
-}
-
-// SetTxDecoder sets the TxDecoder if it wasn't provided in the BaseApp constructor.
-func (app *BaseApp) SetTxDecoder(txDecoder sdk.TxDecoder) {
-	if app.sealed {
-		panic("SetTxDecoder() on sealed BaseApp")
-	}
-
-	app.txDecoder = txDecoder
-}
-
-// SetTxEncoder sets the TxEncoder if it wasn't provided in the BaseApp
-// constructor.
-func (app *BaseApp) SetTxEncoder(txEncoder sdk.TxEncoder) {
-	if app.sealed {
-		panic("SetTxEncoder() on sealed BaseApp")
-	}
-
-	app.txEncoder = txEncoder
-}
-
-// SetPrepareProposal sets the prepare proposal function for the BaseApp.
-func (app *BaseApp) SetPrepareProposal(handler sdk.PrepareProposalHandler) {
-	if app.sealed {
-		panic("SetPrepareProposal() on sealed BaseApp")
-	}
-
-	app.prepareProposal = handler
-}
-
-// SetProcessProposal sets the process proposal function for the BaseApp.
-func (app *BaseApp) SetProcessProposal(handler sdk.ProcessProposalHandler) {
-	if app.sealed {
-		panic("SetProcessProposal() on sealed BaseApp")
-	}
-
-	app.processProposal = handler
 }

@@ -128,6 +128,15 @@ func (s msgServer) CreateClawbackVestingAccount(goCtx context.Context, msg *type
 		lockupCoins = lockupCoins.Add(period.Amount...)
 	}
 
+	if err := lockupCoins.Validate(); err != nil {
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrInvalidCoins, "lockup coins %s are invalid: %v", lockupCoins, err)
+	}
+	if err := vestingCoins.Validate(); err != nil {
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrInvalidCoins, "vesting coins %s are invalid: %v", vestingCoins, err)
+	}
+
 	// if lockup absent, default to an instant unlock schedule
 	lockupPeriods := msg.LockupPeriods
 	vestingPeriods := msg.VestingPeriods
