@@ -2,13 +2,14 @@ package rootmulti
 
 import (
 	"fmt"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"io"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/pruning"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
@@ -953,7 +954,7 @@ func (rs *Store) commitStores(version int64, storeMap map[types.StoreKey]types.C
 
 	for key, store := range storeMap {
 		commitID := store.Commit()
-		rs.logger.Debug("committed KVStore", "height", commitID.Version, "key", key.Name(), "commit_store_hash", fmt.Sprintf("%X", commitID.Hash))
+		rs.logger.Info("committed KVStore", "height", commitID.Version, "key", key.Name(), "commit_store_hash", fmt.Sprintf("%X", commitID.Hash))
 
 		if store.GetStoreType() == types.StoreTypeTransient {
 			continue
