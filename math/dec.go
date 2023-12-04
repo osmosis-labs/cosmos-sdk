@@ -862,11 +862,12 @@ func (d *LegacyDec) Unmarshal(data []byte) error {
 
 	fmt.Println("MATH data: ", string(data))
 	fmt.Println("MATH data len: ", len(data))
-	fmt.Println("MATH d.i: ", d.i.String())
 
 	if err := d.i.UnmarshalText(data); err != nil {
 		return err
 	}
+
+	fmt.Println("MATH d.i: ", d.i.String())
 
 	if d.i.BitLen() > maxDecBitLen {
 		return fmt.Errorf("decimal out of range; got: %d, max: %d", d.i.BitLen(), maxDecBitLen)
