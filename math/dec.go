@@ -856,17 +856,18 @@ func (d *LegacyDec) Unmarshal(data []byte) error {
 	}
 
 	if d.i == nil {
-		fmt.Println("d.i is nil")
+		fmt.Println("MATH d.i is nil")
 		d.i = new(big.Int)
 	}
+
+	fmt.Println("MATH data: ", string(data))
+	fmt.Println("MATH data len: ", len(data))
+	fmt.Println("MATH d.i: ", d.i.String())
 
 	if err := d.i.UnmarshalText(data); err != nil {
 		return err
 	}
 
-	fmt.Println("data: ", string(data))
-	fmt.Println("data len: ", len(data))
-	fmt.Println("d.i: ", d.i.String())
 	if d.i.BitLen() > maxDecBitLen {
 		return fmt.Errorf("decimal out of range; got: %d, max: %d", d.i.BitLen(), maxDecBitLen)
 	}
