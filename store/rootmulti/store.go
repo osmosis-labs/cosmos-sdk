@@ -1138,6 +1138,8 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitKVStore
 			commitID = store.Commit()
 		}
 
+		fmt.Printf("committing KVStore: %s, version: %d, commitID: %v\n", key.Name(), version, commitID)
+
 		storeType := store.GetStoreType()
 		if storeType == types.StoreTypeTransient || storeType == types.StoreTypeMemory {
 			continue
