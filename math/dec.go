@@ -858,6 +858,9 @@ func (d *LegacyDec) Unmarshal(data []byte) error {
 	if d.i == nil {
 		fmt.Println("MATH d.i is nil")
 		d.i = new(big.Int)
+	} else {
+		fmt.Println("MATH d.i is not nil: " + d.i.String())
+
 	}
 
 	fmt.Println("MATH data: ", string(data))
