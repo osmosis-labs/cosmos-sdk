@@ -208,7 +208,7 @@ func (k BaseSendKeeper) SendCoinsWithoutBlockHook(ctx sdk.Context, fromAddr sdk.
 // SendCoins transfers amt coins from a sending account to a receiving account.
 // An error is returned upon failure.
 func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	ctx.Logger().Error("Sendcoins has been called with: %s", amt.String())
+	ctx.Logger().Error("Sendcoins has been called with: " + amt.String())
 	// BlockBeforeSend hook should always be called before the TrackBeforeSend hook.
 	err := k.BlockBeforeSend(ctx, fromAddr, toAddr, amt)
 	if err != nil {
@@ -220,7 +220,7 @@ func (k BaseSendKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAd
 
 // sendCoins has the internal logic for sending coins.
 func (k BaseSendKeeper) sendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
-	ctx.Logger().Error("inner method sendCoins has been called with: %s", amt.String())
+	ctx.Logger().Error("inner method sendCoins has been called with:" + amt.String())
 	// call the TrackBeforeSend hooks
 	k.TrackBeforeSend(ctx, fromAddr, toAddr, amt)
 
