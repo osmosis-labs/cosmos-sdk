@@ -869,7 +869,7 @@ func (d *LegacyDec) Unmarshal(data []byte) error {
 	defer func() {
 		r := recover()
 		if r != nil {
-			fmt.Println("MATH recover data: ", data)
+			fmt.Println("MATH recover data: ", string(data))
 			if d.i == nil {
 				fmt.Println("MATH recover d.i is nil")
 			} else {
