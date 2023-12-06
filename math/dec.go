@@ -888,7 +888,7 @@ func (d *LegacyDec) Unmarshal(data []byte) error {
 
 	if d.i == nil {
 		fmt.Println("AFTER UNMARSHAL: MATH d.i is nil")
-		fmt.Println("AFTER UNMARSHAL data: ", data)
+		fmt.Println("AFTER UNMARSHAL data: ", string(data))
 	} else {
 		fmt.Println("MATH d.i not nil after unmarhsal: ", d.i.String())
 	}
