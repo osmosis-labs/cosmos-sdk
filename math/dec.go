@@ -866,11 +866,32 @@ func (d *LegacyDec) Unmarshal(data []byte) error {
 	fmt.Println("MATH data: ", string(data))
 	fmt.Println("MATH data len: ", len(data))
 
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println("MATH recover data: ", data)
+			if d.i == nil {
+				fmt.Println("MATH recover d.i is nil")
+			} else {
+				fmt.Println("MATH recover d.i is not nil: " + d.i.String())
+			}
+
+			fmt.Println("MATH recover: ", r)
+
+			panic(r)
+		}
+	}()
+
 	if err := d.i.UnmarshalText(data); err != nil {
 		return err
 	}
 
-	fmt.Println("MATH d.i: ", d.i.String())
+	if d.i == nil {
+		fmt.Println("AFTER UNMARSHAL: MATH d.i is nil")
+		fmt.Println("AFTER UNMARSHAL data: ", data)
+	} else {
+		fmt.Println("MATH d.i not nil after unmarhsal: ", d.i.String())
+	}
 
 	if d.i.BitLen() > maxDecBitLen {
 		return fmt.Errorf("decimal out of range; got: %d, max: %d", d.i.BitLen(), maxDecBitLen)
