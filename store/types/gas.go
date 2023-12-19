@@ -3,6 +3,9 @@ package types
 import (
 	"fmt"
 	"math"
+	"os"
+	"runtime/trace"
+	time "time"
 )
 
 // Gas consumption descriptors.
@@ -15,6 +18,8 @@ const (
 	GasReadCostFlatDesc     = "ReadFlat"
 	GasHasDesc              = "Has"
 	GasDeleteDesc           = "Delete"
+
+	filename = "node_trace.out"
 )
 
 // Gas measured by the SDK
@@ -105,6 +110,30 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit or out of gas.
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	if err := trace.Start(file); err != nil {
+		panic(err)
+	}
+
+	defer trace.Stop()
+
+	fmt.Printf("consume gas for %v of amount %v \n", descriptor, amount)
+	fileName, err := createOrGetFileBasedOnTimestamp()
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+
+	err = appendToFile(fileName, fmt.Sprintf("consume gas for %v of amount %v \n", descriptor, amount))
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
+	}
 	var overflow bool
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
 	if overflow {
@@ -180,7 +209,31 @@ func (g *infiniteGasMeter) Limit() Gas {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit.
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	if err := trace.Start(file); err != nil {
+		panic(err)
+	}
+
+	defer trace.Stop()
+
 	var overflow bool
+	fmt.Printf("infinite gas meter consume gas for %v of amount %v \n", descriptor, amount)
+	fileName, err := createOrGetFileBasedOnTimestamp()
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+
+	err = appendToFile(fileName, fmt.Sprintf("infinite gas meter consume gas for %v of amount %v \n", descriptor, amount))
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
+	}
 	// TODO: Should we set the consumed field after overflow checking?
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
 	if overflow {
@@ -252,4 +305,41 @@ func TransientGasConfig() GasConfig {
 		WriteCostPerByte: 3,
 		IterNextCostFlat: 3,
 	}
+}
+
+// Creates a new file with a name based on the current timestamp rounded to 5 seconds
+func createOrGetFileBasedOnTimestamp() (string, error) {
+	now := time.Now()
+	// Round down to the nearest 5 seconds
+	roundedTime := now.Truncate(5 * time.Second)
+
+	// Check for files in the last 5 seconds
+	for i := 0; i < 5; i++ {
+		fileName := fmt.Sprintf("file_%d.txt", roundedTime.Unix()-int64(i))
+		if _, err := os.Stat(fileName); err == nil {
+			return fileName, nil
+		}
+	}
+
+	// If no file found, create a new one
+	fileName := fmt.Sprintf("file_%d.txt", roundedTime.Unix())
+	file, err := os.Create(fileName)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	return fileName, nil
+}
+
+// Appends data to the specified file
+func appendToFile(fileName string, data string) error {
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(data)
+	return err
 }
