@@ -195,14 +195,14 @@ func (g *infiniteGasMeter) Limit() Gas {
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit.
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
 	var overflow bool
-	fmt.Printf("consume gas for %v of amount %v \n", descriptor, amount)
+	fmt.Printf("infinite gas meter consume gas for %v of amount %v \n", descriptor, amount)
 	fileName, err := createOrGetFileBasedOnTimestamp()
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return
 	}
 
-	err = appendToFile(fileName, fmt.Sprintf("consume gas for %v of amount %v \n", descriptor, amount))
+	err = appendToFile(fileName, fmt.Sprintf("infinite gas meter consume gas for %v of amount %v \n", descriptor, amount))
 	if err != nil {
 		fmt.Println("Error appending to file:", err)
 		return
