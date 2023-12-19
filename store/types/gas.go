@@ -3,6 +3,8 @@ package types
 import (
 	"fmt"
 	"math"
+	"os"
+	time "time"
 )
 
 // Gas consumption descriptors.
@@ -105,7 +107,18 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit or out of gas.
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	fmt.Printf("consume gas for %v of amount %v", descriptor, amount)
+	fmt.Printf("consume gas for %v of amount %v \n", descriptor, amount)
+	fileName, err := createFileBasedOnTimestamp()
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+
+	err = appendToFile(fileName, fmt.Sprintf("consume gas for %v of amount %v \n", descriptor, amount))
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
+	}
 	var overflow bool
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
 	if overflow {
@@ -253,4 +266,32 @@ func TransientGasConfig() GasConfig {
 		WriteCostPerByte: 3,
 		IterNextCostFlat: 3,
 	}
+}
+
+// Creates a new file with a name based on the current timestamp rounded to 5 seconds
+func createFileBasedOnTimestamp() (string, error) {
+	now := time.Now()
+	// Round down to the nearest 5 seconds
+	roundedTime := now.Truncate(5 * time.Second)
+	fileName := fmt.Sprintf("file_%d.txt", roundedTime.Unix())
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	return fileName, nil
+}
+
+// Appends data to the specified file
+func appendToFile(fileName string, data string) error {
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(data)
+	return err
 }
