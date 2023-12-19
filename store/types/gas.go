@@ -66,6 +66,9 @@ func (g *basicGasMeter) SetLogger(logger log.Logger) {
 
 // NewGasMeter returns a reference to a new basicGasMeter.
 func NewGasMeter(limit Gas, logger log.Logger) GasMeter {
+
+	logger = logger.With("sim", "info")
+
 	return &basicGasMeter{
 		limit:    limit,
 		consumed: 0,
@@ -170,6 +173,9 @@ func (g *infiniteGasMeter) SetLogger(logger log.Logger) {
 
 // NewInfiniteGasMeter returns a new gas meter without a limit.
 func NewInfiniteGasMeter(logger log.Logger) GasMeter {
+
+	logger = logger.With("sim", "info")
+
 	return &infiniteGasMeter{
 		consumed: 0,
 		logger:   logger,
