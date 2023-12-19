@@ -678,29 +678,29 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		return sdk.GasInfo{}, nil, nil, 0, err
 	}
 
-	hasSwap := false
+	// hasSwap := false
 
-	for _, m := range msgs {
-		msgString := m.String()
+	// for _, m := range msgs {
+	// 	msgString := m.String()
 
-		if strings.Contains(msgString, "MsgSwapExactAmountIn") {
-			hasSwap = true
-		}
-	}
+	// 	if strings.Contains(msgString, "MsgSwapExactAmountIn") {
+	// 		hasSwap = true
+	// 	}
+	// }
 
-	// Replace logger with filter for a specific message type
-	appLogerCopy := app.logger
-	ctxLoggerCopy := ctx.Logger()
-	if hasSwap {
-		ctx = ctx.WithLogger(ctx.Logger().With("sim", "info"))
-		app.logger = app.logger.With("sim", "info")
+	// // Replace logger with filter for a specific message type
+	// appLogerCopy := app.logger
+	// ctxLoggerCopy := ctx.Logger()
+	// if hasSwap {
+	// 	ctx = ctx.WithLogger(ctx.Logger().With("sim", "info"))
+	// 	app.logger = app.logger.With("sim", "info")
 
-		gasMeter := ctx.GasMeter()
-		gasMeter.SetLogger(ctx.Logger())
-		ctx = ctx.WithGasMeter(gasMeter)
+	// 	gasMeter := ctx.GasMeter()
+	// 	gasMeter.SetLogger(ctx.Logger())
+	// 	ctx = ctx.WithGasMeter(gasMeter)
 
-		app.logger.Info("Swap sim logger is enabled")
-	}
+	// 	app.logger.Info("Swap sim logger is enabled")
+	// }
 
 	if app.anteHandler != nil {
 		var (
@@ -796,16 +796,16 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		}
 	}
 
-	// Revert logger
-	if hasSwap {
-		app.logger = appLogerCopy
-		ctx = ctx.WithLogger(ctxLoggerCopy)
-		gasMeter := ctx.GasMeter()
-		gasMeter.SetLogger(ctx.Logger())
-		ctx = ctx.WithGasMeter(gasMeter)
+	// // Revert logger
+	// if hasSwap {
+	// 	app.logger = appLogerCopy
+	// 	ctx = ctx.WithLogger(ctxLoggerCopy)
+	// 	gasMeter := ctx.GasMeter()
+	// 	gasMeter.SetLogger(ctx.Logger())
+	// 	ctx = ctx.WithGasMeter(gasMeter)
 
-		app.logger.Info("Swap sim logger is disabled")
-	}
+	// 	app.logger.Info("Swap sim logger is disabled")
+	// }
 
 	return gInfo, result, anteEvents, priority, err
 }
