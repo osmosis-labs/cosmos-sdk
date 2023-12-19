@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sync"
 	time "time"
 )
 
@@ -195,6 +196,18 @@ func (g *infiniteGasMeter) Limit() Gas {
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit.
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
 	var overflow bool
+	fmt.Printf("consume gas for %v of amount %v \n", descriptor, amount)
+	fileName, err := createOrGetFileBasedOnTimestamp()
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+
+	err = appendToFile(fileName, fmt.Sprintf("consume gas for %v of amount %v \n", descriptor, amount))
+	if err != nil {
+		fmt.Println("Error appending to file:", err)
+		return
+	}
 	// TODO: Should we set the consumed field after overflow checking?
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
 	if overflow {
@@ -268,8 +281,13 @@ func TransientGasConfig() GasConfig {
 	}
 }
 
+var fileMutex = &sync.Mutex{}
+
 // Creates a new file with a name based on the current timestamp rounded to 5 seconds
 func createOrGetFileBasedOnTimestamp() (string, error) {
+	fileMutex.Lock()
+	defer fileMutex.Unlock()
+
 	now := time.Now()
 	// Round down to the nearest 5 seconds
 	roundedTime := now.Truncate(5 * time.Second)
@@ -295,6 +313,9 @@ func createOrGetFileBasedOnTimestamp() (string, error) {
 
 // Appends data to the specified file
 func appendToFile(fileName string, data string) error {
+	fileMutex.Lock()
+	defer fileMutex.Unlock()
+
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
