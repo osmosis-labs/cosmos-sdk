@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"sync"
 	time "time"
 )
 
@@ -281,13 +280,8 @@ func TransientGasConfig() GasConfig {
 	}
 }
 
-var fileMutex = &sync.Mutex{}
-
 // Creates a new file with a name based on the current timestamp rounded to 5 seconds
 func createOrGetFileBasedOnTimestamp() (string, error) {
-	fileMutex.Lock()
-	defer fileMutex.Unlock()
-
 	now := time.Now()
 	// Round down to the nearest 5 seconds
 	roundedTime := now.Truncate(5 * time.Second)
@@ -313,9 +307,6 @@ func createOrGetFileBasedOnTimestamp() (string, error) {
 
 // Appends data to the specified file
 func appendToFile(fileName string, data string) error {
-	fileMutex.Lock()
-	defer fileMutex.Unlock()
-
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
