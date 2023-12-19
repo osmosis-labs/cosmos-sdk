@@ -305,6 +305,10 @@ func (k BaseSendKeeper) SendManyCoins(ctx sdk.Context, fromAddr sdk.AccAddress, 
 			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
 		))
 	}
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(types.AttributeKeySender, fromAddr.String()),
+	))
 
 	return nil
 }
