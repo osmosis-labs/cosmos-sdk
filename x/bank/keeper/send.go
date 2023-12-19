@@ -344,10 +344,6 @@ func (k BaseSendKeeper) subUnlockedCoins(ctx sdk.Context, addr sdk.AccAddress, a
 		}
 	}
 
-	ctx.EventManager().EmitEvent(
-		types.NewCoinSpentEvent(addr, amt),
-	)
-
 	return nil
 }
 
@@ -367,11 +363,6 @@ func (k BaseSendKeeper) addCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.C
 			return err
 		}
 	}
-
-	// emit coin received event
-	ctx.EventManager().EmitEvent(
-		types.NewCoinReceivedEvent(addr, amt),
-	)
 
 	return nil
 }
