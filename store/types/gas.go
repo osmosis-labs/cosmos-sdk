@@ -234,13 +234,24 @@ func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
 	_, err := os.Stat(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
+
+			fmt.Println("File does not exist")
+
 			_, err := os.Create(filename)
 			if err != nil {
+
+				fmt.Println("Error creating file:", err)
+
 				panic(err)
 			}
 		} else {
+
+			fmt.Println("Error stat file:", err)
+
 			panic(err)
 		}
+	} else {
+		fmt.Println("File exists")
 	}
 
 	// if fileInfo.IsDir() {
@@ -256,15 +267,19 @@ func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
+		fmt.Println("Error opening file:", err)
 		panic(err)
 	}
 	defer file.Close()
 
 	if err := trace.Start(file); err != nil {
+		fmt.Println("Error starting trace:", err)
 		panic(err)
 	}
 
-	defer trace.Stop()
+	defer func() {
+		trace.Stop()
+	}()
 
 	var overflow bool
 	fmt.Printf("infinite gas meter consume gas for %v of amount %v \n", descriptor, amount)
