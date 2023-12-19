@@ -50,12 +50,18 @@ type GasMeter interface {
 	IsPastLimit() bool
 	IsOutOfGas() bool
 	String() string
+	SetLogger(log.Logger)
 }
 
 type basicGasMeter struct {
 	limit    Gas
 	consumed Gas
 	logger   log.Logger
+}
+
+// SetLogger implements GasMeter.
+func (g *basicGasMeter) SetLogger(logger log.Logger) {
+	g.logger = logger
 }
 
 // NewGasMeter returns a reference to a new basicGasMeter.
@@ -155,6 +161,11 @@ func (g *basicGasMeter) String() string {
 type infiniteGasMeter struct {
 	consumed Gas
 	logger   log.Logger
+}
+
+// SetLogger implements GasMeter.
+func (g *infiniteGasMeter) SetLogger(logger log.Logger) {
+	g.logger = logger
 }
 
 // NewInfiniteGasMeter returns a new gas meter without a limit.

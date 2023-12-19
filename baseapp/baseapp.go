@@ -689,9 +689,16 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 	}
 
 	// Replace logger with filter for a specific message type
-	logerCopy := app.logger
+	appLogerCopy := app.logger
+	ctxLoggerCopy := ctx.Logger()
 	if hasSwap {
+		ctx = ctx.WithLogger(ctx.Logger().With("sim", "info"))
 		app.logger = app.logger.With("sim", "info")
+
+		gasMeter := ctx.GasMeter()
+		gasMeter.SetLogger(ctx.Logger())
+		ctx = ctx.WithGasMeter(gasMeter)
+
 		app.logger.Info("Swap sim logger is enabled")
 	}
 
@@ -791,7 +798,13 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 
 	// Revert logger
 	if hasSwap {
-		app.logger = logerCopy
+		app.logger = appLogerCopy
+		ctx = ctx.WithLogger(ctxLoggerCopy)
+		gasMeter := ctx.GasMeter()
+		gasMeter.SetLogger(ctx.Logger())
+		ctx = ctx.WithGasMeter(gasMeter)
+
+		app.logger.Info("Swap sim logger is disabled")
 	}
 
 	return gInfo, result, anteEvents, priority, err
