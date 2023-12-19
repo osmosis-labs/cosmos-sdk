@@ -39,6 +39,11 @@ type debuggingGasMeter struct {
 	g storetypes.GasMeter
 }
 
+// SetLogger implements types.GasMeter.
+func (d *debuggingGasMeter) SetLogger(log.Logger) {
+	// no op
+}
+
 func (d debuggingGasMeter) GasConsumed() storetypes.Gas {
 	return d.g.GasConsumed()
 }
@@ -79,6 +84,8 @@ func (d debuggingGasMeter) String() string {
 type GasCountingMockContext struct {
 	GasMeter sdk.GasMeter
 }
+
+var _ storetypes.GasMeter = (*debuggingGasMeter)(nil)
 
 func NewGasCountingMockContext() *GasCountingMockContext {
 	return &GasCountingMockContext{
