@@ -110,39 +110,19 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit or out of gas.
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	_, err := os.Stat(filename)
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		if os.IsNotExist(err) {
-			_, err := os.Create(filename)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			panic(err)
-		}
-	}
-	// if fileInfo.IsDir() {
-	// 	if err := os.RemoveAll(filename); err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	_, err := os.Create(filename)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
-
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
+		fmt.Println("Error opening file:", err)
 		panic(err)
 	}
-	defer file.Close()
-
 	if err := trace.Start(file); err != nil {
+		fmt.Println("Error starting trace:", err)
 		panic(err)
 	}
-
-	defer trace.Stop()
+	defer func() {
+		trace.Stop()
+		file.Close()
+	}()
 
 	fmt.Printf("consume gas for %v of amount %v \n", descriptor, amount)
 	fileName, err := createOrGetFileBasedOnTimestamp()
@@ -231,54 +211,18 @@ func (g *infiniteGasMeter) Limit() Gas {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit.
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	_, err := os.Stat(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-
-			fmt.Println("File does not exist")
-
-			_, err := os.Create(filename)
-			if err != nil {
-
-				fmt.Println("Error creating file:", err)
-
-				panic(err)
-			}
-		} else {
-
-			fmt.Println("Error stat file:", err)
-
-			panic(err)
-		}
-	} else {
-		fmt.Println("File exists")
-	}
-
-	// if fileInfo.IsDir() {
-	// 	if err := os.RemoveAll(filename); err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	_, err := os.Create(filename)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
-
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		panic(err)
 	}
-	defer file.Close()
-
 	if err := trace.Start(file); err != nil {
 		fmt.Println("Error starting trace:", err)
 		panic(err)
 	}
-
 	defer func() {
 		trace.Stop()
+		file.Close()
 	}()
 
 	var overflow bool
