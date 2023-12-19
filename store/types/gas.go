@@ -19,7 +19,7 @@ const (
 	GasHasDesc              = "Has"
 	GasDeleteDesc           = "Delete"
 
-	filename = "node_trace.out"
+	filename = "/osmosis/node_trace.out"
 )
 
 // Gas measured by the SDK
@@ -110,7 +110,18 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit or out of gas.
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
+	fileInfo, err := os.Stat(filename)
+	if err != nil && os.IsNotExist(err) {
+		_, err := os.Create(filename)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if fileInfo.IsDir() {
+		if err := os.RemoveAll(filename); err != nil {
+			panic(err)
+		}
+
 		_, err := os.Create(filename)
 		if err != nil {
 			panic(err)
@@ -216,7 +227,19 @@ func (g *infiniteGasMeter) Limit() Gas {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit.
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	if _, err := os.Stat(filename); err != nil && os.IsNotExist(err) {
+	fileInfo, err := os.Stat(filename)
+	if err != nil && os.IsNotExist(err) {
+		_, err := os.Create(filename)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if fileInfo.IsDir() {
+		if err := os.RemoveAll(filename); err != nil {
+			panic(err)
+		}
+
 		_, err := os.Create(filename)
 		if err != nil {
 			panic(err)
