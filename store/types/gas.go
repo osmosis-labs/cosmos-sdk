@@ -110,23 +110,27 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit or out of gas.
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	fileInfo, err := os.Stat(filename)
-	if err != nil && os.IsNotExist(err) {
-		_, err := os.Create(filename)
-		if err != nil {
+	_, err := os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			_, err := os.Create(filename)
+			if err != nil {
+				panic(err)
+			}
+		} else {
 			panic(err)
 		}
 	}
-	if fileInfo.IsDir() {
-		if err := os.RemoveAll(filename); err != nil {
-			panic(err)
-		}
+	// if fileInfo.IsDir() {
+	// 	if err := os.RemoveAll(filename); err != nil {
+	// 		panic(err)
+	// 	}
 
-		_, err := os.Create(filename)
-		if err != nil {
-			panic(err)
-		}
-	}
+	// 	_, err := os.Create(filename)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -227,24 +231,28 @@ func (g *infiniteGasMeter) Limit() Gas {
 
 // ConsumeGas adds the given amount of gas to the gas consumed and panics if it overflows the limit.
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
-	fileInfo, err := os.Stat(filename)
-	if err != nil && os.IsNotExist(err) {
-		_, err := os.Create(filename)
-		if err != nil {
+	_, err := os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			_, err := os.Create(filename)
+			if err != nil {
+				panic(err)
+			}
+		} else {
 			panic(err)
 		}
 	}
 
-	if fileInfo.IsDir() {
-		if err := os.RemoveAll(filename); err != nil {
-			panic(err)
-		}
+	// if fileInfo.IsDir() {
+	// 	if err := os.RemoveAll(filename); err != nil {
+	// 		panic(err)
+	// 	}
 
-		_, err := os.Create(filename)
-		if err != nil {
-			panic(err)
-		}
-	}
+	// 	_, err := os.Create(filename)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
