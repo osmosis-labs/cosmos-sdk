@@ -449,22 +449,22 @@ var osmosisFirstEpochHeight = int64(12834361)
 // Furthermore, this reverse map code should just get deleted.
 func (k BaseSendKeeper) setBalanceImproved(ctx sdk.Context, addr sdk.AccAddress, oldBalance sdk.Coin, newBalance sdk.Coin) error {
 	if !newBalance.IsValid() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, balance.String())
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, oldBalance.String())
 	}
 
 	accountStore := k.getAccountStore(ctx, addr)
-	denomPrefixStore := k.getDenomAddressPrefixStore(ctx, balance.Denom)
+	denomPrefixStore := k.getDenomAddressPrefixStore(ctx, oldBalance.Denom)
 	// x/bank invariants prohibit persistence of zero balances
 	if newBalance.IsZero() {
-		accountStore.Delete([]byte(balance.Denom))
+		accountStore.Delete([]byte(oldBalance.Denom))
 		denomPrefixStore.Delete(address.MustLengthPrefix(addr))
 	} else {
-		amount, err := balance.Amount.Marshal()
+		amount, err := oldBalance.Amount.Marshal()
 		if err != nil {
 			return err
 		}
 
-		accountStore.Set([]byte(balance.Denom), amount)
+		accountStore.Set([]byte(oldBalance.Denom), amount)
 
 		if oldBalance.IsZero() && ctx.BlockHeight() > osmosisFirstEpochHeight {
 			// Store a reverse index from denomination to account address with a
