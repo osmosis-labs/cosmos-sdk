@@ -466,7 +466,11 @@ func (k BaseSendKeeper) setBalanceImproved(ctx sdk.Context, addr sdk.AccAddress,
 
 		accountStore.Set([]byte(oldBalance.Denom), amount)
 
-		if oldBalance.IsZero() && ctx.BlockHeight() > osmosisFirstEpochHeight {
+		mustSetDenom := oldBalance.IsZero()
+		if ctx.BlockHeight() <= osmosisFirstEpochHeight || newBalance.Denom != "uosmo" {
+			mustSetDenom = true
+		}
+		if mustSetDenom {
 			// Store a reverse index from denomination to account address with a
 			// sentinel value.
 			denomAddrKey := address.MustLengthPrefix(addr)
