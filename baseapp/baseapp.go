@@ -675,6 +675,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 		return sdk.GasInfo{}, nil, nil, 0, err
 	}
 
+	ctx.Logger().With("sim", "info").Info("runTx start", "tx_hash", tx.GetMsgs())
+
 	msgs := tx.GetMsgs()
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return sdk.GasInfo{}, nil, nil, 0, err

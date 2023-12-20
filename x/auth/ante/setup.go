@@ -33,8 +33,17 @@ func (sud SetUpContextDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	if !ok {
 		// Set a gas meter with limit 0 as to prevent an infinite gas meter attack
 		// during runTx.
+
+		if simulate {
+			ctx.Logger().With("sim", "info").Info("SetUpContextDecorator not gasTx, inf gas meter")
+		}
+
 		newCtx = SetGasMeter(simulate, ctx, 0)
 		return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be GasTx")
+	}
+
+	if simulate {
+		ctx.Logger().With("sim", "info").Info("SetUpContextDecorator gasTx - reg gas meter")
 	}
 
 	newCtx = SetGasMeter(simulate, ctx, gasTx.GetGas())
