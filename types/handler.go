@@ -1,5 +1,10 @@
 package types
 
+import (
+	fmt "fmt"
+	reflect "reflect"
+)
+
 // Handler defines the core of the state transition function of an application.
 type Handler func(ctx Context, msg Msg) (*Result, error)
 
@@ -46,7 +51,34 @@ func ChainAnteDecorators(chain ...AnteDecorator) AnteHandler {
 	}
 
 	return func(ctx Context, tx Tx, simulate bool) (Context, error) {
-		return chain[0].AnteHandle(ctx, tx, simulate, ChainAnteDecorators(chain[1:]...))
+
+		structName := getConcreteStructName(chain[0])
+
+		if simulate {
+			ctx.Logger().With("sim", "info").Info(fmt.Sprintf("ChainAnteDecorators - %s START", structName))
+		}
+
+		ctx, err := chain[0].AnteHandle(ctx, tx, simulate, ChainAnteDecorators(chain[1:]...))
+
+		if simulate {
+			ctx.Logger().With("sim", "info").Info(fmt.Sprintf("ChainAnteDecorators - %s END", structName))
+		}
+
+		return ctx, err
+	}
+}
+
+func getConcreteStructName(i interface{}) string {
+	t := reflect.TypeOf(i)
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if t.Kind() == reflect.Struct {
+		return t.Name()
+	} else {
+		panic(fmt.Sprintf("Expected struct, got %s", t.Kind()))
 	}
 }
 
