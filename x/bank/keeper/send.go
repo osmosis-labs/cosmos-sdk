@@ -456,15 +456,15 @@ func (k BaseSendKeeper) setBalanceImproved(ctx sdk.Context, addr sdk.AccAddress,
 	denomPrefixStore := k.getDenomAddressPrefixStore(ctx, oldBalance.Denom)
 	// x/bank invariants prohibit persistence of zero balances
 	if newBalance.IsZero() {
-		accountStore.Delete([]byte(oldBalance.Denom))
+		accountStore.Delete([]byte(newBalance.Denom))
 		denomPrefixStore.Delete(address.MustLengthPrefix(addr))
 	} else {
-		amount, err := oldBalance.Amount.Marshal()
+		amount, err := newBalance.Amount.Marshal()
 		if err != nil {
 			return err
 		}
 
-		accountStore.Set([]byte(oldBalance.Denom), amount)
+		accountStore.Set([]byte(newBalance.Denom), amount)
 
 		mustSetDenom := oldBalance.IsZero()
 		if ctx.BlockHeight() <= osmosisFirstEpochHeight || newBalance.Denom != "uosmo" {
