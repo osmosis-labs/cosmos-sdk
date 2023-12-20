@@ -476,6 +476,7 @@ func (k BaseSendKeeper) setBalanceImproved(ctx sdk.Context, addr sdk.AccAddress,
 		}
 	}
 
+	return nil
 }
 
 // setBalance sets the coin balance for an account by address.
