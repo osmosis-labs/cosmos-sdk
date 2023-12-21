@@ -367,7 +367,8 @@ func (k BaseSendKeeper) addCoinsImproved(ctx sdk.Context, addr sdk.AccAddress, a
 		balance := k.GetBalance(ctx, addr, coin.Denom)
 		newBalance := balance.Add(coin)
 
-		err := k.setBalance(ctx, addr, balance, newBalance)
+		// err := k.setBalance(ctx, addr, balance, newBalance)
+		err := k.setBalance(ctx, addr, newBalance)
 		if err != nil {
 			return err
 		}
