@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
+	dbm "github.com/cosmos/cosmos-db"
 
 	"cosmossdk.io/depinject"
 

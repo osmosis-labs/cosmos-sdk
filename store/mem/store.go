@@ -3,7 +3,7 @@ package mem
 import (
 	"io"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
@@ -58,3 +58,5 @@ func (s *Store) GetPruning() pruningtypes.PruningOptions {
 }
 
 func (s Store) LastCommitID() (id types.CommitID) { return }
+
+func (s Store) WorkingHash() (hash []byte) { return }

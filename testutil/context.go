@@ -3,9 +3,9 @@ package testutil
 import (
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/cosmos/cosmos-sdk/store"

@@ -3,7 +3,7 @@ package orm
 import (
 	"fmt"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/store"
 	"github.com/cosmos/cosmos-sdk/store/gaskv"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"

@@ -10,8 +10,8 @@ import (
 	"sort"
 	"sync"
 
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -61,8 +61,8 @@ func NewStreamingService(
 
 	// NOTE: We use the same listener for each store.
 	listeners := make([]*types.MemoryListener, len(storeKeys))
-	for i, key := range storeKeys {
-		listeners[i] = types.NewMemoryListener(key)
+	for i, _ := range storeKeys {
+		listeners[i] = types.NewMemoryListener()
 	}
 
 	// Check that the writeDir exists and is writable so that we can catch the
@@ -181,7 +181,7 @@ func (fss *StreamingService) writeBlockData(writer io.Writer) error {
 		cache := listener.PopStateCache()
 
 		for i := range cache {
-			bz, err := fss.codec.MarshalLengthPrefixed(&cache[i])
+			bz, err := fss.codec.MarshalLengthPrefixed(cache[i])
 			if err != nil {
 				return err
 			}

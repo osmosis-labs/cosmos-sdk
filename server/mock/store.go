@@ -3,7 +3,7 @@ package mock
 import (
 	"io"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 	protoio "github.com/cosmos/gogoproto/io"
 
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
@@ -50,11 +50,15 @@ func (ms multiStore) SetTracer(w io.Writer) sdk.MultiStore {
 	panic("not implemented")
 }
 
-func (ms multiStore) AddListeners(key storetypes.StoreKey, listeners []storetypes.WriteListener) {
+func (ms multiStore) AddListeners(keys []storetypes.StoreKey) {
 	panic("not implemented")
 }
 
 func (ms multiStore) ListeningEnabled(key storetypes.StoreKey) bool {
+	panic("not implemented")
+}
+
+func (ms multiStore) PopStateCache() []*storetypes.StoreKVPair {
 	panic("not implemented")
 }
 
@@ -157,6 +161,10 @@ func (ms multiStore) RollbackToVersion(version int64) error {
 }
 
 func (ms multiStore) LatestVersion() int64 {
+	panic("not implemented")
+}
+
+func (ms multiStore) WorkingHash() []byte {
 	panic("not implemented")
 }
 

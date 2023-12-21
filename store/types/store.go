@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
+	dbm "github.com/cosmos/cosmos-db"
 
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
@@ -21,6 +21,9 @@ type Store interface {
 type Committer interface {
 	Commit() CommitID
 	LastCommitID() CommitID
+
+	// WorkingHash returns the hash of the KVStore's state before commit.
+	WorkingHash() []byte
 
 	SetPruning(pruningtypes.PruningOptions)
 	GetPruning() pruningtypes.PruningOptions
@@ -188,18 +191,17 @@ type CommitMultiStore interface {
 	// SetIAVLDisableFastNode enables/disables fastnode feature on iavl.
 	SetIAVLDisableFastNode(disable bool)
 
-	// SetIAVLLazyLoading enable/disable lazy loading on iavl.
-	SetLazyLoading(lazyLoading bool)
-
 	// RollbackToVersion rollback the db to specific version(height).
 	RollbackToVersion(version int64) error
 
 	// ListeningEnabled returns if listening is enabled for the KVStore belonging the provided StoreKey
 	ListeningEnabled(key StoreKey) bool
 
-	// AddListeners adds WriteListeners for the KVStore belonging to the provided StoreKey
-	// It appends the listeners to a current set, if one already exists
-	AddListeners(key StoreKey, listeners []WriteListener)
+	// AddListeners adds a listener for the KVStore belonging to the provided StoreKey
+	AddListeners(keys []StoreKey)
+
+	// PopStateCache returns the accumulated state change messages from the CommitMultiStore
+	PopStateCache() []*StoreKVPair
 }
 
 //---------subsp-------------------------------

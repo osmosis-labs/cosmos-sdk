@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"io"
 
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	snapshottypes "github.com/cosmos/cosmos-sdk/snapshots/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 )
@@ -70,10 +71,10 @@ func SetIAVLDisableFastNode(disable bool) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetIAVLDisableFastNode(disable) }
 }
 
-// SetIAVLLazyLoading enables/disables lazy loading of the IAVL store.
-func SetIAVLLazyLoading(lazyLoading bool) func(*BaseApp) {
-	return func(bapp *BaseApp) { bapp.cms.SetLazyLoading(lazyLoading) }
-}
+// // SetIAVLLazyLoading enables/disables lazy loading of the IAVL store.
+// func SetIAVLLazyLoading(lazyLoading bool) func(*BaseApp) {
+// 	return func(bapp *BaseApp) { bapp.cms.SetLazyLoading(lazyLoading) }
+// }
 
 // SetInterBlockCache provides a BaseApp option function that sets the
 // inter-block cache.
@@ -244,8 +245,8 @@ func (app *BaseApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
 // SetStreamingService is used to set a streaming service into the BaseApp hooks and load the listeners into the multistore
 func (app *BaseApp) SetStreamingService(s StreamingService) {
 	// add the listeners for each StoreKey
-	for key, lis := range s.Listeners() {
-		app.cms.AddListeners(key, lis)
+	for key, _ := range s.Listeners() {
+		app.cms.AddListeners([]storetypes.StoreKey{key})
 	}
 	// register the StreamingService within the BaseApp
 	// BaseApp will pass BeginBlock, DeliverTx, and EndBlock requests and responses to the streaming services to update their ABCI context
