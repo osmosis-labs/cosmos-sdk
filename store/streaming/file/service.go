@@ -87,10 +87,10 @@ func NewStreamingService(
 // Listeners satisfies the StreamingService interface. It returns the
 // StreamingService's underlying WriteListeners. Use for registering the
 // underlying WriteListeners with the BaseApp.
-func (fss *StreamingService) Listeners() map[types.StoreKey][]types.WriteListener {
-	listeners := make(map[types.StoreKey][]types.WriteListener, len(fss.storeListeners))
+func (fss *StreamingService) Listeners() map[types.StoreKey][]types.MemoryListener {
+	listeners := make(map[types.StoreKey][]types.MemoryListener, len(fss.storeListeners))
 	for _, listener := range fss.storeListeners {
-		listeners[listener.StoreKey()] = []types.WriteListener{listener}
+		listeners[listener.StoreKey()] = []types.MemoryListener{*listener}
 	}
 
 	return listeners
