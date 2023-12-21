@@ -317,11 +317,12 @@ func (k BaseSendKeeper) SendManyCoins(ctx context.Context, fromAddr sdk.AccAddre
 			return err
 		}
 
-		acc := k.ak.GetAccount(ctx, toAddr)
-		if acc == nil {
-			defer telemetry.IncrCounter(1, "new", "account")
-			k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
-		}
+		// Not needed for epoch code, every user must have an account
+		// acc := k.ak.GetAccount(ctx, toAddr)
+		// if acc == nil {
+		// 	defer telemetry.IncrCounter(1, "new", "account")
+		// 	k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, toAddr))
+		// }
 
 		sdkCtx.EventManager().EmitEvents(sdk.Events{
 			sdk.NewEvent(
