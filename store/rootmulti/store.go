@@ -178,7 +178,7 @@ func (rs *Store) StoreKeysByName() map[string]types.StoreKey {
 
 // LoadLatestVersionAndUpgrade implements CommitMultiStore
 func (rs *Store) LoadLatestVersionAndUpgrade(upgrades *types.StoreUpgrades) error {
-	ver := rs.GetLatestVersion()
+	ver := GetLatestVersion(rs.db)
 	return rs.loadVersion(ver, upgrades)
 }
 
@@ -189,7 +189,7 @@ func (rs *Store) LoadVersionAndUpgrade(ver int64, upgrades *types.StoreUpgrades)
 
 // LoadLatestVersion implements CommitMultiStore.
 func (rs *Store) LoadLatestVersion() error {
-	ver := rs.GetLatestVersion()
+	ver := GetLatestVersion(rs.db)
 	return rs.loadVersion(ver, nil)
 }
 
@@ -312,7 +312,7 @@ func deleteKVStore(kv types.KVStore) error {
 		keys = append(keys, itr.Key())
 		itr.Next()
 	}
-	itr.Close()
+	_ = itr.Close()
 
 	for _, k := range keys {
 		kv.Delete(k)
@@ -328,7 +328,7 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 		newDB.Set(itr.Key(), itr.Value())
 		itr.Next()
 	}
-	itr.Close()
+	_ = itr.Close()
 
 	// then delete the old store
 	return deleteKVStore(oldDB)
@@ -415,7 +415,7 @@ func (rs *Store) LatestVersion() int64 {
 func (rs *Store) LastCommitID() types.CommitID {
 	if rs.lastCommitInfo == nil {
 		return types.CommitID{
-			Version: rs.GetLatestVersion(),
+			Version: GetLatestVersion(rs.db),
 		}
 	}
 
@@ -625,13 +625,8 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 		return nil
 	}
 
-	maxHeight := int64(0)
-	for _, height := range pruningHeights {
-		if height > maxHeight {
-			maxHeight = height
-		}
-	}
-	rs.logger.Debug("pruning store", "heights", maxHeight)
+	rs.logger.Debug("pruning store", "heights", pruningHeights)
+	pruneHeight := pruningHeights[len(pruningHeights)-1]
 
 	for key, store := range rs.stores {
 		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
@@ -644,7 +639,7 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 
 		store = rs.GetCommitKVStore(key)
 
-		err := store.(*iavl.Store).DeleteVersionsTo(maxHeight)
+		err := store.(*iavl.Store).DeleteVersionsTo(pruneHeight)
 		if err == nil {
 			continue
 		}
@@ -769,7 +764,7 @@ func (rs *Store) Snapshot(height uint64, protoWriter protoio.Writer) error {
 	if height == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrLogic, "cannot snapshot height 0")
 	}
-	if height > uint64(rs.GetLatestVersion()) {
+	if height > uint64(GetLatestVersion(rs.db)) {
 		return sdkerrors.Wrapf(sdkerrors.ErrLogic, "cannot snapshot future height %v", height)
 	}
 
@@ -960,6 +955,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		} else {
 			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
 		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -1068,7 +1064,9 @@ func (rs *Store) GetCommitInfo(ver int64) (*types.CommitInfo, error) {
 func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo) {
 	rs.logger.Debug("flushing metadata", "height", version)
 	batch := db.NewBatch()
-	defer batch.Close()
+	defer func() {
+		_ = batch.Close()
+	}()
 
 	if cInfo != nil {
 		flushCommitInfo(batch, version, cInfo)
@@ -1100,25 +1098,19 @@ func newStoreParams(key types.StoreKey, db dbm.DB, typ types.StoreType, initialV
 	}
 }
 
-func (rs *Store) GetLatestVersion() int64 {
-	var (
-		latestVersion int64
-		bz            []byte
-		err           error
-	)
-
-	bz, err = rs.db.Get([]byte(latestVersionKey))
+func GetLatestVersion(db dbm.DB) int64 {
+	bz, err := db.Get([]byte(latestVersionKey))
 	if err != nil {
 		panic(err)
 	} else if bz == nil {
 		return 0
 	}
 
+	var latestVersion int64
+
 	if err := gogotypes.StdInt64Unmarshal(&latestVersion, bz); err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("getLatestVersion: %d\n", latestVersion)
 
 	return latestVersion
 }
@@ -1174,7 +1166,10 @@ func flushCommitInfo(batch dbm.Batch, version int64, cInfo *types.CommitInfo) {
 	}
 
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
-	batch.Set([]byte(cInfoKey), bz)
+
+	if err := batch.Set([]byte(cInfoKey), bz); err != nil {
+		panic(err)
+	}
 }
 
 func flushLatestVersion(batch dbm.Batch, version int64) {
@@ -1183,5 +1178,7 @@ func flushLatestVersion(batch dbm.Batch, version int64) {
 		panic(err)
 	}
 
-	batch.Set([]byte(latestVersionKey), bz)
+	if err := batch.Set([]byte(latestVersionKey), bz); err != nil {
+		panic(err)
+	}
 }
