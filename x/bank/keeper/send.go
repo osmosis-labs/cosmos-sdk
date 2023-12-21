@@ -312,7 +312,7 @@ func (k BaseSendKeeper) SendManyCoins(ctx context.Context, fromAddr sdk.AccAddre
 	for i, toAddr := range toAddrs {
 		amt := amts[i]
 
-		err := k.addCoins(ctx, toAddr, amt)
+		err := k.addCoinsImproved(ctx, toAddr, amt)
 		if err != nil {
 			return err
 		}
@@ -330,12 +330,12 @@ func (k BaseSendKeeper) SendManyCoins(ctx context.Context, fromAddr sdk.AccAddre
 				sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
 				sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
 			),
-			sdk.NewEvent(
-				sdk.EventTypeMessage,
-				sdk.NewAttribute(types.AttributeKeySender, fromAddrString),
-			),
 		})
 	}
+	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
+		sdk.EventTypeMessage,
+		sdk.NewAttribute(types.AttributeKeySender, fromAddr.String()),
+	))
 
 	return nil
 }
@@ -382,6 +382,27 @@ func (k BaseSendKeeper) subUnlockedCoins(ctx context.Context, addr sdk.AccAddres
 	sdkCtx.EventManager().EmitEvent(
 		types.NewCoinSpentEvent(addr, amt),
 	)
+
+	return nil
+}
+
+// Better add coins implementation for code that is not gas metered. Reduces I/O overhead.
+// Used in osmosis epoch.
+// Also removes event that should not exist.
+func (k BaseSendKeeper) addCoinsImproved(ctx context.Context, addr sdk.AccAddress, amt sdk.Coins) error {
+	if !amt.IsValid() {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, amt.String())
+	}
+
+	for _, coin := range amt {
+		balance := k.GetBalance(ctx, addr, coin.Denom)
+		newBalance := balance.Add(coin)
+
+		err := k.setBalance(ctx, addr, newBalance)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
