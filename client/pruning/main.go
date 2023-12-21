@@ -106,9 +106,11 @@ Supported app-db-backend types include 'goleveldb', 'rocksdb', 'pebbledb'.`,
 			}
 			cmd.Printf("pruning heights start from %v, end at %v\n", pruningHeights[0], pruningHeights[len(pruningHeights)-1])
 
-			if err = rootMultiStore.PruneStores(false, pruningHeights); err != nil {
+			rootMultiStore.PruneStores(pruningHeights[len(pruningHeights)-1])
+			if err != nil {
 				return err
 			}
+			fmt.Printf("successfully pruned the application root multi stores\n")
 
 			cmd.Println("successfully pruned the application root multi stores")
 			return nil

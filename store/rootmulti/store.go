@@ -64,15 +64,15 @@ type Store struct {
 	storesParams        map[types.StoreKey]storeParams
 	stores              map[types.StoreKey]types.CommitKVStore
 	keysByName          map[string]types.StoreKey
-	lazyLoading         bool
-	initialVersion      int64
-	removalMap          map[types.StoreKey]bool
-	traceWriter         io.Writer
-	traceContext        types.TraceContext
-	traceContextMutex   sync.Mutex
-	interBlockCache     types.MultiStorePersistentCache
-	listeners           map[types.StoreKey][]types.WriteListener
-	commitHeader        cmtproto.Header
+
+	initialVersion    int64
+	removalMap        map[types.StoreKey]bool
+	traceWriter       io.Writer
+	traceContext      types.TraceContext
+	traceContextMutex sync.Mutex
+	interBlockCache   types.MultiStorePersistentCache
+	listeners         map[types.StoreKey][]types.WriteListener
+	commitHeader      cmtproto.Header
 }
 
 var (
@@ -123,11 +123,6 @@ func (rs *Store) SetIAVLCacheSize(cacheSize int) {
 
 func (rs *Store) SetIAVLDisableFastNode(disableFastNode bool) {
 	rs.iavlDisableFastNode = disableFastNode
-}
-
-// SetLazyLoading sets if the iavl store should be loaded lazily or not
-func (rs *Store) SetLazyLoading(lazyLoading bool) {
-	rs.lazyLoading = lazyLoading
 }
 
 // GetStoreType implements Store.
@@ -600,60 +595,27 @@ func (rs *Store) handlePruning(version int64) error {
 	}
 	rs.logger.Info("prune start", "height", version)
 	defer rs.logger.Info("prune end", "height", version)
-	return rs.PruneStores(true, nil)
+	rs.PruneStores(version)
+	return nil
 }
 
 // PruneStores prunes the specific heights of the multi store.
 // If clearPruningManager is true, the pruning manager will return the pruning heights,
 // and they are appended to the pruningHeights to be pruned.
-func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (err error) {
-	if clearPruningManager {
-		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
-		if err != nil {
-			return err
-		}
-
-		if len(heights) == 0 {
-			rs.logger.Debug("no heights to be pruned from pruning manager")
-		}
-
-		pruningHeights = append(pruningHeights, heights...)
-	}
-
-	if len(pruningHeights) == 0 {
-		rs.logger.Debug("no heights need to be pruned")
-		return nil
-	}
-
-	maxHeight := int64(0)
-	for _, height := range pruningHeights {
-		if height > maxHeight {
-			maxHeight = height
-		}
-	}
-	rs.logger.Debug("pruning store", "heights", maxHeight)
-
+func (rs *Store) PruneStores(pruningHeight int64) {
 	for key, store := range rs.stores {
-		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
+		if store.GetStoreType() == types.StoreTypeIAVL {
+			// If the store is wrapped with an inter-block cache, we must first unwrap
+			// it to get the underlying IAVL store.
+			store = rs.GetCommitKVStore(key)
 
-		// If the store is wrapped with an inter-block cache, we must first unwrap
-		// it to get the underlying IAVL store.
-		if store.GetStoreType() != types.StoreTypeIAVL {
-			continue
-		}
-
-		store = rs.GetCommitKVStore(key)
-
-		err := store.(*iavl.Store).DeleteVersionsTo(maxHeight)
-		if err == nil {
-			continue
-		}
-
-		if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
-			return err
+			if err := store.(*iavl.Store).DeleteVersionsTo(pruningHeight); err != nil {
+				if errCause := errors.Cause(err); errCause != nil && errCause != iavltree.ErrVersionDoesNotExist {
+					panic(err)
+				}
+			}
 		}
 	}
-	return nil
 }
 
 // getStoreByName performs a lookup of a StoreKey given a store name typically
