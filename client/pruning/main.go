@@ -88,7 +88,7 @@ Supported app-db-backend types include 'goleveldb', 'rocksdb', 'pebbledb'.`,
 			if !ok {
 				return fmt.Errorf("currently only support the pruning of rootmulti.Store type")
 			}
-			latestHeight := rootmulti.GetLatestVersion(db)
+			latestHeight := rootMultiStore.GetLatestVersion()
 			// valid heights should be greater than 0.
 			if latestHeight <= 0 {
 				return fmt.Errorf("the database has no valid heights to prune, the latest height: %v", latestHeight)
@@ -106,11 +106,9 @@ Supported app-db-backend types include 'goleveldb', 'rocksdb', 'pebbledb'.`,
 			}
 			cmd.Printf("pruning heights start from %v, end at %v\n", pruningHeights[0], pruningHeights[len(pruningHeights)-1])
 
-			rootMultiStore.PruneStores(pruningHeights[len(pruningHeights)-1])
-			if err != nil {
+			if err = rootMultiStore.PruneStores(false, pruningHeights); err != nil {
 				return err
 			}
-			fmt.Printf("successfully pruned the application root multi stores\n")
 
 			cmd.Println("successfully pruned the application root multi stores")
 			return nil
