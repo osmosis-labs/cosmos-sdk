@@ -187,7 +187,7 @@ require (
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/cosmos/iavl => github.com/czarcas7ic/iavl v1.0.1-0.20231222221742-b87619867c54
+	github.com/cosmos/iavl => github.com/czarcas7ic/iavl v1.0.1-0.20231222225230-9888ca64fe5e
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
