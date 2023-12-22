@@ -100,11 +100,13 @@ func (m *Manager) GetFlushAndResetPruningHeights() ([]int64, error) {
 // previousHeight must be greater than 0 for the handling to take effect since valid heights start at 1 and 0 represents
 // the latest height. The latest height cannot be pruned. As a result, if previousHeight is less than or equal to 0, 0 is returned.
 func (m *Manager) HandleHeight(previousHeight int64) int64 {
+	fmt.Println("HandleHeight, previous height: ", previousHeight)
 	if m.opts.GetPruningStrategy() == types.PruningNothing || previousHeight <= 0 {
 		return 0
 	}
 
 	defer func() {
+		fmt.Println("running defer in handleHeight")
 		m.pruneHeightsMx.Lock()
 		defer m.pruneHeightsMx.Unlock()
 
@@ -116,6 +118,7 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		var next *list.Element
 		for e := m.pruneSnapshotHeights.Front(); e != nil; e = next {
 			snHeight := e.Value.(int64)
+			fmt.Println("snHeight", snHeight)
 			if snHeight < previousHeight-int64(m.opts.KeepRecent) {
 				m.pruneHeights = append(m.pruneHeights, snHeight)
 
@@ -128,19 +131,23 @@ func (m *Manager) HandleHeight(previousHeight int64) int64 {
 		}
 
 		// flush the updates to disk so that they are not lost if crash happens.
+		fmt.Println("SetSync")
 		if err := m.db.SetSync(pruneHeightsKey, int64SliceToBytes(m.pruneHeights)); err != nil {
 			panic(err)
 		}
 	}()
 
+	fmt.Println("int64(m.opts.KeepRecent)", int64(m.opts.KeepRecent))
 	if int64(m.opts.KeepRecent) < previousHeight {
 		pruneHeight := previousHeight - int64(m.opts.KeepRecent)
+		fmt.Println("previousHeight - int64(m.opts.KeepRecent)", pruneHeight)
 		// We consider this height to be pruned iff:
 		//
 		// - snapshotInterval is zero as that means that all heights should be pruned.
 		// - snapshotInterval % (height - KeepRecent) != 0 as that means the height is not
 		// a 'snapshot' height.
 		if m.snapshotInterval == 0 || pruneHeight%int64(m.snapshotInterval) != 0 {
+			fmt.Println("m.snapshotInterval == 0 || pruneHeight%int64(m.snapshotInterval) != 0")
 			m.pruneHeightsMx.Lock()
 			defer m.pruneHeightsMx.Unlock()
 

@@ -596,8 +596,9 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
-	fmt.Println("calling handle pruning")
+	fmt.Println("calling handle pruning, version: ", version)
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
+	fmt.Println("ShouldPruneAtHeight: ", !rs.pruningManager.ShouldPruneAtHeight(version))
 	if !rs.pruningManager.ShouldPruneAtHeight(version) {
 		return nil
 	}
