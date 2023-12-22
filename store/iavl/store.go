@@ -80,7 +80,8 @@ func LoadStoreWithInitialVersion(db dbm.DB, logger log.Logger, key types.StoreKe
 	}
 
 	return &Store{
-		tree: &mutableTree{tree},
+		tree:   &mutableTree{tree},
+		logger: logger,
 	}, nil
 }
 

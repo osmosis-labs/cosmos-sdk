@@ -424,6 +424,7 @@ func (rs *Store) LastCommitID() types.CommitID {
 
 // Commit implements Committer/CommitStore.
 func (rs *Store) Commit() types.CommitID {
+	fmt.Println("calling commit")
 	var previousHeight, version int64
 	if rs.lastCommitInfo.GetVersion() == 0 && rs.initialVersion > 1 {
 		// This case means that no commit has been made in the store, we
@@ -443,6 +444,7 @@ func (rs *Store) Commit() types.CommitID {
 		rs.logger.Debug("commit header and version mismatch", "header_height", rs.commitHeader.Height, "version", version)
 	}
 
+	fmt.Println("calling commit stores")
 	rs.lastCommitInfo = commitStores(version, rs.stores, rs.removalMap)
 	rs.lastCommitInfo.Timestamp = rs.commitHeader.Time
 	defer rs.flushMetadata(rs.db, version, rs.lastCommitInfo)
@@ -594,6 +596,7 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
+	fmt.Println("calling handle pruning")
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
 	if !rs.pruningManager.ShouldPruneAtHeight(version) {
 		return nil
@@ -607,6 +610,7 @@ func (rs *Store) handlePruning(version int64) error {
 // If clearPruningManager is true, the pruning manager will return the pruning heights,
 // and they are appended to the pruningHeights to be pruned.
 func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (err error) {
+	fmt.Println("calling prune stores")
 	if clearPruningManager {
 		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
 		if err != nil {
@@ -638,6 +642,8 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 		}
 
 		store = rs.GetCommitKVStore(key)
+
+		fmt.Println("pruning store", "key", key, "height", pruneHeight)
 
 		err := store.(*iavl.Store).DeleteVersionsTo(pruneHeight)
 		if err == nil {
