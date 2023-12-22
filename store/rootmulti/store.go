@@ -1064,9 +1064,7 @@ func (rs *Store) GetCommitInfo(ver int64) (*types.CommitInfo, error) {
 func (rs *Store) flushMetadata(db dbm.DB, version int64, cInfo *types.CommitInfo) {
 	rs.logger.Debug("flushing metadata", "height", version)
 	batch := db.NewBatch()
-	defer func() {
-		_ = batch.Close()
-	}()
+	defer batch.Close()
 
 	if cInfo != nil {
 		flushCommitInfo(batch, version, cInfo)
@@ -1166,10 +1164,7 @@ func flushCommitInfo(batch dbm.Batch, version int64, cInfo *types.CommitInfo) {
 	}
 
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
-
-	if err := batch.Set([]byte(cInfoKey), bz); err != nil {
-		panic(err)
-	}
+	batch.Set([]byte(cInfoKey), bz)
 }
 
 func flushLatestVersion(batch dbm.Batch, version int64) {
@@ -1178,7 +1173,5 @@ func flushLatestVersion(batch dbm.Batch, version int64) {
 		panic(err)
 	}
 
-	if err := batch.Set([]byte(latestVersionKey), bz); err != nil {
-		panic(err)
-	}
+	batch.Set([]byte(latestVersionKey), bz)
 }
