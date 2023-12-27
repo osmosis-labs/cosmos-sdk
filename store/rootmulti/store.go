@@ -73,6 +73,7 @@ type Store struct {
 	interBlockCache     types.MultiStorePersistentCache
 	listeners           map[types.StoreKey][]types.WriteListener
 	commitHeader        cmtproto.Header
+	pruneMutex          sync.Mutex
 }
 
 var (
@@ -614,6 +615,11 @@ func (rs *Store) handlePruning(version int64) error {
 // If clearPruningManager is true, the pruning manager will return the pruning heights,
 // and they are appended to the pruningHeights to be pruned.
 func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (err error) {
+	if !rs.pruneMutex.TryLock() {
+		// another goroutine is already pruning, so skip this call
+		return nil
+	}
+	defer rs.pruneMutex.Unlock()
 	fmt.Println("calling prune stores")
 	if clearPruningManager {
 		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
