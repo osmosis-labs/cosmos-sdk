@@ -461,9 +461,11 @@ func (rs *Store) Commit() types.CommitID {
 	// reset the removalMap
 	rs.removalMap = make(map[types.StoreKey]bool)
 
-	if err := rs.handlePruning(version); err != nil {
-		panic(err)
-	}
+	go func() {
+		if err := rs.handlePruning(version); err != nil {
+			panic(err)
+		}
+	}()
 
 	return types.CommitID{
 		Version: version,
