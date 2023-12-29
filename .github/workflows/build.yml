@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - release/**
+      - osmo/**
 permissions:
   contents: read
 

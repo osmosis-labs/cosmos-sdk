@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - release/v0.47.x
+      - osmo/**
 
 permissions:
   contents: read

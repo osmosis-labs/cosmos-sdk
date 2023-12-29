@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - release/**
+      - osmo/**
   pull_request:
 permissions:
   contents: read
