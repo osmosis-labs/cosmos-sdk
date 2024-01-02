@@ -332,8 +332,22 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		}
 
 		if err := tmNode.Start(); err != nil {
+			// add err logic for retrieving commits
+			// app.CommitMultiStore().GetCommitInfo()
 			return err
 		}
+
+		// Start a goroutine to listen for errors from appHashErrorsCh
+		go func() {
+			for appHashError := range tmNode.ConsensusReactor().AppHashErrorsCh() {
+				// When an error is received, call returnCommitInfo
+				if appHashError.Err != nil {
+					if commitInfoErr := returnCommitInfo(app, int64(appHashError.Height)); commitInfoErr != nil {
+						ctx.Logger.Error("failed to return commit info", "err", commitInfoErr)
+					}
+				}
+			}
+		}()
 	}
 
 	// Add the tx service to the gRPC router. We only need to register this
@@ -565,4 +579,12 @@ func wrapCPUProfile(ctx *Context, callback func() error) error {
 	}
 
 	return WaitForQuitSignals()
+}
+
+func returnCommitInfo(app types.Application, version int64) error {
+	commitInfoForHeight, err := app.CommitMultiStore().GetCommitInfo(version)
+	if err != nil {
+		return err
+	}
+	return fmt.Errorf("CommitInfo for height %d: %s", version, commitInfoForHeight.String())
 }
