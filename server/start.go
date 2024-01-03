@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/cometbft/cometbft/abci/server"
@@ -22,6 +24,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"encoding/hex"
+
 	"cosmossdk.io/tools/rosetta"
 	crgserver "cosmossdk.io/tools/rosetta/lib/server"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -32,6 +36,7 @@ import (
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
@@ -337,12 +342,12 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 			return err
 		}
 
-		// Start a goroutine to listen for errors from appHashErrorsCh
+		// Start a goroutine to listen for appHash errors from consensus layer.
 		go func() {
-			for appHashError := range tmNode.ConsensusReactor().AppHashErrorsCh() {
-				// When an error is received, call returnCommitInfo
+			for appHashError := range tmNode.BCReactor().AppHashErrorsCh() {
+				// If an error is received, call returnCommitInfo
 				if appHashError.Err != nil {
-					if commitInfoErr := returnCommitInfo(app, int64(appHashError.Height)); commitInfoErr != nil {
+					if commitInfoErr := returnCommitInfo(ctx, app, int64(appHashError.Height)); commitInfoErr != nil {
 						ctx.Logger.Error("failed to return commit info", "err", commitInfoErr)
 					}
 				}
@@ -581,10 +586,41 @@ func wrapCPUProfile(ctx *Context, callback func() error) error {
 	return WaitForQuitSignals()
 }
 
-func returnCommitInfo(app types.Application, version int64) error {
+// returnCommitInfo returns the individual app hashes for every module given a version (height).
+func returnCommitInfo(ctx *Context, app types.Application, version int64) error {
 	commitInfoForHeight, err := app.CommitMultiStore().GetCommitInfo(version)
 	if err != nil {
 		return err
 	}
-	return fmt.Errorf("CommitInfo for height %d: %s", version, commitInfoForHeight.String())
+
+	// Create a new slice of StoreInfos for storing the modified hashes.
+	storeInfos := make([]storetypes.StoreInfo, len(commitInfoForHeight.StoreInfos))
+
+	for i, storeInfo := range commitInfoForHeight.StoreInfos {
+		// Convert the hash to a hexadecimal string.
+		hash := strings.ToUpper(hex.EncodeToString(storeInfo.CommitId.Hash))
+
+		// Create a new StoreInfo with the modified hash.
+		storeInfos[i] = storetypes.StoreInfo{
+			Name: storeInfo.Name,
+			CommitId: storetypes.CommitID{
+				Version: storeInfo.CommitId.Version,
+				Hash:    []byte(hash),
+			},
+		}
+	}
+
+	// Sort the storeInfos slice based on the module name.
+	sort.Slice(storeInfos, func(i, j int) bool {
+		return storeInfos[i].Name < storeInfos[j].Name
+	})
+
+	// Create a new CommitInfo with the modified StoreInfos.
+	commitInfoForHeight = &storetypes.CommitInfo{
+		Version:    commitInfoForHeight.Version,
+		StoreInfos: storeInfos,
+	}
+
+	ctx.Logger.Error("your node has app hashed. Compare each module's hashes with a node that did not app hash to determine the problematic module", "commitInfo", commitInfoForHeight.String())
+	return nil
 }
