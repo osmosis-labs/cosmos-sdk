@@ -337,8 +337,6 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		}
 
 		if err := tmNode.Start(); err != nil {
-			// add err logic for retrieving commits
-			// app.CommitMultiStore().GetCommitInfo()
 			return err
 		}
 
