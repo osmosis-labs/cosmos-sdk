@@ -1,8 +1,11 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -16,6 +19,27 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino" // Import amino.proto file for reflection
 )
+
+// Create a logger
+var logger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+// UnaryServerInterceptor returns a new unary server interceptor for logging request details and timestamps.
+func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		msg := fmt.Sprintf("Request - Method:%s\t", info.FullMethod)
+		logger.Println(msg)
+		return handler(ctx, req)
+	}
+}
+
+// StreamServerInterceptor returns a new streaming server interceptor for logging request details and timestamps.
+func StreamServerInterceptor() grpc.StreamServerInterceptor {
+	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		msg := fmt.Sprintf("Request - Method:%s\t", info.FullMethod)
+		logger.Println(msg)
+		return handler(srv, stream)
+	}
+}
 
 // StartGRPCServer starts a gRPC server on the given address.
 func StartGRPCServer(clientCtx client.Context, app types.Application, cfg config.GRPCConfig) (*grpc.Server, error) {
@@ -33,6 +57,8 @@ func StartGRPCServer(clientCtx client.Context, app types.Application, cfg config
 		grpc.ForceServerCodec(codec.NewProtoCodec(clientCtx.InterfaceRegistry).GRPCCodec()),
 		grpc.MaxSendMsgSize(maxSendMsgSize),
 		grpc.MaxRecvMsgSize(maxRecvMsgSize),
+		grpc.UnaryInterceptor(UnaryServerInterceptor()),
+		grpc.StreamInterceptor(StreamServerInterceptor()),
 	)
 
 	app.RegisterGRPCServer(grpcSrv)
