@@ -207,6 +207,10 @@ max-recv-msg-size = "{{ .GRPC.MaxRecvMsgSize }}"
 # The default value is math.MaxInt32.
 max-send-msg-size = "{{ .GRPC.MaxSendMsgSize }}"
 
+# LogQueries if enabled will print an info log stating what query type
+# was submitted to this node on every submission.
+log-queries = "{{ .GRPC.LogQueries }}"
+
 ###############################################################################
 ###                        gRPC Web Configuration                           ###
 ###############################################################################
