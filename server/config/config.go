@@ -34,6 +34,10 @@ const (
 	// bytes the server can send.
 	DefaultGRPCMaxSendMsgSize = math.MaxInt32
 
+	// DefaultLogQueries defines the default value for the log_queries parameter.
+	// Should be set to false unless debugging.
+	DefaultLogQueries = false
+
 	// FileStreamer defines the store streaming type for file streaming.
 	FileStreamer = "file"
 )
@@ -322,7 +326,7 @@ func DefaultConfig() *Config {
 			Address:        DefaultGRPCAddress,
 			MaxRecvMsgSize: DefaultGRPCMaxRecvMsgSize,
 			MaxSendMsgSize: DefaultGRPCMaxSendMsgSize,
-			LogQueries:     false,
+			LogQueries:     DefaultLogQueries,
 		},
 		Rosetta: RosettaConfig{
 			Enable:              false,
