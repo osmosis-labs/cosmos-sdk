@@ -3,6 +3,7 @@ package server
 // DONTCOVER
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"net"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	db "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/abci/server"
 	tcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
 	"github.com/cometbft/cometbft/node"
@@ -20,6 +22,7 @@ import (
 	pvm "github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/cometbft/cometbft/store"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -28,6 +31,12 @@ import (
 
 	"cosmossdk.io/tools/rosetta"
 	crgserver "cosmossdk.io/tools/rosetta/lib/server"
+	cfg "github.com/cometbft/cometbft/config"
+	cmtjson "github.com/cometbft/cometbft/libs/json"
+	cmtstate "github.com/cometbft/cometbft/proto/tendermint/state"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	sm "github.com/cometbft/cometbft/state"
+	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -40,6 +49,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
 )
 
 const (
@@ -153,7 +163,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 			// amino is needed here for backwards compatibility of REST routes
 			err = wrapCPUProfile(serverCtx, func() error {
-				return startInProcess(serverCtx, clientCtx, appCreator)
+				return startInProcess(serverCtx, clientCtx, appCreator, nil, "", "")
 			})
 			errCode, ok := err.(ErrorCode)
 			if !ok {
@@ -165,49 +175,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 		},
 	}
 
-	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
-	cmd.Flags().Bool(flagWithTendermint, true, "Run abci app embedded in-process with tendermint")
-	cmd.Flags().String(flagAddress, "tcp://0.0.0.0:26658", "Listen address")
-	cmd.Flags().String(flagTransport, "socket", "Transport protocol: socket, grpc")
-	cmd.Flags().String(flagTraceStore, "", "Enable KVStore tracing to an output file")
-	cmd.Flags().String(FlagMinGasPrices, "", "Minimum gas prices to accept for transactions; Any fee in a tx must meet this minimum (e.g. 0.01photino;0.0001stake)")
-	cmd.Flags().IntSlice(FlagUnsafeSkipUpgrades, []int{}, "Skip a set of upgrade heights to continue the old binary")
-	cmd.Flags().Uint64(FlagHaltHeight, 0, "Block height at which to gracefully halt the chain and shutdown the node")
-	cmd.Flags().Uint64(FlagHaltTime, 0, "Minimum block time (in Unix seconds) at which to gracefully halt the chain and shutdown the node")
-	cmd.Flags().Bool(FlagInterBlockCache, true, "Enable inter-block caching")
-	cmd.Flags().String(flagCPUProfile, "", "Enable CPU profiling and write to the provided file")
-	cmd.Flags().Bool(FlagTrace, false, "Provide full stack traces for errors in ABCI Log")
-	cmd.Flags().String(FlagPruning, pruningtypes.PruningOptionDefault, "Pruning strategy (default|nothing|everything|custom)")
-	cmd.Flags().Uint64(FlagPruningKeepRecent, 0, "Number of recent heights to keep on disk (ignored if pruning is not 'custom')")
-	cmd.Flags().Uint64(FlagPruningInterval, 0, "Height interval at which pruned heights are removed from disk (ignored if pruning is not 'custom')")
-	cmd.Flags().Uint(FlagInvCheckPeriod, 0, "Assert registered invariants every N blocks")
-	cmd.Flags().Uint64(FlagMinRetainBlocks, 0, "Minimum block height offset during ABCI commit to prune Tendermint blocks")
-
-	cmd.Flags().Bool(FlagAPIEnable, false, "Define if the API server should be enabled")
-	cmd.Flags().Bool(FlagAPISwagger, false, "Define if swagger documentation should automatically be registered (Note: the API must also be enabled)")
-	cmd.Flags().String(FlagAPIAddress, serverconfig.DefaultAPIAddress, "the API server address to listen on")
-	cmd.Flags().Uint(FlagAPIMaxOpenConnections, 1000, "Define the number of maximum open connections")
-	cmd.Flags().Uint(FlagRPCReadTimeout, 10, "Define the Tendermint RPC read timeout (in seconds)")
-	cmd.Flags().Uint(FlagRPCWriteTimeout, 0, "Define the Tendermint RPC write timeout (in seconds)")
-	cmd.Flags().Uint(FlagRPCMaxBodyBytes, 1000000, "Define the Tendermint maximum request body (in bytes)")
-	cmd.Flags().Bool(FlagAPIEnableUnsafeCORS, false, "Define if CORS should be enabled (unsafe - use it at your own risk)")
-
-	cmd.Flags().Bool(flagGRPCOnly, false, "Start the node in gRPC query only mode (no Tendermint process is started)")
-	cmd.Flags().Bool(flagGRPCEnable, true, "Define if the gRPC server should be enabled")
-	cmd.Flags().String(flagGRPCAddress, serverconfig.DefaultGRPCAddress, "the gRPC server address to listen on")
-
-	cmd.Flags().Bool(flagGRPCWebEnable, true, "Define if the gRPC-Web server should be enabled. (Note: gRPC must also be enabled)")
-	cmd.Flags().String(flagGRPCWebAddress, serverconfig.DefaultGRPCWebAddress, "The gRPC-Web server address to listen on")
-
-	cmd.Flags().Uint64(FlagStateSyncSnapshotInterval, 0, "State sync snapshot interval")
-	cmd.Flags().Uint32(FlagStateSyncSnapshotKeepRecent, 2, "State sync snapshot to keep")
-
-	cmd.Flags().Bool(FlagDisableIAVLFastNode, false, "Disable fast node for IAVL tree")
-
-	cmd.Flags().Int(FlagMempoolMaxTxs, mempool.DefaultMaxTx, "Sets MaxTx value for the app-side mempool")
-
-	// add support for all Tendermint-specific command line options
-	tcmd.AddNodeFlags(cmd)
+	addStartNodeFlags(cmd, defaultNodeHome)
 	return cmd
 }
 
@@ -268,7 +236,11 @@ func startStandAlone(ctx *Context, appCreator types.AppCreator) error {
 	return WaitForQuitSignals()
 }
 
-func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.AppCreator) error {
+func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.AppCreator, testnetAppCreator types.TestnetAppCreator, newChainID, newOperatorAddress string) error {
+	if appCreator != nil && testnetAppCreator != nil {
+		return errors.New("cannot provide both appCreator and testnetAppCreator")
+	}
+
 	cfg := ctx.Config
 	home := cfg.RootDir
 
@@ -303,7 +275,16 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
-	app := appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
+	var app types.Application
+
+	if appCreator != nil {
+		app = appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
+	} else if testnetAppCreator != nil {
+		app, err = testnetify(ctx, cfg, home, newChainID, newOperatorAddress, testnetAppCreator, db)
+		if err != nil {
+			return err
+		}
+	}
 
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
 	if err != nil {
@@ -621,4 +602,278 @@ func returnCommitInfo(ctx *Context, app types.Application, version int64) error 
 
 	ctx.Logger.Error("your node has app hashed. Compare each module's hashes with a node that did not app hash to determine the problematic module", "commitInfo", commitInfoForHeight.String())
 	return nil
+}
+
+// InPlaceTestnetCreator utilizes the provided chainID and operatorAddress as well as the local private validator key to
+// control the network represented in the data folder. This is useful to create testnets nearly identical to your
+// mainnet environment.
+func InPlaceTestnetCreator(testnetAppCreator types.TestnetAppCreator, defaultNodeHome string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "in-place-testnet [newChainID] [newOperatorAddress]",
+		Short: "Create and start a testnet from current local state",
+		Long: `Create and start a testnet from current local state.
+After utilizing this command the network will start. If the network is stopped,
+the normal "start" command should be used. Re-using this command on state that
+has already been run on could result in unexpected behavior.
+
+Additionally, the first block may take up to one minute to be committed, depending
+on how old the block is. For instance, if a snapshot was taken weeks ago and we want
+to turn this into a testnet, it is possible lots of pending state needs to be commited
+(expiring locks, etc.). It is recommended that you should wait at the very least for this
+block to be commited before stopping the daemon. Then, as explained above, should use the
+normal "start" command after that to restart the daemon.
+`,
+		Example: "in-place-testnet localosmosis osmo12smx2wdlyttvyzvzg54y2vnqwq2qjateuf7thj",
+		Args:    cobra.ExactArgs(2),
+		PreRunE: func(cmd *cobra.Command, _ []string) error {
+			serverCtx := GetServerContextFromCmd(cmd)
+
+			if err := serverCtx.Viper.BindPFlags(cmd.Flags()); err != nil {
+				return err
+			}
+
+			_, err := GetPruningOptionsFromFlags(serverCtx.Viper)
+			return err
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serverCtx := GetServerContextFromCmd(cmd)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			newChainID := args[0]
+			newOperatorAddress := args[1]
+
+			// Confirmation prompt to prevent accidental modification of state.
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Println("This operation will modify state in your data folder and cannot be undone. Do you want to continue? (y/n)")
+			text, _ := reader.ReadString('\n')
+			response := strings.TrimSpace(strings.ToLower(text))
+			if response != "y" && response != "yes" {
+				fmt.Println("Operation cancelled.")
+				return nil
+			}
+
+			return startInProcess(serverCtx, clientCtx, nil, testnetAppCreator, newChainID, newOperatorAddress)
+		},
+	}
+
+	addStartNodeFlags(cmd, defaultNodeHome)
+	return cmd
+}
+
+// testnetify modifies both state and blockStore, allowing the provided operator address and local validator key to control the network
+// that the state in the data folder represents. The chainID of the local genesis file is modified to match the provided chainID.
+func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorAddress string, testnetAppCreator types.TestnetAppCreator, db db.DB) (types.Application, error) {
+	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
+	traceWriter, err := openTraceWriter(traceWriterFile)
+	if err != nil {
+		return nil, err
+	}
+
+	genDocProvider := node.DefaultGenesisDocProviderFunc(config)
+
+	// Initialize blockStore and stateDB.
+	blockStoreDB, err := node.DefaultDBProvider(&node.DBContext{ID: "blockstore", Config: config})
+	if err != nil {
+		return nil, err
+	}
+	blockStore := store.NewBlockStore(blockStoreDB)
+
+	stateDB, err := node.DefaultDBProvider(&node.DBContext{ID: "state", Config: config})
+	if err != nil {
+		return nil, err
+	}
+
+	defer blockStore.Close()
+	defer stateDB.Close()
+
+	privValidator := pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+	userPubKey, err := privValidator.GetPubKey()
+	if err != nil {
+		return nil, err
+	}
+	validatorAddress := userPubKey.Address()
+	if err != nil {
+		return nil, err
+	}
+
+	stateStore := sm.NewStore(stateDB, sm.StoreOptions{
+		DiscardABCIResponses: config.Storage.DiscardABCIResponses,
+	})
+
+	state, genDoc, err := node.LoadStateFromDBOrGenesisDocProvider(stateDB, genDocProvider)
+	if err != nil {
+		return nil, err
+	}
+
+	genDoc.ChainID = newChainID
+	genFilePath := config.GenesisFile()
+	if err = genutil.ExportGenesisFile(genDoc, genFilePath); err != nil {
+		return nil, err
+	}
+
+	// There are times when a user stops their node between commits, resulting in a mismatch between the
+	// blockStore and state. For convenience, we just discard the uncommited blockStore block and operate on
+	// the lastBlockHeight in state.
+	if blockStore.Height() != state.LastBlockHeight {
+		blockStore.DeleteLatestBlock()
+	}
+
+	block := blockStore.LoadBlock(blockStore.Height())
+
+	block.ChainID = newChainID
+	state.ChainID = newChainID
+
+	block.LastBlockID = state.LastBlockID
+	block.LastCommit.BlockID = state.LastBlockID
+
+	// Create a vote from our validator
+	vote := cmttypes.Vote{
+		Type:             cmtproto.PrecommitType,
+		Height:           state.LastBlockHeight,
+		Round:            0,
+		BlockID:          state.LastBlockID,
+		Timestamp:        time.Now(),
+		ValidatorAddress: validatorAddress,
+		ValidatorIndex:   0,
+		Signature:        []byte{},
+	}
+
+	// Sign the vote, and copy the proto changes from the act of signing to the vote itself
+	voteProto := vote.ToProto()
+	err = privValidator.SignVote(newChainID, voteProto)
+	if err != nil {
+		return nil, err
+	}
+	vote.Signature = voteProto.Signature
+	vote.Timestamp = voteProto.Timestamp
+
+	// Modify the block's lastCommit to be signed only by our validator
+	block.LastCommit.Signatures[0].ValidatorAddress = validatorAddress
+	block.LastCommit.Signatures[0].Signature = vote.Signature
+	block.LastCommit.Signatures = []cmttypes.CommitSig{block.LastCommit.Signatures[0]}
+
+	// Load the seenCommit of the lastBlockHeight and modify it to be signed from our validator
+	seenCommit := blockStore.LoadSeenCommit(state.LastBlockHeight)
+	seenCommit.BlockID = state.LastBlockID
+	seenCommit.Round = vote.Round
+	seenCommit.Signatures[0].Signature = vote.Signature
+	seenCommit.Signatures[0].ValidatorAddress = validatorAddress
+	seenCommit.Signatures[0].Timestamp = vote.Timestamp
+	seenCommit.Signatures = []cmttypes.CommitSig{seenCommit.Signatures[0]}
+	blockStore.SaveSeenCommit(state.LastBlockHeight, seenCommit)
+
+	// Create ValidatorSet struct containing just our valdiator.
+	newVal := &cmttypes.Validator{
+		Address:     validatorAddress,
+		PubKey:      userPubKey,
+		VotingPower: 900000000000000,
+	}
+	newValSet := &cmttypes.ValidatorSet{
+		Validators: []*cmttypes.Validator{newVal},
+		Proposer:   newVal,
+	}
+
+	// Replace all valSets in state to be the valSet with just our validator.
+	state.Validators = newValSet
+	state.LastValidators = newValSet
+	state.NextValidators = newValSet
+	state.LastHeightValidatorsChanged = blockStore.Height()
+
+	stateStore.Save(state)
+
+	// Create a ValidatorsInfo struct to store in stateDB.
+	valSet, err := state.Validators.ToProto()
+	if err != nil {
+		return nil, err
+	}
+	valInfo := &cmtstate.ValidatorsInfo{
+		ValidatorSet:      valSet,
+		LastHeightChanged: state.LastBlockHeight,
+	}
+	buf, err := valInfo.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	// Modfiy Validators stateDB entry.
+	err = stateDB.Set([]byte(fmt.Sprintf("validatorsKey:%v", blockStore.Height())), buf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Modify LastValidators stateDB entry.
+	err = stateDB.Set([]byte(fmt.Sprintf("validatorsKey:%v", blockStore.Height()-1)), buf)
+	if err != nil {
+		return nil, err
+	}
+
+	// Modify NextValidators stateDB entry.
+	err = stateDB.Set([]byte(fmt.Sprintf("validatorsKey:%v", blockStore.Height()+1)), buf)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := cmtjson.Marshal(genDoc)
+	if err != nil {
+		return nil, err
+	}
+	if err := stateDB.SetSync([]byte("genesisDoc"), b); err != nil {
+		return nil, err
+	}
+
+	// testnetAppCreator makes any application side changes that must be made due to the above modifications.
+	// Also, it makes any optional application side changes to make running the testnet easier (voting times, fund accounts, etc).
+	testnetApp := testnetAppCreator(ctx.Logger, db, traceWriter, validatorAddress, userPubKey, newOperatorAddress, ctx.Viper)
+
+	return testnetApp, err
+}
+
+// addStartNodeFlags should be added to any CLI commands that start the network.
+func addStartNodeFlags(cmd *cobra.Command, defaultNodeHome string) {
+	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
+	cmd.Flags().Bool(flagWithTendermint, true, "Run abci app embedded in-process with tendermint")
+	cmd.Flags().String(flagAddress, "tcp://0.0.0.0:26658", "Listen address")
+	cmd.Flags().String(flagTransport, "socket", "Transport protocol: socket, grpc")
+	cmd.Flags().String(flagTraceStore, "", "Enable KVStore tracing to an output file")
+	cmd.Flags().String(FlagMinGasPrices, "", "Minimum gas prices to accept for transactions; Any fee in a tx must meet this minimum (e.g. 0.01photino;0.0001stake)")
+	cmd.Flags().IntSlice(FlagUnsafeSkipUpgrades, []int{}, "Skip a set of upgrade heights to continue the old binary")
+	cmd.Flags().Uint64(FlagHaltHeight, 0, "Block height at which to gracefully halt the chain and shutdown the node")
+	cmd.Flags().Uint64(FlagHaltTime, 0, "Minimum block time (in Unix seconds) at which to gracefully halt the chain and shutdown the node")
+	cmd.Flags().Bool(FlagInterBlockCache, true, "Enable inter-block caching")
+	cmd.Flags().String(flagCPUProfile, "", "Enable CPU profiling and write to the provided file")
+	cmd.Flags().Bool(FlagTrace, false, "Provide full stack traces for errors in ABCI Log")
+	cmd.Flags().String(FlagPruning, pruningtypes.PruningOptionDefault, "Pruning strategy (default|nothing|everything|custom)")
+	cmd.Flags().Uint64(FlagPruningKeepRecent, 0, "Number of recent heights to keep on disk (ignored if pruning is not 'custom')")
+	cmd.Flags().Uint64(FlagPruningInterval, 0, "Height interval at which pruned heights are removed from disk (ignored if pruning is not 'custom')")
+	cmd.Flags().Uint(FlagInvCheckPeriod, 0, "Assert registered invariants every N blocks")
+	cmd.Flags().Uint64(FlagMinRetainBlocks, 0, "Minimum block height offset during ABCI commit to prune Tendermint blocks")
+
+	cmd.Flags().Bool(FlagAPIEnable, false, "Define if the API server should be enabled")
+	cmd.Flags().Bool(FlagAPISwagger, false, "Define if swagger documentation should automatically be registered (Note: the API must also be enabled)")
+	cmd.Flags().String(FlagAPIAddress, serverconfig.DefaultAPIAddress, "the API server address to listen on")
+	cmd.Flags().Uint(FlagAPIMaxOpenConnections, 1000, "Define the number of maximum open connections")
+	cmd.Flags().Uint(FlagRPCReadTimeout, 10, "Define the Tendermint RPC read timeout (in seconds)")
+	cmd.Flags().Uint(FlagRPCWriteTimeout, 0, "Define the Tendermint RPC write timeout (in seconds)")
+	cmd.Flags().Uint(FlagRPCMaxBodyBytes, 1000000, "Define the Tendermint maximum request body (in bytes)")
+	cmd.Flags().Bool(FlagAPIEnableUnsafeCORS, false, "Define if CORS should be enabled (unsafe - use it at your own risk)")
+
+	cmd.Flags().Bool(flagGRPCOnly, false, "Start the node in gRPC query only mode (no Tendermint process is started)")
+	cmd.Flags().Bool(flagGRPCEnable, true, "Define if the gRPC server should be enabled")
+	cmd.Flags().String(flagGRPCAddress, serverconfig.DefaultGRPCAddress, "the gRPC server address to listen on")
+
+	cmd.Flags().Bool(flagGRPCWebEnable, true, "Define if the gRPC-Web server should be enabled. (Note: gRPC must also be enabled)")
+	cmd.Flags().String(flagGRPCWebAddress, serverconfig.DefaultGRPCWebAddress, "The gRPC-Web server address to listen on")
+
+	cmd.Flags().Uint64(FlagStateSyncSnapshotInterval, 0, "State sync snapshot interval")
+	cmd.Flags().Uint32(FlagStateSyncSnapshotKeepRecent, 2, "State sync snapshot to keep")
+
+	cmd.Flags().Bool(FlagDisableIAVLFastNode, false, "Disable fast node for IAVL tree")
+
+	cmd.Flags().Int(FlagMempoolMaxTxs, mempool.DefaultMaxTx, "Sets MaxTx value for the app-side mempool")
+
+	// add support for all Tendermint-specific command line options
+	tcmd.AddNodeFlags(cmd)
 }
