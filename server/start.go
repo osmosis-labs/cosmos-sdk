@@ -717,7 +717,10 @@ func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorA
 	// blockStore and state. For convenience, we just discard the uncommited blockStore block and operate on
 	// the lastBlockHeight in state.
 	if blockStore.Height() != state.LastBlockHeight {
-		blockStore.DeleteLatestBlock()
+		err = blockStore.DeleteLatestBlock()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	block := blockStore.LoadBlock(blockStore.Height())
@@ -762,7 +765,10 @@ func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorA
 	seenCommit.Signatures[0].ValidatorAddress = validatorAddress
 	seenCommit.Signatures[0].Timestamp = vote.Timestamp
 	seenCommit.Signatures = []cmttypes.CommitSig{seenCommit.Signatures[0]}
-	blockStore.SaveSeenCommit(state.LastBlockHeight, seenCommit)
+	err = blockStore.SaveSeenCommit(state.LastBlockHeight, seenCommit)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create ValidatorSet struct containing just our valdiator.
 	newVal := &cmttypes.Validator{
@@ -781,7 +787,10 @@ func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorA
 	state.NextValidators = newValSet
 	state.LastHeightValidatorsChanged = blockStore.Height()
 
-	stateStore.Save(state)
+	err = stateStore.Save(state)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create a ValidatorsInfo struct to store in stateDB.
 	valSet, err := state.Validators.ToProto()
