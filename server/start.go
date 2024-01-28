@@ -614,14 +614,13 @@ func InPlaceTestnetCreator(testnetAppCreator types.TestnetAppCreator, defaultNod
 		Long: `Create and start a testnet from current local state.
 After utilizing this command the network will start. If the network is stopped,
 the normal "start" command should be used. Re-using this command on state that
-has already been run on could result in unexpected behavior.
+has already been modified by this command could result in unexpected behavior.
 
 Additionally, the first block may take up to one minute to be committed, depending
 on how old the block is. For instance, if a snapshot was taken weeks ago and we want
 to turn this into a testnet, it is possible lots of pending state needs to be commited
-(expiring locks, etc.). It is recommended that you should wait at the very least for this
-block to be commited before stopping the daemon. Then, as explained above, should use the
-normal "start" command after that to restart the daemon.
+(expiring locks, etc.). It is recommended that you should wait for this block to be commited
+before stopping the daemon.
 `,
 		Example: "in-place-testnet localosmosis osmo12smx2wdlyttvyzvzg54y2vnqwq2qjateuf7thj",
 		Args:    cobra.ExactArgs(2),
