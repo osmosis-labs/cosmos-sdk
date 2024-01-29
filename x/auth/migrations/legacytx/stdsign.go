@@ -86,7 +86,9 @@ func StdSignBytes(chainID string, accnum, sequence, timeout uint64, fee StdFee, 
 		panic(err)
 	}
 
-	return sdk.MustSortJSON(bz)
+	t := sdk.MustSortJSON(bz)
+	fmt.Printf(string(t))
+	return t
 }
 
 // Deprecated: StdSignature represents a sig
