@@ -99,6 +99,13 @@ const (
 
 	// mempool flags
 	FlagMempoolMaxTxs = "mempool.max-txs"
+
+	// testnet keys
+	KeyIsTestnet  = "is-testnet"
+	KeyNewChainID = "new-chain-ID"
+	KeyNewOpAddr  = "new-operator-addr"
+	KeyNewValAddr = "new-validator-addr"
+	KeyUserPubKey = "user-pub-key"
 )
 
 // StartCmd runs the service passed in, either stand-alone or in-process with
@@ -163,7 +170,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 			// amino is needed here for backwards compatibility of REST routes
 			err = wrapCPUProfile(serverCtx, func() error {
-				return startInProcess(serverCtx, clientCtx, appCreator, nil, "", "")
+				return startInProcess(serverCtx, clientCtx, appCreator)
 			})
 			errCode, ok := err.(ErrorCode)
 			if !ok {
@@ -236,11 +243,7 @@ func startStandAlone(ctx *Context, appCreator types.AppCreator) error {
 	return WaitForQuitSignals()
 }
 
-func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.AppCreator, testnetAppCreator types.TestnetAppCreator, newChainID, newOperatorAddress string) error {
-	if appCreator != nil && testnetAppCreator != nil {
-		return errors.New("cannot provide both appCreator and testnetAppCreator")
-	}
-
+func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.AppCreator) error {
 	cfg := ctx.Config
 	home := cfg.RootDir
 
@@ -275,15 +278,29 @@ func startInProcess(ctx *Context, clientCtx client.Context, appCreator types.App
 		return err
 	}
 
+	isTestnet, ok := ctx.Viper.Get(KeyIsTestnet).(bool)
+	if !ok {
+		isTestnet = false
+	}
+
 	var app types.Application
 
-	if appCreator != nil {
-		app = appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
-	} else if testnetAppCreator != nil {
-		app, err = testnetify(ctx, cfg, home, newChainID, newOperatorAddress, testnetAppCreator, db)
+	if isTestnet {
+		newChainID, ok := ctx.Viper.Get(KeyNewChainID).(string)
+		if !ok {
+			return fmt.Errorf("expected string for key %s", KeyNewChainID)
+		}
+		newOperatorAddress, ok := ctx.Viper.Get(KeyNewOpAddr).(string)
+		if !ok {
+			return fmt.Errorf("expected string for key %s", KeyNewOpAddr)
+		}
+
+		app, err = testnetify(ctx, cfg, home, newChainID, newOperatorAddress, appCreator, db)
 		if err != nil {
 			return err
 		}
+	} else {
+		app = appCreator(ctx.Logger, db, traceWriter, ctx.Viper)
 	}
 
 	nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
@@ -607,7 +624,7 @@ func returnCommitInfo(ctx *Context, app types.Application, version int64) error 
 // InPlaceTestnetCreator utilizes the provided chainID and operatorAddress as well as the local private validator key to
 // control the network represented in the data folder. This is useful to create testnets nearly identical to your
 // mainnet environment.
-func InPlaceTestnetCreator(testnetAppCreator types.TestnetAppCreator, defaultNodeHome string) *cobra.Command {
+func InPlaceTestnetCreator(testnetAppCreator types.AppCreator, defaultNodeHome string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "in-place-testnet [newChainID] [newOperatorAddress]",
 		Short: "Create and start a testnet from current local state",
@@ -653,8 +670,11 @@ before stopping the daemon.
 				fmt.Println("Operation cancelled.")
 				return nil
 			}
+			serverCtx.Viper.Set(KeyIsTestnet, true)
+			serverCtx.Viper.Set(KeyNewChainID, newChainID)
+			serverCtx.Viper.Set(KeyNewOpAddr, newOperatorAddress)
 
-			return startInProcess(serverCtx, clientCtx, nil, testnetAppCreator, newChainID, newOperatorAddress)
+			return startInProcess(serverCtx, clientCtx, testnetAppCreator)
 		},
 	}
 
@@ -664,7 +684,7 @@ before stopping the daemon.
 
 // testnetify modifies both state and blockStore, allowing the provided operator address and local validator key to control the network
 // that the state in the data folder represents. The chainID of the local genesis file is modified to match the provided chainID.
-func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorAddress string, testnetAppCreator types.TestnetAppCreator, db db.DB) (types.Application, error) {
+func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorAddress string, testnetAppCreator types.AppCreator, db db.DB) (types.Application, error) {
 	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
 	traceWriter, err := openTraceWriter(traceWriterFile)
 	if err != nil {
@@ -834,7 +854,9 @@ func testnetify(ctx *Context, config *cfg.Config, home, newChainID, newOperatorA
 
 	// testnetAppCreator makes any application side changes that must be made due to the above modifications.
 	// Also, it makes any optional application side changes to make running the testnet easier (voting times, fund accounts, etc).
-	testnetApp := testnetAppCreator(ctx.Logger, db, traceWriter, validatorAddress, userPubKey, newOperatorAddress, ctx.Viper)
+	ctx.Viper.Set(KeyNewValAddr, validatorAddress)
+	ctx.Viper.Set(KeyUserPubKey, userPubKey)
+	testnetApp := testnetAppCreator(ctx.Logger, db, traceWriter, ctx.Viper)
 
 	return testnetApp, err
 }

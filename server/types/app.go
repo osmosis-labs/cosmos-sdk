@@ -7,8 +7,6 @@ import (
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/crypto"
-	"github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -73,10 +71,6 @@ type (
 	// AppCreator is a function that allows us to lazily initialize an
 	// application using various configurations.
 	AppCreator func(log.Logger, dbm.DB, io.Writer, AppOptions) Application
-
-	// TestnetAppCreator serves a similar purpose as AppCreator, however is used for
-	// passing more information to the application layer needed to create a testnet from existing state.
-	TestnetAppCreator func(log.Logger, dbm.DB, io.Writer, bytes.HexBytes, crypto.PubKey, string, AppOptions) Application
 
 	// ModuleInitFlags takes a start command and adds modules specific init flags.
 	ModuleInitFlags func(startCmd *cobra.Command)

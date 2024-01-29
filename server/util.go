@@ -325,7 +325,7 @@ func AddCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator type
 }
 
 // AddTestnetCreatorCommand allows chains to create a testnet from the state existing in their node's data directory.
-func AddTestnetCreatorCommand(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.TestnetAppCreator, addStartFlags types.ModuleInitFlags) {
+func AddTestnetCreatorCommand(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, addStartFlags types.ModuleInitFlags) {
 	testnetCreateCmd := InPlaceTestnetCreator(appCreator, defaultNodeHome)
 	addStartFlags(testnetCreateCmd)
 	rootCmd.AddCommand(testnetCreateCmd)
