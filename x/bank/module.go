@@ -40,6 +40,8 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
+// Random text to start CI
+
 // AppModuleBasic defines the basic application module used by the bank module.
 type AppModuleBasic struct {
 	cdc codec.Codec
