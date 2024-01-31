@@ -13,20 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting/client/cli"
 )
 
-const periods = `{
-    "start_time": 1625204910,
-    "periods": [
-        {
-            "coins": "10stake",
-            "length": 2592000
-        },
-        {
-            "coins": "10stake",
-            "length":2592000
-        }
-    ]
-}`
-
 type E2ETestSuite struct {
 	suite.Suite
 
@@ -248,8 +234,8 @@ func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
 			args: []string{
 				sdk.AccAddress("addr10______________").String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address),
-				fmt.Sprintf("--%s=%s", cli.FlagLockup, periods),
-				fmt.Sprintf("--%s=%s", cli.FlagVesting, periods),
+				fmt.Sprintf("--%s=%s", cli.FlagLockup, "testdata/period1.json"),
+				fmt.Sprintf("--%s=%s", cli.FlagVesting, "testdata/period1.json"),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
@@ -263,7 +249,7 @@ func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
 			args: []string{
 				sdk.AccAddress("addr11______________").String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address),
-				fmt.Sprintf("--%s=%s", cli.FlagVesting, periods),
+				fmt.Sprintf("--%s=%s", cli.FlagVesting, "testdata/period1.json"),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
@@ -277,7 +263,7 @@ func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
 			args: []string{
 				sdk.AccAddress("addr12______________").String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address),
-				fmt.Sprintf("--%s=%s", cli.FlagLockup, periods),
+				fmt.Sprintf("--%s=%s", cli.FlagLockup, "testdata/period1.json"),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
@@ -291,8 +277,8 @@ func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
 			args: []string{
 				sdk.AccAddress("addr10______________").String(),
 				fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address),
-				fmt.Sprintf("--%s=%s", cli.FlagLockup, periods),
-				fmt.Sprintf("--%s=%s", cli.FlagVesting, periods),
+				fmt.Sprintf("--%s=%s", cli.FlagLockup, "testdata/period1.json"),
+				fmt.Sprintf("--%s=%s", cli.FlagVesting, "testdata/period1.json"),
 				fmt.Sprintf("--%s=%s", cli.FlagMerge, "true"),
 				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
@@ -389,8 +375,8 @@ func (s *E2ETestSuite) TestNewMsgClawbackCmd() {
 	_, err := clitestutil.ExecTestCLICmd(val.ClientCtx, cli.NewMsgCreateClawbackVestingAccountCmd(), []string{
 		addr.String(),
 		fmt.Sprintf("--%s=%s", flags.FlagFrom, val.Address),
-		fmt.Sprintf("--%s=%s", cli.FlagLockup, periods),
-		fmt.Sprintf("--%s=%s", cli.FlagVesting, periods),
+		fmt.Sprintf("--%s=%s", cli.FlagLockup, "testdata/period1.json"),
+		fmt.Sprintf("--%s=%s", cli.FlagVesting, "testdata/period1.json"),
 		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
 		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 		fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),

@@ -30,34 +30,34 @@ func (s *E2ETestSuite) TestCmdParams() {
 			[]string{},
 			`
 deposit_params:
-   max_deposit_period: 172800s
-   min_deposit:
-   - amount: "10000000"
-     denom: stake
+  max_deposit_period: 172800s
+  min_deposit:
+  - amount: "10000000"
+    denom: stake
 params:
-   burn_proposal_deposit_prevote: false
-   burn_vote_quorum: false
-   burn_vote_veto: true
-   expedited_min_deposit:
-   - amount: "50000000"
-     denom: stake
-   expedited_threshold: "0.667000000000000000"
-   expedited_voting_period: 86400s
-   max_deposit_period: 172800s
-   min_deposit:
-   - amount: "10000000"
-     denom: stake
-   min_initial_deposit_ratio: "0.000000000000000000"
-   quorum: "0.334000000000000000"
-   threshold: "0.500000000000000000"
-   veto_threshold: "0.334000000000000000"
-   voting_period: 172800s
+  burn_proposal_deposit_prevote: false
+  burn_vote_quorum: false
+  burn_vote_veto: true
+  expedited_min_deposit:
+  - amount: "50000000"
+    denom: stake
+  expedited_threshold: "0.667000000000000000"
+  expedited_voting_period: 86400s
+  max_deposit_period: 172800s
+  min_deposit:
+  - amount: "10000000"
+    denom: stake
+  min_initial_deposit_ratio: "0.000000000000000000"
+  quorum: "0.334000000000000000"
+  threshold: "0.500000000000000000"
+  veto_threshold: "0.334000000000000000"
+  voting_period: 172800s
 tally_params:
-   quorum: "0.334000000000000000"
-   threshold: "0.500000000000000000"
-   veto_threshold: "0.334000000000000000"
+  quorum: "0.334000000000000000"
+  threshold: "0.500000000000000000"
+  veto_threshold: "0.334000000000000000"
 voting_params:
-   voting_period: 172800s
+  voting_period: 172800s
 	`,
 		},
 	}
