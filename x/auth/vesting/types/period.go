@@ -176,11 +176,12 @@ func DisjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (int64, 
 	for iP < lenP && iQ < lenQ {
 		nextP := timeP + periodsP[iP].Length // next p event in absolute time
 		nextQ := timeQ + periodsQ[iQ].Length // next q event in absolute time
-		if nextP < nextQ {
+		switch {
+		case nextP < nextQ:
 			consumeP(nextP)
-		} else if nextP > nextQ {
+		case nextP > nextQ:
 			consumeQ(nextQ)
-		} else {
+		default:
 			consumeBoth(nextP)
 		}
 	}
@@ -275,11 +276,12 @@ func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTi
 	for iP < lenP && iQ < lenQ {
 		nextP := timeP + periodsP[iP].Length // next p event in absolute time
 		nextQ := timeQ + periodsQ[iQ].Length // next q event in absolute time
-		if nextP < nextQ {
+		switch {
+		case nextP < nextQ:
 			consumeP(nextP)
-		} else if nextP > nextQ {
+		case nextP > nextQ:
 			consumeQ(nextQ)
-		} else {
+		default:
 			consumeBoth(nextP)
 		}
 	}
