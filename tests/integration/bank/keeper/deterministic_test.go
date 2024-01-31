@@ -218,7 +218,7 @@ func (suite *DeterministicTestSuite) TestGRPCQueryTotalSupply() {
 	suite.Require().NoError(suite.bankKeeper.MintCoins(suite.ctx, minttypes.ModuleName, coins))
 
 	req := &banktypes.QueryTotalSupplyRequest{}
-	testdata.DeterministicIterations(suite.ctx, suite.Require(), req, suite.queryClient.TotalSupply, 243, false)
+	testdata.DeterministicIterations(suite.ctx, suite.Require(), req, suite.queryClient.TotalSupply, 3285, false)
 }
 
 func (suite *DeterministicTestSuite) TestGRPCQueryTotalSupplyOf() {
@@ -238,7 +238,7 @@ func (suite *DeterministicTestSuite) TestGRPCQueryTotalSupplyOf() {
 
 	suite.Require().NoError(suite.bankKeeper.MintCoins(suite.ctx, minttypes.ModuleName, sdk.NewCoins(coin)))
 	req := &banktypes.QuerySupplyOfRequest{Denom: coin.GetDenom()}
-	testdata.DeterministicIterations(suite.ctx, suite.Require(), req, suite.queryClient.SupplyOf, 1021, false)
+	testdata.DeterministicIterations(suite.ctx, suite.Require(), req, suite.queryClient.SupplyOf, 2033, false)
 }
 
 func (suite *DeterministicTestSuite) TestGRPCQueryParams() {
