@@ -617,8 +617,10 @@ func marshalYaml(i interface{}) (interface{}, error) {
 
 // Clawback Vesting Account
 
-var _ vestexported.VestingAccount = (*ClawbackVestingAccount)(nil)
-var _ authtypes.GenesisAccount = (*ClawbackVestingAccount)(nil)
+var (
+	_ vestexported.VestingAccount = (*ClawbackVestingAccount)(nil)
+	_ authtypes.GenesisAccount    = (*ClawbackVestingAccount)(nil)
+)
 
 // NewClawbackVestingAccount returns a new ClawbackVestingAccount
 func NewClawbackVestingAccount(
@@ -702,7 +704,6 @@ func CoinEq(a, b sdk.Coins) bool {
 func (va ClawbackVestingAccount) Validate() error {
 	if va.GetStartTime() >= va.GetEndTime() {
 		return errors.New("vesting start-time must be before end-time")
-
 	}
 
 	lockupEnd := va.GetStartTime()
@@ -778,7 +779,6 @@ func (cga clawbackGrantAction) AddToAccount(ctx sdk.Context, rawAccount exported
 	}
 	cva.addGrant(ctx, cga.grantStartTime, cga.grantLockupPeriods, cga.grantVestingPeriods, cga.grantCoins)
 	return nil
-
 }
 
 func (va *ClawbackVestingAccount) AddGrant(ctx sdk.Context, action exported.AddGrantAction) error {
