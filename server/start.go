@@ -99,11 +99,12 @@ const (
 	FlagMempoolMaxTxs = "mempool.max-txs"
 
 	// testnet keys
-	KeyIsTestnet  = "is-testnet"
-	KeyNewChainID = "new-chain-ID"
-	KeyNewOpAddr  = "new-operator-addr"
-	KeyNewValAddr = "new-validator-addr"
-	KeyUserPubKey = "user-pub-key"
+	KeyIsTestnet             = "is-testnet"
+	KeyNewChainID            = "new-chain-ID"
+	KeyNewOpAddr             = "new-operator-addr"
+	KeyNewValAddr            = "new-validator-addr"
+	KeyUserPubKey            = "user-pub-key"
+	KeyTriggerTestnetUpgrade = "trigger-testnet-upgrade"
 )
 
 // StartCmd runs the service passed in, either stand-alone or in-process with
@@ -663,6 +664,7 @@ before stopping the daemon.
 	}
 
 	addStartNodeFlags(cmd, defaultNodeHome)
+	cmd.Flags().String(KeyTriggerTestnetUpgrade, "", "If set (example: \"v21\"), triggers the v21 upgrade handler to run on the first block of the testnet")
 	return cmd
 }
 
