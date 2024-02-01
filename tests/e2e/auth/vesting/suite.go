@@ -223,6 +223,10 @@ func (s *E2ETestSuite) TestNewMsgCreatePermanentLockedAccountCmd() {
 }
 
 func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 	val := s.network.Validators[0]
 	for _, tc := range []struct {
 		name         string
