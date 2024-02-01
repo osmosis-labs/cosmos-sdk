@@ -358,6 +358,12 @@ func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
 			expectErr: true,
 		},
 	} {
+		// Synchronize height between test runs, to ensure sequence numbers are
+		// properly updated.
+		height, err := s.network.LatestHeight()
+		s.Require().NoError(err, "Getting initial latest height")
+		s.T().Logf("Initial latest height: %d", height)
+
 		s.Run(tc.name, func() {
 			clientCtx := val.ClientCtx
 
@@ -372,6 +378,10 @@ func (s *E2ETestSuite) TestNewMsgCreateClawbackVestingAccountCmd() {
 				s.Require().Equal(tc.expectedCode, txResp.Code)
 			}
 		})
+		next, err := s.network.WaitForHeight(height + 1)
+		s.Require().NoError(err, "Waiting for height...")
+		height = next
+		s.T().Logf("Height now: %d", height)
 	}
 }
 
@@ -394,6 +404,16 @@ func (s *E2ETestSuite) TestNewMsgClawbackCmd() {
 		fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
 	})
 	s.Require().NoError(err)
+
+	// Synchronize height between test runs, to ensure sequence numbers are
+	// properly updated.
+	height, err := s.network.LatestHeight()
+	s.Require().NoError(err, "Getting initial latest height")
+	s.T().Logf("Initial latest height: %d", height)
+	next, err := s.network.WaitForHeight(height + 1)
+	s.Require().NoError(err, "Waiting for height...")
+	height = next
+	s.T().Logf("Height now: %d", height)
 
 	for _, tc := range []struct {
 		name         string
@@ -445,6 +465,12 @@ func (s *E2ETestSuite) TestNewMsgClawbackCmd() {
 			respType:     &sdk.TxResponse{},
 		},
 	} {
+		// Synchronize height between test runs, to ensure sequence numbers are
+		// properly updated.
+		height, err := s.network.LatestHeight()
+		s.Require().NoError(err, "Getting initial latest height")
+		s.T().Logf("Initial latest height: %d", height)
+
 		s.Run(tc.name, func() {
 			clientCtx := val.ClientCtx
 
@@ -459,5 +485,9 @@ func (s *E2ETestSuite) TestNewMsgClawbackCmd() {
 				s.Require().Equal(tc.expectedCode, txResp.Code)
 			}
 		})
+		next, err := s.network.WaitForHeight(height + 1)
+		s.Require().NoError(err, "Waiting for height...")
+		height = next
+		s.T().Logf("Height now: %d", height)
 	}
 }
