@@ -205,7 +205,7 @@ func TestDepositAmount(t *testing.T) {
 			require.NoError(t, err)
 
 			tp := TestProposal
-			proposal, err := govKeeper.SubmitProposal(ctx, tp, "", "title", "summary", testAddrs[0])
+			proposal, err := govKeeper.SubmitProposal(ctx, tp, "", "title", "summary", testAddrs[0], false)
 			require.NoError(t, err)
 			proposalID := proposal.Id
 
@@ -321,7 +321,7 @@ func TestValidateInitialDeposit(t *testing.T) {
 
 			govKeeper.SetParams(ctx, params)
 
-			err := govKeeper.ValidateInitialDeposit(ctx, tc.initialDeposit, tc.expedited)
+			err := govKeeper.ValidateInitialDeposit(ctx, params, tc.initialDeposit, tc.expedited)
 
 			if tc.expectError {
 				require.Error(t, err)
