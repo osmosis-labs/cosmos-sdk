@@ -847,6 +847,7 @@ func (k Keeper) Undelegate(
 func (k Keeper) InstantUndelegate(
 	ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, sharesAmount sdk.Dec,
 ) (sdk.Coins, error) {
+
 	validator, found := k.GetValidator(ctx, valAddr)
 	if !found {
 		return nil, types.ErrNoDelegatorForAddress
@@ -871,6 +872,7 @@ func (k Keeper) InstantUndelegate(
 		return nil, err
 	}
 	return res, nil
+
 }
 
 // CompleteUnbonding completes the unbonding of all mature entries in the
