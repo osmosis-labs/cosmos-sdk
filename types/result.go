@@ -14,6 +14,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
+var cdc = codec.NewLegacyAmino()
+
 func (gi GasInfo) String() string {
 	bz, _ := codec.MarshalYAML(codec.NewProtoCodec(nil), &gi)
 	return string(bz)
@@ -47,7 +49,7 @@ func NewABCIMessageLog(i uint32, log string, events Events) ABCIMessageLog {
 // String implements the fmt.Stringer interface for the ABCIMessageLogs type.
 func (logs ABCIMessageLogs) String() (str string) {
 	if logs != nil {
-		raw, err := json.Marshal(logs)
+		raw, err := cdc.MarshalJSON(logs)
 		if err == nil {
 			str = string(raw)
 		}

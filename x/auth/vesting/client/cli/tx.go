@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
@@ -220,7 +221,7 @@ func NewMsgCreatePeriodicVestingAccountCmd() *cobra.Command {
 // readScheduleFile reads the file at path and unmarshals it to get the schedule.
 // Returns start time, periods, and error.
 func readScheduleFile(path string) (int64, []types.Period, error) {
-	contents, err := os.ReadFile(path)
+	contents, err := ioutil.ReadFile(path)
 	if err != nil {
 		return 0, nil, err
 	}

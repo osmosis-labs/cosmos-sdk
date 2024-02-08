@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -11,7 +10,7 @@ import (
 )
 
 // GetSupplyOffset retrieves the SupplyOffset from store for a specific denom
-func (k BaseViewKeeper) GetSupplyOffset(ctx sdk.Context, denom string) math.Int {
+func (k BaseViewKeeper) GetSupplyOffset(ctx sdk.Context, denom string) sdk.Int {
 	store := ctx.KVStore(k.storeKey)
 	supplyOffsetStore := prefix.NewStore(store, types.SupplyOffsetKey)
 
@@ -20,7 +19,7 @@ func (k BaseViewKeeper) GetSupplyOffset(ctx sdk.Context, denom string) math.Int 
 		return sdk.NewInt(0)
 	}
 
-	var amount math.Int
+	var amount sdk.Int
 	err := amount.Unmarshal(bz)
 	if err != nil {
 		panic(fmt.Errorf("unable to unmarshal supply offset value %v", err))
@@ -30,7 +29,7 @@ func (k BaseViewKeeper) GetSupplyOffset(ctx sdk.Context, denom string) math.Int 
 }
 
 // setSupplyOffset sets the supply offset for the given denom
-func (k BaseKeeper) setSupplyOffset(ctx sdk.Context, denom string, offsetAmount math.Int) {
+func (k BaseKeeper) setSupplyOffset(ctx sdk.Context, denom string, offsetAmount sdk.Int) {
 	intBytes, err := offsetAmount.Marshal()
 	if err != nil {
 		panic(fmt.Errorf("unable to marshal amount value %v", err))
@@ -48,7 +47,7 @@ func (k BaseKeeper) setSupplyOffset(ctx sdk.Context, denom string, offsetAmount 
 }
 
 // AddSupplyOffset adjusts the current supply offset of a denom by the inputted offsetAmount
-func (k BaseKeeper) AddSupplyOffset(ctx sdk.Context, denom string, offsetAmount math.Int) {
+func (k BaseKeeper) AddSupplyOffset(ctx sdk.Context, denom string, offsetAmount sdk.Int) {
 	k.setSupplyOffset(ctx, denom, k.GetSupplyOffset(ctx, denom).Add(offsetAmount))
 }
 
@@ -76,7 +75,7 @@ func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, paginati
 	pageRes, err := query.Paginate(supplyStore, pagination, func(key, value []byte) error {
 		denom := string(key)
 
-		var amount math.Int
+		var amount sdk.Int
 		err := amount.Unmarshal(value)
 		if err != nil {
 			return fmt.Errorf("unable to convert amount string to Int %v", err)
@@ -88,6 +87,7 @@ func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx sdk.Context, paginati
 		supply = supply.Add(sdk.NewCoin(denom, amount))
 		return nil
 	})
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -106,7 +106,7 @@ func (k BaseViewKeeper) IterateTotalSupplyWithOffsets(ctx sdk.Context, cb func(s
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		var amount math.Int
+		var amount sdk.Int
 		err := amount.Unmarshal(iterator.Value())
 		if err != nil {
 			panic(fmt.Errorf("unable to unmarshal supply value %v", err))
