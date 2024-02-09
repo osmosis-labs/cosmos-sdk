@@ -743,7 +743,7 @@ func testnetify(ctx *Context, home string, testnetAppCreator types.AppCreator, d
 	// This height difference changes how we go about modifying the state.
 	clientCreator := proxy.NewLocalClientCreator(testnetApp)
 	metrics := node.DefaultMetricsProvider(config.Instrumentation)
-	_, _, _, _, proxyMetrics := metrics(genDoc.ChainID)
+	_, _, _, _, proxyMetrics := metrics(genDoc.ChainID) //nolint:dogsled
 	proxyApp := proxy.NewAppConns(clientCreator, proxyMetrics)
 	if err := proxyApp.Start(); err != nil {
 		return nil, fmt.Errorf("error starting proxy app connections: %v", err)
@@ -760,20 +760,21 @@ func testnetify(ctx *Context, home string, testnetAppCreator types.AppCreator, d
 	appHeight := res.LastBlockHeight
 
 	var block *cmttypes.Block
-	if appHeight == blockStore.Height() {
+	switch {
+	case appHeight == blockStore.Height():
 		// This state occurs when we stop the node with the halt height flag, and need to handle differently
 		state.LastBlockHeight++
 		block = blockStore.LoadBlock(blockStore.Height())
 		block.AppHash = appHash
 		state.AppHash = appHash
-	} else if blockStore.Height() > state.LastBlockHeight {
+	case blockStore.Height() > state.LastBlockHeight:
 		// This state occurs when we kill the node
 		err = blockStore.DeleteLatestBlock()
 		if err != nil {
 			return nil, err
 		}
 		block = blockStore.LoadBlock(blockStore.Height())
-	} else {
+	default:
 		// If there is any other state, we just load the block
 		block = blockStore.LoadBlock(blockStore.Height())
 	}
