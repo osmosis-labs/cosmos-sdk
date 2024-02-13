@@ -337,7 +337,7 @@ func (s E2ETestSuite) TestGetTxEvents_GRPC() {
 			"with pagination",
 			&tx.GetTxsEventRequest{
 				Events: []string{bankMsgSendEventAction},
-				Page:   2,
+				Page:   1,
 				Limit:  2,
 			},
 			false, "", 2,
