@@ -2479,7 +2479,7 @@ func (s *E2ETestSuite) TestExecProposalsWhenMemberLeavesOrIsUpdated() {
 			s.Require().NoError(err)
 
 			if tc.expectLogErr {
-				s.Require().Contains(execResp.RawLog, tc.errMsg)
+				s.Require().Contains(execResp.Events, tc.errMsg)
 			}
 		})
 	}
