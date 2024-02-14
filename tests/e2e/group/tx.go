@@ -2486,9 +2486,9 @@ func (s *E2ETestSuite) TestExecProposalsWhenMemberLeavesOrIsUpdated() {
 }
 
 func (s *E2ETestSuite) getGroupIDFromTxResponse(txResp sdk.TxResponse) string {
-	s.Require().Greater(len(txResp.Events), 0)
-	s.Require().NotNil(txResp.Events[0])
-	events := txResp.Events
+	s.Require().Greater(len(txResp.Logs), 0)
+	s.Require().NotNil(txResp.Logs[0].Events)
+	events := txResp.Logs[0].Events
 	createProposalEvent, _ := sdk.TypedEventToEvent(&group.EventSubmitProposal{})
 
 	for _, e := range events {
