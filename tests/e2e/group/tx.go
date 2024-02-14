@@ -2479,7 +2479,19 @@ func (s *E2ETestSuite) TestExecProposalsWhenMemberLeavesOrIsUpdated() {
 			s.Require().NoError(err)
 
 			if tc.expectLogErr {
-				s.Require().Contains(execResp.Events, tc.errMsg)
+				found := false
+				for _, event := range execResp.Events {
+					for _, attr := range event.Attributes {
+						if attr.Value == tc.errMsg {
+							found = true
+							break
+						}
+					}
+					if found {
+						break
+					}
+				}
+				s.Require().True(found, "Expected to find '%s' in execResp.Events", tc.errMsg)
 			}
 		})
 	}
