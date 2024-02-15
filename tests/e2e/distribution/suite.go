@@ -40,6 +40,8 @@ func NewE2ETestSuite(cfg network.Config) *E2ETestSuite {
 func (s *E2ETestSuite) SetupSuite() {
 	s.T().Log("setting up e2e test suite")
 
+	// We distribute rewards every block here since we test the delayed distribution
+	// in another test.
 	distr.BlockMultipleToDistributeRewards = 1
 
 	cfg := network.DefaultConfig(simapp.NewTestNetworkFixture)

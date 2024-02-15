@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -15,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	dist "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/distribution/testutil"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -136,7 +136,6 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 		},
 	}
 	distrKeeper.AllocateTokens(ctx, 200, votes)
-	fmt.Println(distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
 
 	// 98 outstanding rewards (100 less 2 to community pool)
 	firstValidator0OutstandingRewards := distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards
@@ -165,8 +164,8 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 
 	// test that the block height triggers the distribution
 
-	// 9 is not a multiple of 10, should not trigger allocation (no change in rewards)
-	ctx = ctx.WithBlockHeight(9)
+	// block height is not a multiple, should not trigger allocation (no change in rewards)
+	ctx = ctx.WithBlockHeight(dist.BlockMultipleToDistributeRewards - 1)
 	app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: tmproto.Header{ProposerAddress: valAddrs[0].Bytes()},
 		LastCommitInfo: abci.CommitInfo{
 			Votes: votes,
@@ -179,7 +178,9 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	require.Equal(t, firstValidator0CurrentRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
 	require.Equal(t, firstValidator1CurrentRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
 
-	// 10 is a multiple of 10, should trigger allocation
+	// block height is not a multiple, should trigger allocation
+	ctx = ctx.WithBlockHeight(dist.BlockMultipleToDistributeRewards)
+
 	feesCollectedInt := bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 
 	// feesCollected was increased from last BeginBlocker call, then will occur again from the new BeginBlocker call,
@@ -198,7 +199,6 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	pendingCommission := firstValidator0OutstandingRewards.Add(newRewards...)
 	pendingCommission[0].Amount = pendingCommission[0].Amount.Quo(sdk.NewDec(2))
 
-	ctx = ctx.WithBlockHeight(10)
 	app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: tmproto.Header{ProposerAddress: valAddrs[0].Bytes()},
 		LastCommitInfo: abci.CommitInfo{
 			Votes: votes,

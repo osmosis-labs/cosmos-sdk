@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
-var BlockMultipleToDistributeRewards = int64(10)
+var BlockMultipleToDistributeRewards = int64(20)
 
 // BeginBlocker sets the proposer for determining distribution during endblock
 // and distribute rewards for the previous block.
