@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -135,25 +136,81 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 		},
 	}
 	distrKeeper.AllocateTokens(ctx, 200, votes)
+	fmt.Println(distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
 
 	// 98 outstanding rewards (100 less 2 to community pool)
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards)
+	firstValidator0OutstandingRewards := distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards
+	firstValidator1OutstandingRewards := distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, firstValidator0OutstandingRewards)
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, firstValidator1OutstandingRewards)
 
 	// 2 community pool coins
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: math.LegacyNewDec(2)}}, distrKeeper.GetFeePool(ctx).CommunityPool)
 
 	// 50% commission for first proposer, (0.5 * 98%) * 100 / 2 = 23.25
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(2450, 2)}}, distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission)
+	firstValidator0Commission := distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(2450, 2)}}, firstValidator0Commission)
 
 	// zero commission for second proposer
-	require.True(t, distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission.IsZero())
+	firstValidator1Commission := distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission
+	require.True(t, firstValidator1Commission.IsZero())
 
 	// just staking.proportional for first proposer less commission = (0.5 * 98%) * 100 / 2 = 24.50
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(2450, 2)}}, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
+	firstValidator0CurrentRewards := distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(2450, 2)}}, firstValidator0CurrentRewards)
 
 	// proposer reward + staking.proportional for second proposer = (0.5 * (98%)) * 100 = 49
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
+	firstValidator1CurrentRewards := distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, firstValidator1CurrentRewards)
+
+	// test that the block height triggers the distribution
+
+	// 9 is not a multiple of 10, should not trigger allocation (no change in rewards)
+	ctx = ctx.WithBlockHeight(9)
+	app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: tmproto.Header{ProposerAddress: valAddrs[0].Bytes()},
+		LastCommitInfo: abci.CommitInfo{
+			Votes: votes,
+		},
+	})
+	require.Equal(t, firstValidator0OutstandingRewards, distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
+	require.Equal(t, firstValidator1OutstandingRewards, distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards)
+	require.Equal(t, firstValidator0Commission, distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission)
+	require.Equal(t, firstValidator1Commission, distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission)
+	require.Equal(t, firstValidator0CurrentRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
+	require.Equal(t, firstValidator1CurrentRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
+
+	// 10 is a multiple of 10, should trigger allocation
+	feesCollectedInt := bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
+
+	// feesCollected was increased from last BeginBlocker call, then will occur again from the new BeginBlocker call,
+	// so we need to double the feesCollected to simulate the new BeginBlocker call
+	feesCollectedInt[0].Amount = feesCollectedInt[0].Amount.MulRaw(2)
+	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
+
+	communityTax := distrKeeper.GetCommunityTax(ctx)
+	voteMultiplier := math.LegacyOneDec().Sub(communityTax)
+	feeMultiplier := feesCollected.MulDecTruncate(voteMultiplier)
+	powerFraction := math.LegacyNewDec(100).QuoTruncate(math.LegacyNewDec(200))
+
+	newRewards := feeMultiplier.MulDecTruncate(powerFraction)
+	pendingRewards := firstValidator0OutstandingRewards.Add(newRewards...)
+
+	pendingCommission := firstValidator0OutstandingRewards.Add(newRewards...)
+	pendingCommission[0].Amount = pendingCommission[0].Amount.Quo(sdk.NewDec(2))
+
+	ctx = ctx.WithBlockHeight(10)
+	app.BeginBlocker(ctx, abci.RequestBeginBlock{Header: tmproto.Header{ProposerAddress: valAddrs[0].Bytes()},
+		LastCommitInfo: abci.CommitInfo{
+			Votes: votes,
+		},
+	})
+
+	require.Equal(t, pendingRewards, distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
+	require.Equal(t, pendingRewards, distrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards)
+	require.Equal(t, pendingCommission, distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission)
+	require.True(t, distrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission.IsZero())
+	require.Equal(t, pendingCommission, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
+	require.Equal(t, pendingRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
 }
 
 func TestAllocateTokensTruncation(t *testing.T) {

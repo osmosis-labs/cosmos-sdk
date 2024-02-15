@@ -23,7 +23,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 	blockHeight := ctx.BlockHeight()
 	// only allocate rewards if the block height is greater than 1
 	// and for every multiple of 10 blocks for performance reasons.
-	if blockHeight > 1 && blockHeight%BlockMultipleToDistributeRewards == 0 {
+	if (blockHeight > 1 && blockHeight%BlockMultipleToDistributeRewards == 0) || blockHeight == 2 {
 		// determine the total power signing the block
 		var previousTotalPower int64
 		for _, voteInfo := range req.LastCommitInfo.GetVotes() {
