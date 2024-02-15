@@ -24,7 +24,10 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 
 	// TODO this is Tendermint-dependent
 	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
-	if ctx.BlockHeight() > 1 {
+	blockHeight := ctx.BlockHeight()
+	// only allocate rewards if the block height is greater than 1
+	// and only allocate rewards for every multiple of 10 blocks for performance reasons.
+	if blockHeight > 1 && blockHeight%10 == 0 {
 		k.AllocateTokens(ctx, previousTotalPower, req.LastCommitInfo.GetVotes())
 	}
 
