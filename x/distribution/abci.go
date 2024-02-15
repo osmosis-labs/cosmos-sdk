@@ -16,18 +16,18 @@ import (
 func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
-	// determine the total power signing the block
-	var previousTotalPower int64
-	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
-		previousTotalPower += voteInfo.Validator.Power
-	}
-
 	// TODO this is Tendermint-dependent
 	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
 	blockHeight := ctx.BlockHeight()
 	// only allocate rewards if the block height is greater than 1
 	// and only allocate rewards for every multiple of 10 blocks for performance reasons.
 	if blockHeight > 1 && blockHeight%10 == 0 {
+		// determine the total power signing the block
+		var previousTotalPower int64
+		for _, voteInfo := range req.LastCommitInfo.GetVotes() {
+			previousTotalPower += voteInfo.Validator.Power
+		}
+
 		k.AllocateTokens(ctx, previousTotalPower, req.LastCommitInfo.GetVotes())
 	}
 
