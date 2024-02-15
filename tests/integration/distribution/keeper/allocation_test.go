@@ -178,7 +178,7 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	require.Equal(t, firstValidator0CurrentRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
 	require.Equal(t, firstValidator1CurrentRewards, distrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
 
-	// block height is not a multiple, should trigger allocation
+	// block height is a multiple, should trigger allocation
 	ctx = ctx.WithBlockHeight(dist.BlockMultipleToDistributeRewards)
 
 	feesCollectedInt := bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
