@@ -22,7 +22,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
 	blockHeight := ctx.BlockHeight()
 	// only allocate rewards if the block height is greater than 1
-	// and for every multiple of 10 blocks for performance reasons.
+	// and for every multiple of 20 blocks for performance reasons.
 	if blockHeight > 1 && blockHeight%BlockMultipleToDistributeRewards == 0 {
 		// determine the total power signing the block
 		var previousTotalPower int64
