@@ -19,6 +19,7 @@ import (
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/distribution/client/cli"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -41,6 +42,10 @@ func NewE2ETestSuite(cfg network.Config) *E2ETestSuite {
 // these state changes to be present in other tests.
 func (s *E2ETestSuite) SetupSuite() {
 	s.T().Log("setting up e2e test suite")
+
+	// We distribute rewards every block here since we test the delayed distribution
+	// in another test.
+	distr.BlockMultipleToDistributeRewards = 1
 
 	cfg := network.DefaultConfig(simapp.NewTestNetworkFixture)
 	cfg.NumValidators = 1
