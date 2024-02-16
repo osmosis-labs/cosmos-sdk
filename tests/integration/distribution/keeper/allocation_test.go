@@ -72,6 +72,10 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 		stakingKeeper *stakingkeeper.Keeper
 	)
 
+	// set distribute to every block for first test.
+	// we test the delayed distribution in the next test.
+	dist.BlockMultipleToDistributeRewards = 1
+
 	app, err := simtestutil.Setup(testutil.AppConfig,
 		&accountKeeper,
 		&bankKeeper,
@@ -163,6 +167,7 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: sdk.NewDecWithPrec(490, 1)}}, firstValidator1CurrentRewards)
 
 	// test that the block height triggers the distribution
+	dist.BlockMultipleToDistributeRewards = 50
 
 	// block height is not a multiple, should not trigger allocation (no change in rewards)
 	ctx = ctx.WithBlockHeight(dist.BlockMultipleToDistributeRewards - 1)
