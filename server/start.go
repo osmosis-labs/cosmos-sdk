@@ -21,6 +21,7 @@ import (
 	db "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/abci/server"
 	tcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
+	cmtcfg "github.com/cometbft/cometbft/config"
 	cmtjson "github.com/cometbft/cometbft/libs/json"
 	"github.com/cometbft/cometbft/node"
 	"github.com/cometbft/cometbft/p2p"
@@ -742,9 +743,7 @@ func testnetify(ctx *Context, home string, testnetAppCreator types.AppCreator, d
 	// Depending on how the node was stopped, the application height can differ from the blockStore height.
 	// This height difference changes how we go about modifying the state.
 	clientCreator := proxy.NewLocalClientCreator(testnetApp)
-	// This metrics provider is just for the proxy app, so we can utilize a nil input.
-	// If prometheus is enabled and we don't use a nil input, this panics.
-	metrics := node.DefaultMetricsProvider(nil)
+	metrics := node.DefaultMetricsProvider(cmtcfg.DefaultConfig().Instrumentation)
 	_, _, _, _, proxyMetrics := metrics(genDoc.ChainID) //nolint:dogsled
 	proxyApp := proxy.NewAppConns(clientCreator, proxyMetrics)
 	if err := proxyApp.Start(); err != nil {
@@ -761,16 +760,30 @@ func testnetify(ctx *Context, home string, testnetAppCreator types.AppCreator, d
 	appHash := res.LastBlockAppHash
 	appHeight := res.LastBlockHeight
 
+	// Delete the walDir and recreate the folder.
+	// These write ahead logs cause edge cases and serve no purpose for the testnet.
+	walDir := fmt.Sprintf("%s/cs.wal", config.DBDir())
+	err = os.RemoveAll(walDir)
+	if err != nil {
+		return nil, err
+	}
+	err = os.MkdirAll(walDir, 0o755)
+	if err != nil {
+		return nil, err
+	}
+
 	var block *cmttypes.Block
 	switch {
 	case appHeight == blockStore.Height():
-		// This state occurs when we stop the node with the halt height flag, and need to handle differently
-		state.LastBlockHeight++
 		block = blockStore.LoadBlock(blockStore.Height())
-		block.AppHash = appHash
-		state.AppHash = appHash
+		// If the state's last blockstore height does not match the app and blockstore height, we likely stopped with the halt height flag.
+		if state.LastBlockHeight != appHeight {
+			state.LastBlockHeight++
+			block.AppHash = appHash
+			state.AppHash = appHash
+		}
 	case blockStore.Height() > state.LastBlockHeight:
-		// This state occurs when we kill the node
+		// This state usually occurs when we sig kill the node.
 		err = blockStore.DeleteLatestBlock()
 		if err != nil {
 			return nil, err
@@ -813,15 +826,21 @@ func testnetify(ctx *Context, home string, testnetAppCreator types.AppCreator, d
 	block.LastCommit.Signatures[0].Signature = vote.Signature
 	block.LastCommit.Signatures = []cmttypes.CommitSig{block.LastCommit.Signatures[0]}
 
-	// Load the seenCommit of the lastBlockHeight and modify it to be signed from our validator
-	seenCommit := blockStore.LoadSeenCommit(state.LastBlockHeight)
-	seenCommit.BlockID = state.LastBlockID
-	seenCommit.Round = vote.Round
-	seenCommit.Signatures[0].Signature = vote.Signature
-	seenCommit.Signatures[0].ValidatorAddress = validatorAddress
-	seenCommit.Signatures[0].Timestamp = vote.Timestamp
-	seenCommit.Signatures = []cmttypes.CommitSig{seenCommit.Signatures[0]}
-	err = blockStore.SaveSeenCommit(state.LastBlockHeight, seenCommit)
+	// Create a commit signed from our validator and save it
+	seenCommit := cmttypes.Commit{
+		Height:  state.LastBlockHeight,
+		Round:   vote.Round,
+		BlockID: state.LastBlockID,
+		Signatures: []cmttypes.CommitSig{
+			{
+				BlockIDFlag:      cmttypes.BlockIDFlagCommit,
+				Signature:        vote.Signature,
+				ValidatorAddress: validatorAddress,
+				Timestamp:        vote.Timestamp,
+			},
+		},
+	}
+	err = blockStore.SaveSeenCommit(state.LastBlockHeight, &seenCommit)
 	if err != nil {
 		return nil, err
 	}
