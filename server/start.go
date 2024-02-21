@@ -742,7 +742,9 @@ func testnetify(ctx *Context, home string, testnetAppCreator types.AppCreator, d
 	// Depending on how the node was stopped, the application height can differ from the blockStore height.
 	// This height difference changes how we go about modifying the state.
 	clientCreator := proxy.NewLocalClientCreator(testnetApp)
-	metrics := node.DefaultMetricsProvider(config.Instrumentation)
+	// This metrics provider is just for the proxy app, so we can utilize a nil input.
+	// If prometheus is enabled and we don't use a nil input, this panics.
+	metrics := node.DefaultMetricsProvider(nil)
 	_, _, _, _, proxyMetrics := metrics(genDoc.ChainID) //nolint:dogsled
 	proxyApp := proxy.NewAppConns(clientCreator, proxyMetrics)
 	if err := proxyApp.Start(); err != nil {
