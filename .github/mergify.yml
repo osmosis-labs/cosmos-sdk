@@ -38,3 +38,4 @@ pull_request_rules:
       backport:
         branches:
           - osmo-v23/v0.47.5
+          - osmo-v23/v0.47.5-iavl-v1
