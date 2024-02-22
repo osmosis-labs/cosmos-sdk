@@ -10,7 +10,12 @@ import (
 
 func TestImmutableTreePanics(t *testing.T) {
 	t.Parallel()
+<<<<<<< HEAD
 	immTree := iavl.NewImmutableTree(dbm.NewMemDB(), 100, false)
+=======
+	db := wrapper.NewIAVLDB(dbm.NewMemDB())
+	immTree := iavl.NewImmutableTree(db, 100, false, log.NewNopLogger())
+>>>>>>> 1434d548a (fix: iavl grow issue (#535))
 	it := &immutableTree{immTree}
 	require.Panics(t, func() { it.Set([]byte{}, []byte{}) })
 	require.Panics(t, func() { it.Remove([]byte{}) })

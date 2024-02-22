@@ -53,7 +53,12 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/gogoproto v1.4.10 // indirect
+<<<<<<< HEAD
 	github.com/cosmos/iavl v0.20.0 // indirect
+=======
+	github.com/cosmos/iavl v1.0.2-0.20240221171955-e019f7411ec7 // indirect
+	github.com/cosmos/ics23/go v0.10.0 // indirect
+>>>>>>> 1434d548a (fix: iavl grow issue (#535))
 	github.com/cosmos/ledger-cosmos-go v0.12.1 // indirect
 	github.com/cosmos/rosetta-sdk-go v0.10.0 // indirect
 	github.com/creachadair/taskgroup v0.3.2 // indirect

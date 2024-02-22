@@ -89,9 +89,14 @@ func testPrefixStore(t *testing.T, baseStore types.KVStore, prefix []byte) {
 }
 
 func TestIAVLStorePrefix(t *testing.T) {
+<<<<<<< HEAD
 	db := dbm.NewMemDB()
 	tree, err := tiavl.NewMutableTree(db, cacheSize, false)
 	require.NoError(t, err)
+=======
+	db := wrapper.NewIAVLDB(dbm.NewMemDB())
+	tree := tiavl.NewMutableTree(db, cacheSize, false, log.NewNopLogger())
+>>>>>>> 1434d548a (fix: iavl grow issue (#535))
 	iavlStore := iavl.UnsafeNewStore(tree)
 
 	testPrefixStore(t, iavlStore, []byte("test"))
