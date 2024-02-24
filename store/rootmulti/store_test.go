@@ -511,7 +511,7 @@ func TestMultiStore_Pruning(t *testing.T) {
 				ms.Commit()
 			}
 
-			ms.wg.Wait()
+			time.Sleep(1 * time.Second)
 
 			for _, v := range tc.saved {
 				_, err := ms.CacheMultiStoreWithVersion(v)

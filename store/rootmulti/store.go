@@ -618,9 +618,6 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 	}
 	defer rs.pruneMutex.Unlock()
 
-	rs.wg.Add(1)
-	defer rs.wg.Done()
-
 	if clearPruningManager {
 		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
 		if err != nil {
