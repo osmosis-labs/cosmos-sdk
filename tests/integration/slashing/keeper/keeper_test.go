@@ -58,9 +58,9 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.slashingKeeper.SetParams(ctx, testutil.TestParams())
 	addrDels := simtestutil.AddTestAddrsIncremental(s.bankKeeper, s.stakingKeeper, ctx, 5, s.stakingKeeper.TokensFromConsensusPower(ctx, 200))
 
-	info1 := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addrDels[0]), int64(4), int64(3),
+	info1 := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addrDels[0]), int64(4),
 		time.Unix(2, 0), false, int64(10))
-	info2 := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addrDels[1]), int64(5), int64(4),
+	info2 := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addrDels[1]), int64(5),
 		time.Unix(2, 0), false, int64(10))
 
 	s.slashingKeeper.SetValidatorSigningInfo(ctx, sdk.ConsAddress(addrDels[0]), info1)
