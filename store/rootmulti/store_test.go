@@ -511,6 +511,8 @@ func TestMultiStore_Pruning(t *testing.T) {
 				ms.Commit()
 			}
 
+			ms.wg.Wait()
+
 			for _, v := range tc.saved {
 				_, err := ms.CacheMultiStoreWithVersion(v)
 				require.NoError(t, err, "expected no error when loading height: %d", v)

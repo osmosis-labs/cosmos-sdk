@@ -74,6 +74,7 @@ type Store struct {
 	listeners           map[types.StoreKey][]types.WriteListener
 	commitHeader        cmtproto.Header
 	pruneMutex          sync.Mutex
+	wg                  sync.WaitGroup
 }
 
 var (
@@ -616,6 +617,9 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 		return nil
 	}
 	defer rs.pruneMutex.Unlock()
+
+	rs.wg.Add(1)
+	defer rs.wg.Done()
 
 	if clearPruningManager {
 		heights, err := rs.pruningManager.GetFlushAndResetPruningHeights()
