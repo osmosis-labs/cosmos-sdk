@@ -74,7 +74,6 @@ type Store struct {
 	listeners           map[types.StoreKey][]types.WriteListener
 	commitHeader        cmtproto.Header
 	pruneMutex          sync.Mutex
-	wg                  sync.WaitGroup
 }
 
 var (
