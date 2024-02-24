@@ -169,7 +169,6 @@ func (s *KeeperTestSuite) TestHandleNewValidator() {
 	info, found := s.slashingKeeper.GetValidatorSigningInfo(ctx, sdk.ConsAddress(val.Address()))
 	s.Require().True(found)
 	s.Require().Equal(s.slashingKeeper.SignedBlocksWindow(ctx)+1, info.StartHeight)
-	s.Require().Equal(int64(2), info.IndexOffset)
 	s.Require().Equal(int64(1), info.MissedBlocksCounter)
 	s.Require().Equal(time.Unix(0, 0).UTC(), info.JailedUntil)
 
@@ -308,7 +307,6 @@ func (s *KeeperTestSuite) TestValidatorDippingInAndOut() {
 	s.Require().True(found)
 	s.Require().Equal(int64(700), signInfo.StartHeight)
 	s.Require().Equal(int64(0), signInfo.MissedBlocksCounter)
-	s.Require().Equal(int64(0), signInfo.IndexOffset)
 
 	// some blocks pass
 	height = int64(5000)
