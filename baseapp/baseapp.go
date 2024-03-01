@@ -781,7 +781,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte) (gInfo sdk.GasInfo, re
 // Handler does not exist for a given message route. Otherwise, a reference to a
 // Result is returned. The caller must not commit state if an error is returned.
 func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*sdk.Result, error) {
-	msgLogs := make(sdk.ABCIMessageLogs, 0, len(msgs))
 	events := sdk.EmptyEvents()
 	var msgResponses []*codectypes.Any
 
@@ -823,8 +822,6 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 			}
 			msgResponses = append(msgResponses, msgResponse)
 		}
-
-		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(i), msgResult.Log, msgEvents))
 	}
 
 	data, err := makeABCIData(msgResponses)
@@ -834,7 +831,6 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 	return &sdk.Result{
 		Data:         data,
-		Log:          strings.TrimSpace(msgLogs.String()),
 		Events:       events.ToABCIEvents(),
 		MsgResponses: msgResponses,
 	}, nil
