@@ -87,16 +87,17 @@ var (
 // LoadVersion must be called.
 func NewStore(db dbm.DB, logger log.Logger) *Store {
 	return &Store{
-		db:                  db,
-		logger:              logger,
-		iavlCacheSize:       iavl.DefaultIAVLCacheSize,
-		iavlDisableFastNode: iavlDisablefastNodeDefault,
-		storesParams:        make(map[types.StoreKey]storeParams),
-		stores:              make(map[types.StoreKey]types.CommitKVStore),
-		keysByName:          make(map[string]types.StoreKey),
-		listeners:           make(map[types.StoreKey][]types.WriteListener),
-		removalMap:          make(map[types.StoreKey]bool),
-		pruningManager:      pruning.NewManager(db, logger),
+		db:                          db,
+		logger:                      logger,
+		iavlCacheSize:               iavl.DefaultIAVLCacheSize,
+		iavlDisableFastNode:         iavlDisablefastNodeDefault,
+		iavlFastNodeModuleWhitelist: make(map[string]bool),
+		storesParams:                make(map[types.StoreKey]storeParams),
+		stores:                      make(map[types.StoreKey]types.CommitKVStore),
+		keysByName:                  make(map[string]types.StoreKey),
+		listeners:                   make(map[types.StoreKey][]types.WriteListener),
+		removalMap:                  make(map[types.StoreKey]bool),
+		pruningManager:              pruning.NewManager(db, logger),
 	}
 }
 
