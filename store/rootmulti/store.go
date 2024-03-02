@@ -128,7 +128,6 @@ func (rs *Store) SetIAVLDisableFastNode(disableFastNode bool) {
 }
 
 func (rs *Store) SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string) {
-	fmt.Println("calling SetIAVLFastNodeModuleWhitelist in store.go rootmulti", modulesToWhitelist)
 	for _, module := range modulesToWhitelist {
 		rs.iavlFastNodeModuleWhitelist[module] = true
 	}
