@@ -951,19 +951,15 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 	}
 
 	disabledFastNodes := rs.iavlDisableFastNode
-	fmt.Println("disabledFastNodes", disabledFastNodes)
 	// If fast nodes are enables:
 	if !rs.iavlDisableFastNode {
 		// If the whitelist is empty, fast nodes are enabled for all modules.
 		if len(rs.iavlFastNodeModuleWhitelist) == 0 {
-			fmt.Println("fast node enabled for all modules")
 			disabledFastNodes = false
 		} else {
 			// If the whitelist is not empty, fast nodes are enabled for only the modules in the whitelist.
 			disabledFastNodes = true
-			fmt.Println("fast node enabled only for whitelisted modules")
 			if _, ok := rs.iavlFastNodeModuleWhitelist[key.Name()]; ok {
-				fmt.Println("fast node enabled for module", key.Name())
 				rs.logger.Info("fast node enabled for module", "module", key.Name())
 				disabledFastNodes = false
 			}
