@@ -1,0 +1,12 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+  }
+}
+"ghcr.io/elanhasson/devcontainer-features/dotnet-aspire-daily:1":{}
+"ghcr.io/devcontainers/features/aws-cli:1": {}
+"ghcr.io/nordcominc/devcontainer-features/android-sdk:1": {}
+"ghcr.io/lee-orr/rusty-dev-containers/cargo-watch:0": {}
+"ghcr.io/devcontainers-contrib/features/activemq-sdkman:2": {}
+"ghcr.io/eliises/devcontainer-features/devcontainers-cli:1": {}
+"ghcr.io/devcontainers-contrib/features/kotlin-sdkman:2": {}
