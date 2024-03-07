@@ -32,7 +32,6 @@ func (s *KeeperTestSuite) TestGRPCSigningInfo() {
 	signingInfo := slashingtypes.NewValidatorSigningInfo(
 		consAddr,
 		0,
-		int64(0),
 		time.Unix(2, 0),
 		false,
 		int64(0),
@@ -58,7 +57,6 @@ func (s *KeeperTestSuite) TestGRPCSigningInfos() {
 	signingInfo := slashingtypes.NewValidatorSigningInfo(
 		consAddr1,
 		0,
-		int64(0),
 		time.Unix(2, 0),
 		false,
 		int64(0),

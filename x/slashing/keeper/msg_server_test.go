@@ -208,7 +208,7 @@ func (s *KeeperTestSuite) TestUnjail() {
 
 				s.Require().NoError(err)
 
-				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4), int64(3),
+				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4),
 					time.Unix(2, 0), false, int64(10))
 
 				s.slashingKeeper.SetValidatorSigningInfo(s.ctx, sdk.ConsAddress(addr), info)
@@ -238,7 +238,7 @@ func (s *KeeperTestSuite) TestUnjail() {
 
 				s.Require().NoError(err)
 
-				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4), int64(3),
+				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4),
 					time.Unix(2, 0), true, int64(10))
 
 				s.slashingKeeper.SetValidatorSigningInfo(s.ctx, sdk.ConsAddress(addr), info)
@@ -268,7 +268,7 @@ func (s *KeeperTestSuite) TestUnjail() {
 
 				s.Require().NoError(err)
 
-				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4), int64(3),
+				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4),
 					s.ctx.BlockTime().AddDate(0, 0, 1), false, int64(10))
 
 				s.slashingKeeper.SetValidatorSigningInfo(s.ctx, sdk.ConsAddress(addr), info)
@@ -298,7 +298,7 @@ func (s *KeeperTestSuite) TestUnjail() {
 				val.Jailed = true
 				s.Require().NoError(err)
 
-				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4), int64(3),
+				info := slashingtypes.NewValidatorSigningInfo(sdk.ConsAddress(addr), int64(4),
 					time.Unix(2, 0), false, int64(10))
 
 				s.slashingKeeper.SetValidatorSigningInfo(s.ctx, sdk.ConsAddress(addr), info)
