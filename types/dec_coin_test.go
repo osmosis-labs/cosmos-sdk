@@ -376,6 +376,9 @@ func (s *decCoinTestSuite) TestParseDecCoins() {
 	}{
 		{"", nil, false},
 		{"4stake", sdk.DecCoins{sdk.NewDecCoinFromDec("stake", sdk.NewDecFromInt(sdk.NewInt(4)))}, false},
+		{"5.5atom", sdk.DecCoins{
+			sdk.NewDecCoinFromDec("atom", math.LegacyNewDecWithPrec(5500000000000000000, math.LegacyPrecision)),
+		}, false},
 		{"5.5atom,4stake", sdk.DecCoins{
 			sdk.NewDecCoinFromDec("atom", sdk.NewDecWithPrec(5500000000000000000, sdk.Precision)),
 			sdk.NewDecCoinFromDec("stake", math.LegacyNewDec(4)),

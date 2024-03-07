@@ -112,6 +112,8 @@ func (s *coinTestSuite) TestCoinIsValid() {
 
 func (s *coinTestSuite) TestCustomValidation() {
 	newDnmRegex := `[\x{1F600}-\x{1F6FF}]`
+	reDnmString := `[a-zA-Z][a-zA-Z0-9/:._-]{2,127}`
+
 	sdk.SetCoinDenomRegex(func() string {
 		return newDnmRegex
 	})
@@ -130,7 +132,7 @@ func (s *coinTestSuite) TestCustomValidation() {
 	for i, tc := range cases {
 		s.Require().Equal(tc.expectPass, tc.coin.IsValid(), "unexpected result for IsValid, tc #%d", i)
 	}
-	sdk.SetCoinDenomRegex(sdk.DefaultCoinDenomRegex)
+	sdk.SetCoinDenomRegex(func() string { return reDnmString })
 }
 
 func (s *coinTestSuite) TestCoinsDenoms() {

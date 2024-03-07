@@ -4,6 +4,7 @@ run:
   timeout: 5m
   skip-files:
     - server/grpc/gogoreflection/serverreflection.go
+    - types/coin_regex.go
 
 linters:
   disable-all: true
