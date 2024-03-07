@@ -62,7 +62,7 @@ func (k Keeper) HandleValidatorSignatureWithParams(ctx sdk.Context, params types
 	missed := !signed
 	switch {
 	case !previous && missed:
-		modifiedSignInfo := true
+		modifiedSignInfo = true
 		// Bitmap value has changed from not missed to missed, so we flip the bit
 		// and increment the counter.
 		if err := k.SetMissedBlockBitmapValue(ctx, consAddr, index, true); err != nil {
