@@ -70,9 +70,9 @@ func SetIAVLDisableFastNode(disable bool) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetIAVLDisableFastNode(disable) }
 }
 
-// SetIAVLLazyLoading enables/disables lazy loading of the IAVL store.
-func SetIAVLLazyLoading(lazyLoading bool) func(*BaseApp) {
-	return func(bapp *BaseApp) { bapp.cms.SetLazyLoading(lazyLoading) }
+// SetIAVLFastNodeModuleWhitelist returns a BaseApp option function that sets the modules to whitelist for IAVL fast node.
+func SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string) func(*BaseApp) {
+	return func(bapp *BaseApp) { bapp.cms.SetIAVLFastNodeModuleWhitelist(modulesToWhitelist) }
 }
 
 // SetInterBlockCache provides a BaseApp option function that sets the
@@ -94,6 +94,11 @@ func SetMempool(mempool mempool.Mempool) func(*BaseApp) {
 // SetChainID sets the chain ID in BaseApp.
 func SetChainID(chainID string) func(*BaseApp) {
 	return func(app *BaseApp) { app.chainID = chainID }
+}
+
+// SetStoreLoader allows us to customize the rootMultiStore initialization.
+func SetStoreLoader(loader StoreLoader) func(*BaseApp) {
+	return func(app *BaseApp) { app.SetStoreLoader(loader) }
 }
 
 func (app *BaseApp) SetName(name string) {
