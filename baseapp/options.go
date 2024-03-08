@@ -84,6 +84,11 @@ func SetIAVLDisableFastNode(disable bool) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetIAVLDisableFastNode(disable) }
 }
 
+// SetIAVLFastNodeModuleWhitelist returns a BaseApp option function that sets the modules to whitelist for IAVL fast node.
+func SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string) func(*BaseApp) {
+	return func(bapp *BaseApp) { bapp.cms.SetIAVLFastNodeModuleWhitelist(modulesToWhitelist) }
+}
+
 // SetInterBlockCache provides a BaseApp option function that sets the
 // inter-block cache.
 func SetInterBlockCache(cache storetypes.MultiStorePersistentCache) func(*BaseApp) {
