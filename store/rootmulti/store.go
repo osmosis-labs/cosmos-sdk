@@ -974,15 +974,9 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		var err error
 
 		if params.initialVersion == 0 {
-<<<<<<< HEAD
-			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.lazyLoading, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.lazyLoading, rs.iavlCacheSize, disabledFastNodes)
 		} else {
-			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, rs.lazyLoading, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
-=======
-			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.iavlCacheSize, disabledFastNodes)
-		} else {
-			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, params.initialVersion, rs.iavlCacheSize, disabledFastNodes)
->>>>>>> 11b6186e0 (feat: per module fast nodes (#552))
+			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, rs.lazyLoading, params.initialVersion, rs.iavlCacheSize, disabledFastNodes)
 		}
 
 		if err != nil {

@@ -70,15 +70,14 @@ func SetIAVLDisableFastNode(disable bool) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetIAVLDisableFastNode(disable) }
 }
 
-<<<<<<< HEAD
 // SetIAVLLazyLoading enables/disables lazy loading of the IAVL store.
 func SetIAVLLazyLoading(lazyLoading bool) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetLazyLoading(lazyLoading) }
-=======
+}
+
 // SetIAVLFastNodeModuleWhitelist returns a BaseApp option function that sets the modules to whitelist for IAVL fast node.
 func SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string) func(*BaseApp) {
 	return func(bapp *BaseApp) { bapp.cms.SetIAVLFastNodeModuleWhitelist(modulesToWhitelist) }
->>>>>>> 11b6186e0 (feat: per module fast nodes (#552))
 }
 
 // SetInterBlockCache provides a BaseApp option function that sets the
