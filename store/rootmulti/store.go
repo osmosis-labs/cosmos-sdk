@@ -55,24 +55,25 @@ func keysForStoreKeyMap[V any](m map[types.StoreKey]V) []types.StoreKey {
 // cacheMultiStore which is used for branching other MultiStores. It implements
 // the CommitMultiStore interface.
 type Store struct {
-	db                  dbm.DB
-	logger              log.Logger
-	lastCommitInfo      *types.CommitInfo
-	pruningManager      *pruning.Manager
-	iavlCacheSize       int
-	iavlDisableFastNode bool
-	storesParams        map[types.StoreKey]storeParams
-	stores              map[types.StoreKey]types.CommitKVStore
-	keysByName          map[string]types.StoreKey
-	lazyLoading         bool
-	initialVersion      int64
-	removalMap          map[types.StoreKey]bool
-	traceWriter         io.Writer
-	traceContext        types.TraceContext
-	traceContextMutex   sync.Mutex
-	interBlockCache     types.MultiStorePersistentCache
-	listeners           map[types.StoreKey][]types.WriteListener
-	commitHeader        cmtproto.Header
+	db                          dbm.DB
+	logger                      log.Logger
+	lastCommitInfo              *types.CommitInfo
+	pruningManager              *pruning.Manager
+	iavlCacheSize               int
+	iavlDisableFastNode         bool
+	iavlFastNodeModuleWhitelist map[string]bool
+	storesParams                map[types.StoreKey]storeParams
+	stores                      map[types.StoreKey]types.CommitKVStore
+	keysByName                  map[string]types.StoreKey
+	lazyLoading                 bool
+	initialVersion              int64
+	removalMap                  map[types.StoreKey]bool
+	traceWriter                 io.Writer
+	traceContext                types.TraceContext
+	traceContextMutex           sync.Mutex
+	interBlockCache             types.MultiStorePersistentCache
+	listeners                   map[types.StoreKey][]types.WriteListener
+	commitHeader                cmtproto.Header
 }
 
 var (
@@ -86,16 +87,17 @@ var (
 // LoadVersion must be called.
 func NewStore(db dbm.DB, logger log.Logger) *Store {
 	return &Store{
-		db:                  db,
-		logger:              logger,
-		iavlCacheSize:       iavl.DefaultIAVLCacheSize,
-		iavlDisableFastNode: iavlDisablefastNodeDefault,
-		storesParams:        make(map[types.StoreKey]storeParams),
-		stores:              make(map[types.StoreKey]types.CommitKVStore),
-		keysByName:          make(map[string]types.StoreKey),
-		listeners:           make(map[types.StoreKey][]types.WriteListener),
-		removalMap:          make(map[types.StoreKey]bool),
-		pruningManager:      pruning.NewManager(db, logger),
+		db:                          db,
+		logger:                      logger,
+		iavlCacheSize:               iavl.DefaultIAVLCacheSize,
+		iavlDisableFastNode:         iavlDisablefastNodeDefault,
+		iavlFastNodeModuleWhitelist: make(map[string]bool),
+		storesParams:                make(map[types.StoreKey]storeParams),
+		stores:                      make(map[types.StoreKey]types.CommitKVStore),
+		keysByName:                  make(map[string]types.StoreKey),
+		listeners:                   make(map[types.StoreKey][]types.WriteListener),
+		removalMap:                  make(map[types.StoreKey]bool),
+		pruningManager:              pruning.NewManager(db, logger),
 	}
 }
 
@@ -123,6 +125,12 @@ func (rs *Store) SetIAVLCacheSize(cacheSize int) {
 
 func (rs *Store) SetIAVLDisableFastNode(disableFastNode bool) {
 	rs.iavlDisableFastNode = disableFastNode
+}
+
+func (rs *Store) SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string) {
+	for _, module := range modulesToWhitelist {
+		rs.iavlFastNodeModuleWhitelist[module] = true
+	}
 }
 
 // SetLazyLoading sets if the iavl store should be loaded lazily or not
@@ -312,7 +320,7 @@ func deleteKVStore(kv types.KVStore) error {
 		keys = append(keys, itr.Key())
 		itr.Next()
 	}
-	itr.Close()
+	_ = itr.Close()
 
 	for _, k := range keys {
 		kv.Delete(k)
@@ -328,7 +336,7 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 		newDB.Set(itr.Key(), itr.Value())
 		itr.Next()
 	}
-	itr.Close()
+	_ = itr.Close()
 
 	// then delete the old store
 	return deleteKVStore(oldDB)
@@ -460,7 +468,7 @@ func (rs *Store) Commit() types.CommitID {
 	rs.removalMap = make(map[types.StoreKey]bool)
 
 	if err := rs.handlePruning(version); err != nil {
-		panic(err)
+		rs.logger.Info("pruning failed at height", version, "err", err)
 	}
 
 	return types.CommitID{
@@ -626,6 +634,7 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 	}
 
 	rs.logger.Debug("pruning store", "heights", pruningHeights)
+	pruneHeight := pruningHeights[len(pruningHeights)-1]
 
 	for key, store := range rs.stores {
 		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
@@ -638,7 +647,7 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 
 		store = rs.GetCommitKVStore(key)
 
-		err := store.(*iavl.Store).DeleteVersions(pruningHeights...)
+		err := store.(*iavl.Store).DeleteVersionsTo(pruneHeight)
 		if err == nil {
 			continue
 		}
@@ -941,6 +950,22 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		db = dbm.NewPrefixDB(rs.db, []byte(prefix))
 	}
 
+	disabledFastNodes := rs.iavlDisableFastNode
+	// If fast nodes are enabled:
+	if !rs.iavlDisableFastNode {
+		// If the whitelist is empty, enable fast nodes for all modules.
+		if len(rs.iavlFastNodeModuleWhitelist) == 0 {
+			disabledFastNodes = false
+		} else {
+			// If the whitelist is not empty, enable fast nodes for only the modules in the whitelist.
+			disabledFastNodes = true
+			if _, ok := rs.iavlFastNodeModuleWhitelist[key.Name()]; ok {
+				rs.logger.Info("fast node enabled for module", "module", key.Name())
+				disabledFastNodes = false
+			}
+		}
+	}
+
 	switch params.typ {
 	case types.StoreTypeMulti:
 		panic("recursive MultiStores not yet supported")
@@ -950,9 +975,9 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		var err error
 
 		if params.initialVersion == 0 {
-			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.lazyLoading, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.iavlCacheSize, disabledFastNodes)
 		} else {
-			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, rs.lazyLoading, params.initialVersion, rs.iavlCacheSize, rs.iavlDisableFastNode)
+			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, params.initialVersion, rs.iavlCacheSize, disabledFastNodes)
 		}
 
 		if err != nil {
@@ -1022,12 +1047,7 @@ func (rs *Store) RollbackToVersion(target int64) error {
 			// If the store is wrapped with an inter-block cache, we must first unwrap
 			// it to get the underlying IAVL store.
 			store = rs.GetCommitKVStore(key)
-			var err error
-			if rs.lazyLoading {
-				_, err = store.(*iavl.Store).LazyLoadVersionForOverwriting(target)
-			} else {
-				_, err = store.(*iavl.Store).LoadVersionForOverwriting(target)
-			}
+			_, err := store.(*iavl.Store).LoadVersionForOverwriting(target)
 			if err != nil {
 				return err
 			}
