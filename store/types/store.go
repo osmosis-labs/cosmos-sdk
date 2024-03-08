@@ -191,8 +191,13 @@ type CommitMultiStore interface {
 	// SetIAVLDisableFastNode enables/disables fastnode feature on iavl.
 	SetIAVLDisableFastNode(disable bool)
 
+<<<<<<< HEAD
 	// SetIAVLLazyLoading enable/disable lazy loading on iavl.
 	SetLazyLoading(lazyLoading bool)
+=======
+	// SetIAVLFastNodeModuleWhitelist sets the modules to whitelist for IAVL fast node.
+	SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string)
+>>>>>>> 11b6186e0 (feat: per module fast nodes (#552))
 
 	// RollbackToVersion rollback the db to specific version(height).
 	RollbackToVersion(version int64) error
