@@ -37,9 +37,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
-<<<<<<< HEAD
-* (slashing) [#18959](https://github.com/cosmos/cosmos-sdk/pull/18959) Slight speedup to Slashing Beginblock logic
-=======
 * (store) [#525](https://github.com/osmosis-labs/cosmos-sdk/pull/525) CacheKV speedups
 * (slashing) [#548](https://github.com/osmosis-labs/cosmos-sdk/pull/548) Implement v0.50 slashing bitmap logic
 * (slashing) [#543](https://github.com/osmosis-labs/cosmos-sdk/pull/543) Make slashing not write sign info every block
@@ -93,7 +90,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 * (store) [#560](https://github.com/osmosis-labs/cosmos-sdk/pull/560) Enable fast nodes at a per module level
 
 ## [v0.47.5-v23-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-1)
->>>>>>> cf09bb59f (fix: module whitelist settings parse (#572))
 
 ## [v0.47.5](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.5) - 2023-09-01
 
