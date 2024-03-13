@@ -30,3 +30,20 @@ func DecodeAndConvert(bech string) (string, []byte, error) {
 
 	return hrp, converted, nil
 }
+
+// TrustedDataDecodeAndConvert decodes a bech32 encoded string and converts to base64 encoded bytes.
+// It assumes that the bech32 string is trusted data and does not check the checksum.
+func TrustedDataDecodeAndConvert(bech string) (string, []byte, error) {
+	// This function does not panic under any circumstance.
+	hrp, data, _, err := bech32.DecodeUnsafe(bech)
+	if err != nil {
+		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
+	}
+
+	converted, err := bech32.ConvertBits(data, 5, 8, false)
+	if err != nil {
+		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
+	}
+
+	return hrp, converted, nil
+}

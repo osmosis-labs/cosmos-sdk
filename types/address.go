@@ -209,6 +209,26 @@ func AccAddressFromBech32(address string) (addr AccAddress, err error) {
 	return AccAddress(bz), nil
 }
 
+func AccAddressFromTrustedBech32(address string) (addr AccAddress, err error) {
+	if len(strings.TrimSpace(address)) == 0 {
+		return AccAddress{}, errors.New("empty address string is not allowed")
+	}
+
+	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
+
+	bz, err := GetFromTrustedBech32(address, bech32PrefixAccAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	err = VerifyAddressFormat(bz)
+	if err != nil {
+		return nil, err
+	}
+
+	return AccAddress(bz), nil
+}
+
 // Returns boolean for whether two AccAddresses are Equal
 func (aa AccAddress) Equals(aa2 Address) bool {
 	if aa.Empty() && aa2.Empty() {
@@ -349,6 +369,26 @@ func ValAddressFromBech32(address string) (addr ValAddress, err error) {
 	bech32PrefixValAddr := GetConfig().GetBech32ValidatorAddrPrefix()
 
 	bz, err := GetFromBech32(address, bech32PrefixValAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	err = VerifyAddressFormat(bz)
+	if err != nil {
+		return nil, err
+	}
+
+	return ValAddress(bz), nil
+}
+
+func ValAddressFromTrustedBech32(address string) (addr ValAddress, err error) {
+	if len(strings.TrimSpace(address)) == 0 {
+		return ValAddress{}, errors.New("empty address string is not allowed")
+	}
+
+	bech32PrefixValAddr := GetConfig().GetBech32ValidatorAddrPrefix()
+
+	bz, err := GetFromTrustedBech32(address, bech32PrefixValAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -676,6 +716,23 @@ func GetFromBech32(bech32str, prefix string) ([]byte, error) {
 	}
 
 	hrp, bz, err := bech32.DecodeAndConvert(bech32str)
+	if err != nil {
+		return nil, err
+	}
+
+	if hrp != prefix {
+		return nil, fmt.Errorf("invalid Bech32 prefix; expected %s, got %s", prefix, hrp)
+	}
+
+	return bz, nil
+}
+
+func GetFromTrustedBech32(bech32str, prefix string) ([]byte, error) {
+	if len(bech32str) == 0 {
+		return nil, errBech32EmptyAddress
+	}
+
+	hrp, bz, err := bech32.TrustedDataDecodeAndConvert(bech32str)
 	if err != nil {
 		return nil, err
 	}
