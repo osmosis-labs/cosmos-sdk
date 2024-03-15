@@ -629,7 +629,7 @@ func ParseDecCoin(coinStr string) (coin DecCoin, err error) {
 		if err != nil {
 			return DecCoin{}, err
 		}
-	} else { //nolint:gocritic
+	} else {
 		coinStr = strings.TrimSpace(coinStr)
 
 		matches := reDecCoin.FindStringSubmatch(coinStr)
@@ -662,8 +662,8 @@ func ParseDecAmount(coinStr string) (string, string, error) {
 	parsingAmount := true
 
 	for _, r := range strings.TrimSpace(coinStr) {
-		if parsingAmount {
-			if unicode.IsDigit(r) || r == '.' {
+		if parsingAmount { //nolint:gocritic
+			if unicode.IsDigit(r) || r == '.' { //nolint:gocritic
 				amountRune = append(amountRune, r)
 			} else if unicode.IsSpace(r) { // if space is seen, indicates that we have finished parsing amount
 				parsingAmount = false
