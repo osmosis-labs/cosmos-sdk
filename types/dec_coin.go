@@ -624,12 +624,12 @@ func (coins DecCoins) Sort() DecCoins {
 func ParseDecCoin(coinStr string) (coin DecCoin, err error) {
 	var amountStr, denomStr string
 	// if custom parsing has not been set, use default coin regex
-	if reDecCoin == nil {
+	if reDecCoin == nil { //nolint:gocritic
 		amountStr, denomStr, err = ParseDecAmount(coinStr)
 		if err != nil {
 			return DecCoin{}, err
 		}
-	} else {
+	} else { //nolint:gocritic
 		coinStr = strings.TrimSpace(coinStr)
 
 		matches := reDecCoin.FindStringSubmatch(coinStr)

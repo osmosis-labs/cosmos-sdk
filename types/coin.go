@@ -856,17 +856,15 @@ func SetCoinDenomRegex(reFn func() string) {
 }
 
 // ValidateDenom is the default validation function for Coin.Denom.
-//
-//nolint:gocritic
 func ValidateDenom(denom string) error {
-	if reDnm == nil || reDecCoin == nil {
+	if reDnm == nil || reDecCoin == nil { //nolint:gocritic
 		// Convert the string to a byte slice as required by the Ragel-generated function.
 
 		// Call the Ragel-generated function.
-		if !MatchDenom(denom) {
+		if !MatchDenom(denom) { //nolint:gocritic
 			return fmt.Errorf("invalid denom: %s", denom)
 		}
-	} else if !reDnm.MatchString(denom) { // If reDnm has been initialized, use it for matching.
+	} else if !reDnm.MatchString(denom) { //nolint:gocritic // If reDnm has been initialized, use it for matching.
 		return fmt.Errorf("invalid denom: %s", denom)
 	}
 
