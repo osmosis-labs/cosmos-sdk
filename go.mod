@@ -25,7 +25,12 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogogateway v1.2.0
 	github.com/cosmos/gogoproto v1.4.10
+<<<<<<< HEAD
 	github.com/cosmos/iavl v0.20.0
+=======
+	github.com/cosmos/iavl v1.1.1-0.20240314205139-ca1d22d11bbb
+	github.com/cosmos/ics23/go v0.10.0
+>>>>>>> 9c12971eb (chore: update iavl minor version (#575))
 	github.com/cosmos/ledger-cosmos-go v0.12.1
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
