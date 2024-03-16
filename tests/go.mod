@@ -207,6 +207,8 @@ require (
 replace (
 	// We always want to test against the latest version of the simapp.
 	cosmossdk.io/simapp => ../simapp
+	// Needs to be replaced due to iavlFastNodeModuleWhitelist feature
+	cosmossdk.io/store => github.com/osmosis-labs/cosmos-sdk/store v0.1.0-alpha.1.0.20240509221435-b8feb2ffb728
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	// We always want to test against the latest version of the SDK.
 	github.com/cosmos/cosmos-sdk => ../.

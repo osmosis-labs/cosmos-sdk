@@ -348,7 +348,7 @@ func (s *CLITestSuite) TestCLITxGrantAuthorization() {
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(10))).String()),
 			},
 			true,
-			"invalid decimal coin expression",
+			"nvalid character in denomination: ",
 		},
 		{
 			"invalid authorization type",

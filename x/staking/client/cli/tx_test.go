@@ -449,7 +449,7 @@ func (s *CLITestSuite) TestNewDelegateCmd() {
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(10))).String()),
 			},
-			"invalid decimal coin expression: fooCoin",
+			"failed to parse decimal coin amount",
 		},
 		{
 			"invalid validator address",
@@ -513,7 +513,7 @@ func (s *CLITestSuite) TestNewRedelegateCmd() {
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(10))).String()),
 			},
-			"invalid decimal coin expression: fooCoin",
+			"failed to parse decimal coin amount",
 		},
 		{
 			"wrong src validator",
@@ -594,7 +594,7 @@ func (s *CLITestSuite) TestNewUnbondCmd() {
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(10))).String()),
 			},
-			"invalid decimal coin expression: foo",
+			"failed to parse decimal coin amount",
 		},
 		{
 			"invalid validator address",
@@ -671,7 +671,7 @@ func (s *CLITestSuite) TestNewCancelUnbondingDelegationCmd() {
 				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastSync),
 				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(10))).String()),
 			},
-			"invalid decimal coin expression",
+			"failed to parse decimal coin amount",
 		},
 		{
 			"without unbond creation height",
