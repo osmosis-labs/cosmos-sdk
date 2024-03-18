@@ -1,6 +1,8 @@
 package v4
 
 import (
+	"fmt"
+
 	"github.com/bits-and-blooms/bitset"
 	gogotypes "github.com/cosmos/gogoproto/types"
 
@@ -117,10 +119,14 @@ func GetValidatorMissedBlocks(
 func deleteValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress) {
 	iter := storetypes.KVStorePrefixIterator(store, validatorMissedBlockBitArrayPrefixKey(addr))
 	defer iter.Close()
+	i := 0
 
 	for ; iter.Valid(); iter.Next() {
+		i++
 		store.Delete(iter.Key())
 	}
+
+	fmt.Printf("deleted %d missed block bit array entries for validator %s\n", i, addr)
 }
 
 func setMissedBlockBitmapValue(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress, index int64, missed bool) error {
