@@ -21,11 +21,11 @@ func Migrate(ctx sdk.Context, cdc codec.BinaryCodec, store storetypes.KVStore, p
 	var missedBlocks []types.ValidatorMissedBlocks
 	iterateValidatorSigningInfos(ctx, cdc, store, func(addr sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
 		bechAddr := addr.String()
-		localMissedBlocks := GetValidatorMissedBlocks(ctx, cdc, store, addr, params)
+		//localMissedBlocks := GetValidatorMissedBlocks(ctx, cdc, store, addr, params)
 
 		missedBlocks = append(missedBlocks, types.ValidatorMissedBlocks{
 			Address:      bechAddr,
-			MissedBlocks: localMissedBlocks,
+			MissedBlocks: []types.MissedBlock{},
 		})
 
 		return false
