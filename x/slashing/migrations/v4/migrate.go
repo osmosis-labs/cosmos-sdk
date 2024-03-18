@@ -39,7 +39,7 @@ func Migrate(ctx sdk.Context, cdc codec.BinaryCodec, store storetypes.KVStore, p
 			return err
 		}
 
-		//deleteValidatorMissedBlockBitArray(ctx, store, addr)
+		deleteValidatorMissedBlockBitArray(ctx, store, addr)
 
 		for _, b := range mb.MissedBlocks {
 			// Note: It is not necessary to store entries with missed=false, i.e. where
