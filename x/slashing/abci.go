@@ -25,5 +25,5 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 	}
 
 	// If there are still old entries for the MissedBlockBitArray, delete them up until we hit the per block limit
-	k.DeleteDeprecatedValidatorMissedBlockBitArray(ctx, 1000)
+	k.DeleteDeprecatedValidatorMissedBlockBitArray(ctx, 1000000)
 }
