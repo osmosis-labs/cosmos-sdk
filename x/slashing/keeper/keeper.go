@@ -143,6 +143,10 @@ func (k Keeper) DeleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, it
 				}
 			}
 		}()
+
+		if iterationCounter >= iterationLimit {
+			break
+		}
 	}
 
 	fmt.Printf("Deleted %d deprecated missed block bit arrays\n", iterationCounter)
