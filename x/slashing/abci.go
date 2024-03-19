@@ -11,6 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
 
+var deprecatedBitArrayPruneLimitPerBlock = 2000
+
 // BeginBlocker check for infraction evidence or downtime of validators
 // on every begin block
 func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) {
@@ -24,6 +26,6 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 		k.HandleValidatorSignatureWithParams(ctx, params, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
 	}
 
-	// If there are still old entries for the MissedBlockBitArray, delete them up until we hit the per block limit
-	k.DeleteDeprecatedValidatorMissedBlockBitArray(ctx, 1000000)
+	// If there are still entries for the deprecated MissedBlockBitArray, delete them up until we hit the per block limit
+	k.DeleteDeprecatedValidatorMissedBlockBitArray(ctx, deprecatedBitArrayPruneLimitPerBlock)
 }
