@@ -123,6 +123,7 @@ func (k Keeper) DeleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, it
 		return
 	}
 
+	// Iterate over all the validator signing infos and delete the deprecated missed block bit arrays
 	valSignInfoIter := sdk.KVStorePrefixIterator(store, types.ValidatorSigningInfoKeyPrefix)
 	defer valSignInfoIter.Close()
 
@@ -130,7 +131,7 @@ func (k Keeper) DeleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, it
 	for ; valSignInfoIter.Valid(); valSignInfoIter.Next() {
 		address := types.ValidatorSigningInfoAddress(valSignInfoIter.Key())
 
-		// created anonymous function to scope defer statement
+		// Creat anonymous function to scope defer statement
 		func() {
 			iter := storetypes.KVStorePrefixIterator(store, v4.DeprecatedValidatorMissedBlockBitArrayPrefixKey(address))
 			defer iter.Close()
@@ -151,7 +152,7 @@ func (k Keeper) DeleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, it
 
 	ctx.Logger().Info("Deleted deprecated missed block bit arrays", "count", iterationCounter)
 
-	// if we have deleted all the deprecated missed block bit arrays, we can delete the pruning key (setting to nil)
+	// If we have deleted all the deprecated missed block bit arrays, we can delete the pruning key (set to nil)
 	if iterationCounter == 0 {
 		store.Delete(types.IsPruningKey)
 	}
