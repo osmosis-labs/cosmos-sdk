@@ -1,8 +1,6 @@
 package v4
 
 import (
-	"fmt"
-
 	"github.com/bits-and-blooms/bitset"
 	gogotypes "github.com/cosmos/gogoproto/types"
 
@@ -41,7 +39,10 @@ func Migrate(ctx sdk.Context, cdc codec.BinaryCodec, store storetypes.KVStore, p
 			return err
 		}
 
-		deleteValidatorMissedBlockBitArray(ctx, store, addr)
+		// We skip the deletion here in favor of spreading out across multiple block for performance reasons
+		// We set the isPruning key to true to indicate that we are in the process of pruning
+		store.Set(types.IsPruningKey, []byte{1})
+		// deleteDeprecatedValidatorMissedBlockBitArray(ctx, store, addr)
 
 		for _, b := range mb.MissedBlocks {
 			// Note: It is not necessary to store entries with missed=false, i.e. where
@@ -88,7 +89,7 @@ func iterateValidatorMissedBlockBitArray(
 ) {
 	for i := int64(0); i < params.SignedBlocksWindow; i++ {
 		var missed gogotypes.BoolValue
-		bz := store.Get(ValidatorMissedBlockBitArrayKey(addr, i))
+		bz := store.Get(DeprecatedValidatorMissedBlockBitArrayKey(addr, i))
 		if bz == nil {
 			continue
 		}
@@ -116,8 +117,8 @@ func GetValidatorMissedBlocks(
 	return missedBlocks
 }
 
-func deleteValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress) {
-	iter := storetypes.KVStorePrefixIterator(store, validatorMissedBlockBitArrayPrefixKey(addr))
+func deleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress) {
+	iter := storetypes.KVStorePrefixIterator(store, DeprecatedValidatorMissedBlockBitArrayPrefixKey(addr))
 	defer iter.Close()
 	i := 0
 
@@ -125,8 +126,6 @@ func deleteValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStor
 		i++
 		store.Delete(iter.Key())
 	}
-
-	fmt.Printf("deleted %d missed block bit array entries for validator %s\n", i, addr)
 }
 
 func setMissedBlockBitmapValue(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress, index int64, missed bool) error {

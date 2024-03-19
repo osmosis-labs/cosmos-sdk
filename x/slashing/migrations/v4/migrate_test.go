@@ -35,7 +35,7 @@ func TestMigrate(t *testing.T) {
 		// all even blocks are missed
 		missed := &gogotypes.BoolValue{Value: i%2 == 0}
 		bz := cdc.MustMarshal(missed)
-		store.Set(v4.ValidatorMissedBlockBitArrayKey(consAddr, i), bz)
+		store.Set(v4.DeprecatedValidatorMissedBlockBitArrayKey(consAddr, i), bz)
 	}
 
 	err := v4.Migrate(ctx, cdc, store, params)

@@ -23,4 +23,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) 
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.HandleValidatorSignatureWithParams(ctx, params, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
 	}
+
+	// If there are still old entries for the MissedBlockBitArray, delete them up until we hit the per block limit
+	k.DeleteDeprecatedValidatorMissedBlockBitArray(ctx, 1000)
 }
