@@ -151,8 +151,8 @@ func (k Keeper) DeleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, it
 
 	fmt.Printf("Deleted %d deprecated missed block bit arrays\n", iterationCounter)
 
-	// if we have deleted all the deprecated missed block bit arrays, we can set the pruning key to nil
+	// if we have deleted all the deprecated missed block bit arrays, we can delete the pruning key
 	if iterationCounter == 0 {
-		store.Set(types.IsPruningKey, nil)
+		store.Delete(types.IsPruningKey)
 	}
 }
