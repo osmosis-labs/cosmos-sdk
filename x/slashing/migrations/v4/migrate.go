@@ -119,14 +119,15 @@ func GetValidatorMissedBlocks(
 	return missedBlocks
 }
 
-func deleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress) {
-	iter := storetypes.KVStorePrefixIterator(store, DeprecatedValidatorMissedBlockBitArrayPrefixKey(addr))
-	defer iter.Close()
+// No longer use this
+// func deleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress) {
+// 	iter := storetypes.KVStorePrefixIterator(store, DeprecatedValidatorMissedBlockBitArrayPrefixKey(addr))
+// 	defer iter.Close()
 
-	for ; iter.Valid(); iter.Next() {
-		store.Delete(iter.Key())
-	}
-}
+// 	for ; iter.Valid(); iter.Next() {
+// 		store.Delete(iter.Key())
+// 	}
+// }
 
 func setMissedBlockBitmapValue(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress, index int64, missed bool) error {
 	// get the chunk or "word" in the logical bitmap
