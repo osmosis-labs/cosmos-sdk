@@ -21,7 +21,9 @@ func Migrate(ctx sdk.Context, cdc codec.BinaryCodec, store storetypes.KVStore, p
 	var missedBlocks []types.ValidatorMissedBlocks
 	iterateValidatorSigningInfos(ctx, cdc, store, func(addr sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
 		bechAddr := addr.String()
-		//localMissedBlocks := GetValidatorMissedBlocks(ctx, cdc, store, addr, params)
+
+		// We opt to reset all validators missed blocks to improve upgrade performance
+		// localMissedBlocks := GetValidatorMissedBlocks(ctx, cdc, store, addr, params)
 
 		missedBlocks = append(missedBlocks, types.ValidatorMissedBlocks{
 			Address:      bechAddr,
@@ -120,10 +122,8 @@ func GetValidatorMissedBlocks(
 func deleteDeprecatedValidatorMissedBlockBitArray(ctx sdk.Context, store storetypes.KVStore, addr sdk.ConsAddress) {
 	iter := storetypes.KVStorePrefixIterator(store, DeprecatedValidatorMissedBlockBitArrayPrefixKey(addr))
 	defer iter.Close()
-	i := 0
 
 	for ; iter.Valid(); iter.Next() {
-		i++
 		store.Delete(iter.Key())
 	}
 }
