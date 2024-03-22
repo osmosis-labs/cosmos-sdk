@@ -123,7 +123,7 @@ func (keeper Keeper) AddDeposit(ctx sdk.Context, proposalID uint64, depositorAdd
 	params := keeper.GetParams(ctx)
 
 	// NOTE: backported from v50
-	// v47 does not have expedited proposals so we always use params.MinDeposit
+	// Upstream v47 does not have expedited proposals but we do, so we check the minDeposit here
 	minDepositAmount := proposal.GetMinDepositFromParams(params)
 	minDepositRatio, err := sdk.NewDecFromStr(params.GetMinDepositRatio())
 	if err != nil {
