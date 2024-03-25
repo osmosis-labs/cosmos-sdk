@@ -37,14 +37,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
-### [State Breaking]
-
-### [State Compatible]
-
-## v24
-
-## [v0.47.5-v24-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v24-osmo-1)
-
 * (store) [#525](https://github.com/osmosis-labs/cosmos-sdk/pull/525) CacheKV speedups
 * (slashing) [#548](https://github.com/osmosis-labs/cosmos-sdk/pull/548) Implement v0.50 slashing bitmap logic
 * (slashing) [#543](https://github.com/osmosis-labs/cosmos-sdk/pull/543) Make slashing not write sign info every block
