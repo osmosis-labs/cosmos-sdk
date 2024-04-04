@@ -468,6 +468,7 @@ func (rs *Store) Commit() types.CommitID {
 	rs.removalMap = make(map[types.StoreKey]bool)
 
 	if err := rs.handlePruning(version); err != nil {
+		fmt.Println("pruning failed at height", version, "err", err)
 		rs.logger.Info("pruning failed at height", version, "err", err)
 	}
 
@@ -602,12 +603,15 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 }
 
 func (rs *Store) handlePruning(version int64) error {
+	fmt.Println("handlePruning at height", version)
 	rs.pruningManager.HandleHeight(version - 1) // we should never prune the current version.
 	if !rs.pruningManager.ShouldPruneAtHeight(version) {
 		return nil
 	}
+	fmt.Println("prune start", "height", version)
 	rs.logger.Info("prune start", "height", version)
 	defer rs.logger.Info("prune end", "height", version)
+	defer fmt.Println("prune end", "height", version)
 	return rs.PruneStores(true, nil)
 }
 
@@ -622,7 +626,7 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 		}
 
 		if len(heights) == 0 {
-			rs.logger.Debug("no heights to be pruned from pruning manager")
+			fmt.Println("no heights to be pruned from pruning manager")
 		}
 
 		pruningHeights = append(pruningHeights, heights...)
@@ -633,11 +637,11 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 		return nil
 	}
 
-	rs.logger.Debug("pruning store", "heights", pruningHeights)
+	fmt.Println("pruning store", "heights", pruningHeights)
 	pruneHeight := pruningHeights[len(pruningHeights)-1]
 
 	for key, store := range rs.stores {
-		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
+		fmt.Println("pruning store", "key", key) // Also log store.name (a private variable)?
 
 		// If the store is wrapped with an inter-block cache, we must first unwrap
 		// it to get the underlying IAVL store.
