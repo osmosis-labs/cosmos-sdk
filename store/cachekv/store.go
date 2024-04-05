@@ -2,6 +2,7 @@ package cachekv
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"sort"
 	"sync"
@@ -56,6 +57,7 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 	types.AssertValidKey(key)
 
+	fmt.Println("AAA key: ", conv.UnsafeBytesToStr(key))
 	cacheValue, ok := store.cache[conv.UnsafeBytesToStr(key)]
 	if !ok {
 		value = store.parent.Get(key)
