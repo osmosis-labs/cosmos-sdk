@@ -103,11 +103,13 @@ func (ckv *CommitKVStoreCache) Get(key []byte) []byte {
 	keyStr := string(key)
 	valueI, ok := ckv.cache.Get(keyStr)
 	if ok {
+		fmt.Println("cache hit")
 		// cache hit
 		return valueI.([]byte)
 	}
 
 	// cache miss; write to cache
+	fmt.Println("cache miss")
 	value := ckv.CommitKVStore.Get(key)
 	ckv.cache.Add(keyStr, value)
 

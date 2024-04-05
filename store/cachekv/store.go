@@ -57,12 +57,14 @@ func (store *Store) Get(key []byte) (value []byte) {
 
 	types.AssertValidKey(key)
 
-	fmt.Println("AAA key: ", conv.UnsafeBytesToStr(key))
+	fmt.Println("AAA key: ", conv.UnsafeBytesToStr(key), string(key))
 	cacheValue, ok := store.cache[conv.UnsafeBytesToStr(key)]
 	if !ok {
+		fmt.Println("AAA notOK")
 		value = store.parent.Get(key)
 		store.setCacheValue(key, value, false)
 	} else {
+		fmt.Println("AAA OK, cache Value", cacheValue.value)
 		value = cacheValue.value
 	}
 
