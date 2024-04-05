@@ -37,21 +37,18 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
-## [State Breaking]
-
-* (store) [#525](https://github.com/osmosis-labs/cosmos-sdk/pull/525) CacheKV speedups
-* (slashing) [#548](https://github.com/osmosis-labs/cosmos-sdk/pull/548) Implement v0.50 slashing bitmap logic
-* (slashing) [#543](https://github.com/osmosis-labs/cosmos-sdk/pull/543) Make slashing not write sign info every block
-* (authz) [#513](https://github.com/osmosis-labs/cosmos-sdk/pull/513) Limit expired authz grant pruning to 200 per block
-* (gov) [#514](https://github.com/osmosis-labs/cosmos-sdk/pull/514) Let gov hooks return an error
-
-## [State Compatible]
-
-* (coin) [#570](https://github.com/osmosis-labs/cosmos-sdk/pull/570) Removal of regex usage on denom validation
-
 ## IAVL v23 v1 Releases
 
 ## [Unreleased IAVL v1]
+
+## [v0.47.5-v23-osmo-8-iavl-v1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-8-iavl-v1)
+
+* (iavl) [#594](https://github.com/osmosis-labs/cosmos-sdk/pull/594) IAVL bump to fix legacy node key bug
+
+## [v0.47.5-v23-osmo-7-iavl-v1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-7-iavl-v1)
+
+* (coin) [#570](https://github.com/osmosis-labs/cosmos-sdk/pull/570) Removal of regex usage on denom validation
+* (iavl) [#586](https://github.com/osmosis-labs/cosmos-sdk/pull/586) Increment IAVL version
 
 ## [v0.47.5-v23-osmo-6-iavl-v1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-6-iavl-v1)
 
