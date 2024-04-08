@@ -47,6 +47,12 @@ func (ts *Store) WorkingHash() []byte {
 	return []byte{}
 }
 
+// Implements CommitStore
+func (ts *Store) SetCommitting() {}
+
+// Implements CommitStore
+func (ts *Store) UnsetCommitting() {}
+
 // Implements Store.
 func (ts *Store) GetStoreType() types.StoreType {
 	return types.StoreTypeTransient

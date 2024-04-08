@@ -21,6 +21,8 @@ type Store interface {
 type Committer interface {
 	Commit() CommitID
 	LastCommitID() CommitID
+	SetCommitting()
+	UnsetCommitting()
 
 	// WorkingHash returns the hash of the KVStore's state before commit.
 	WorkingHash() []byte
