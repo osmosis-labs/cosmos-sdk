@@ -54,15 +54,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased IAVL v1]
 
-## [v0.47.5-v23-osmo-7-iavl-v1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-7-iavl-v1)
-
-* (coin) [#570](https://github.com/osmosis-labs/cosmos-sdk/pull/570) Removal of regex usage on denom validation
-* (iavl) [#586](https://github.com/osmosis-labs/cosmos-sdk/pull/586) Increment IAVL version
-
-## [v0.47.5-v23-osmo-6-iavl-v1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-6-iavl-v1)
-
-* (store) [#575](https://github.com/osmosis-labs/cosmos-sdk/pull/575) Bumps IAVL v1 version for bug fixes
-
 ## [v0.47.5-v23-osmo-5-iavl-v1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v23-osmo-5-iavl-v1)
 
 * (config) [#572](https://github.com/osmosis-labs/cosmos-sdk/pull/572) Fix module whitelist parsing
