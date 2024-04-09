@@ -75,6 +75,11 @@ func SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string) func(*BaseApp) 
 	return func(bapp *BaseApp) { bapp.cms.SetIAVLFastNodeModuleWhitelist(modulesToWhitelist) }
 }
 
+// SetIAVLLazyLoading enables/disables lazy loading of the IAVL store.
+func SetIAVLLazyLoading(lazyLoading bool) func(*BaseApp) {
+	return func(bapp *BaseApp) { bapp.cms.SetLazyLoading(lazyLoading) }
+}
+
 // SetInterBlockCache provides a BaseApp option function that sets the
 // inter-block cache.
 func SetInterBlockCache(cache sdk.MultiStorePersistentCache) func(*BaseApp) {

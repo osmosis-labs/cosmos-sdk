@@ -194,6 +194,9 @@ type CommitMultiStore interface {
 	// SetIAVLFastNodeModuleWhitelist sets the modules to whitelist for IAVL fast node.
 	SetIAVLFastNodeModuleWhitelist(modulesToWhitelist []string)
 
+	// SetIAVLLazyLoading enable/disable lazy loading on iavl.
+	SetLazyLoading(lazyLoading bool)
+
 	// RollbackToVersion rollback the db to specific version(height).
 	RollbackToVersion(version int64) error
 

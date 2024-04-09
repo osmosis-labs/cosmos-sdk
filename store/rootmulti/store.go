@@ -320,7 +320,7 @@ func deleteKVStore(kv types.KVStore) error {
 		keys = append(keys, itr.Key())
 		itr.Next()
 	}
-	_ = itr.Close()
+	itr.Close()
 
 	for _, k := range keys {
 		kv.Delete(k)
@@ -336,7 +336,7 @@ func moveKVStoreData(oldDB types.KVStore, newDB types.KVStore) error {
 		newDB.Set(itr.Key(), itr.Value())
 		itr.Next()
 	}
-	_ = itr.Close()
+	itr.Close()
 
 	// then delete the old store
 	return deleteKVStore(oldDB)
@@ -634,7 +634,6 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 	}
 
 	rs.logger.Debug("pruning store", "heights", pruningHeights)
-	pruneHeight := pruningHeights[len(pruningHeights)-1]
 
 	for key, store := range rs.stores {
 		rs.logger.Debug("pruning store", "key", key) // Also log store.name (a private variable)?
@@ -647,7 +646,7 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 
 		store = rs.GetCommitKVStore(key)
 
-		err := store.(*iavl.Store).DeleteVersionsTo(pruneHeight)
+		err := store.(*iavl.Store).DeleteVersions(pruningHeights...)
 		if err == nil {
 			continue
 		}
@@ -975,9 +974,9 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		var err error
 
 		if params.initialVersion == 0 {
-			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.iavlCacheSize, disabledFastNodes)
+			store, err = iavl.LoadStore(db, rs.logger, key, id, rs.lazyLoading, rs.iavlCacheSize, disabledFastNodes)
 		} else {
-			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, params.initialVersion, rs.iavlCacheSize, disabledFastNodes)
+			store, err = iavl.LoadStoreWithInitialVersion(db, rs.logger, key, id, rs.lazyLoading, params.initialVersion, rs.iavlCacheSize, disabledFastNodes)
 		}
 
 		if err != nil {
@@ -1047,7 +1046,12 @@ func (rs *Store) RollbackToVersion(target int64) error {
 			// If the store is wrapped with an inter-block cache, we must first unwrap
 			// it to get the underlying IAVL store.
 			store = rs.GetCommitKVStore(key)
-			_, err := store.(*iavl.Store).LoadVersionForOverwriting(target)
+			var err error
+			if rs.lazyLoading {
+				_, err = store.(*iavl.Store).LazyLoadVersionForOverwriting(target)
+			} else {
+				_, err = store.(*iavl.Store).LoadVersionForOverwriting(target)
+			}
 			if err != nil {
 				return err
 			}
