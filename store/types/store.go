@@ -21,8 +21,6 @@ type Store interface {
 type Committer interface {
 	Commit() CommitID
 	LastCommitID() CommitID
-	SetCommitting()
-	UnsetCommitting()
 
 	SetPruning(pruningtypes.PruningOptions)
 	GetPruning() pruningtypes.PruningOptions

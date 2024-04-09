@@ -451,9 +451,7 @@ func (rs *Store) Commit() types.CommitID {
 		rs.logger.Debug("commit header and version mismatch", "header_height", rs.commitHeader.Height, "version", version)
 	}
 
-	rs.SetCommitting()
 	rs.lastCommitInfo = commitStores(version, rs.stores, rs.removalMap)
-	rs.UnsetCommitting()
 	rs.lastCommitInfo.Timestamp = rs.commitHeader.Time
 	defer rs.flushMetadata(rs.db, version, rs.lastCommitInfo)
 
@@ -476,20 +474,6 @@ func (rs *Store) Commit() types.CommitID {
 	return types.CommitID{
 		Version: version,
 		Hash:    rs.lastCommitInfo.Hash(),
-	}
-}
-
-// SetCommitting implements Committer/CommitStore.
-func (rs *Store) SetCommitting() {
-	for _, store := range rs.stores {
-		store.SetCommitting()
-	}
-}
-
-// UnsetCommitting implements Committer/CommitStore.
-func (rs *Store) UnsetCommitting() {
-	for _, store := range rs.stores {
-		store.UnsetCommitting()
 	}
 }
 
