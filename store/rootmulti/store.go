@@ -74,6 +74,7 @@ type Store struct {
 	interBlockCache             types.MultiStorePersistentCache
 	listeners                   map[types.StoreKey][]types.WriteListener
 	commitHeader                cmtproto.Header
+	isCompacting                bool
 }
 
 var (
@@ -672,6 +673,24 @@ func (rs *Store) PruneStores(clearPruningManager bool, pruningHeights []int64) (
 			return err
 		}
 	}
+
+	if rs.isCompacting {
+		rs.logger.Debug("compaction already in progress")
+		fmt.Println("compaction already in progress")
+		return nil
+	}
+
+	rs.isCompacting = true
+	go func() {
+		defer func() { rs.isCompacting = false }()
+		fmt.Println("compaction started")
+		err := rs.db.Compact(nil, nil)
+		if err != nil {
+			fmt.Println("compaction failed", "err", err)
+			rs.logger.Error("compaction failed", "err", err)
+		}
+		fmt.Println("compaction completed")
+	}()
 	return nil
 }
 
