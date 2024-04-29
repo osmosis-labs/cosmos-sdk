@@ -869,8 +869,10 @@ func (app *BaseApp) runTx(mode execMode, txBytes []byte) (gInfo sdk.GasInfo, res
 	}
 
 	msgs := tx.GetMsgs()
-	if err := validateBasicTxMsgs(msgs); err != nil {
-		return sdk.GasInfo{}, nil, nil, err
+	if mode != execModeReCheck {
+		if err := validateBasicTxMsgs(msgs); err != nil {
+			return sdk.GasInfo{}, nil, nil, err
+		}
 	}
 
 	for _, msg := range msgs {
