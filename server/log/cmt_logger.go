@@ -20,3 +20,7 @@ func (cmt CometLoggerWrapper) With(keyVals ...interface{}) cmtlog.Logger {
 	logger := cmt.Logger.With(keyVals...)
 	return CometLoggerWrapper{logger}
 }
+
+func (cmt CometLoggerWrapper) DebugOn() bool {
+	return false
+}
