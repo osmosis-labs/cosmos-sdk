@@ -5,6 +5,7 @@ package cosmos.gov.v1;
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/gov/v1/gov.proto";
 import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
 import "cosmos_proto/cosmos.proto";
 import "google/protobuf/any.proto";
 import "cosmos/msg/v1/msg.proto";
@@ -34,9 +35,21 @@ service Msg {
 
   // UpdateParams defines a governance operation for updating the x/gov module
   // parameters. The authority is defined in the keeper.
-  //
-  // Since: cosmos-sdk 0.47
-  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse) {
+  };
+
+  // CancelProposal defines a method to cancel governance proposal
+  rpc CancelProposal(MsgCancelProposal) returns (MsgCancelProposalResponse) {
+  };
+
+  // SubmitMultipleChoiceProposal defines a method to create new multiple choice proposal.
+  rpc SubmitMultipleChoiceProposal(MsgSubmitMultipleChoiceProposal) returns (MsgSubmitMultipleChoiceProposalResponse) {
+  };
+
+  // SudoExec defines a method to execute an inner message as the governance module.
+  // It permits to execute any message from a proposal, even if they weren't meant to be governance proposals.
+  rpc SudoExec(MsgSudoExec) returns (MsgSudoExecResponse) {
+  }
 }
 
 // MsgSubmitProposal defines an sdk.Msg type that supports submitting arbitrary
@@ -49,7 +62,12 @@ message MsgSubmitProposal {
   repeated google.protobuf.Any messages = 1;
 
   // initial_deposit is the deposit value that must be paid at proposal submission.
-  repeated cosmos.base.v1beta1.Coin initial_deposit = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated cosmos.base.v1beta1.Coin initial_deposit = 2 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (amino.dont_omitempty)   = true,
+    (amino.encoding)         = "legacy_coins"
+  ];
 
   // proposer is the account address of the proposer.
   string proposer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
@@ -58,19 +76,20 @@ message MsgSubmitProposal {
   string metadata = 4;
 
   // title is the title of the proposal.
-  //
-  // Since: cosmos-sdk 0.47
   string title = 5;
 
   // summary is the summary of the proposal
-  //
-  // Since: cosmos-sdk 0.47
   string summary = 6;
 
-  // expedided defines if the proposal is expedited or not
-  //
-  // Since: cosmos-sdk 0.48
-  bool expedited = 7;
+  // expedited defines if the proposal is expedited or not
+  // Deprecated: Use the PROPOSAL_TYPE_EXPEDITED proposal type instead.
+  // When this field is set and no proposal_type is set, the proposal_type
+  // will be set to PROPOSAL_TYPE_EXPEDITED for backwards compatibility.
+  bool expedited = 7 [deprecated = true];
+
+  // proposal_type defines the type of proposal
+  // When not set defaults to PROPOSAL_TYPE_STANDARD
+  ProposalType proposal_type = 8 ;
 }
 
 // MsgSubmitProposalResponse defines the Msg/SubmitProposal response type.
@@ -155,11 +174,9 @@ message MsgDeposit {
 message MsgDepositResponse {}
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
-//
-// Since: cosmos-sdk 0.47
 message MsgUpdateParams {
-  option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name)           = "cosmos-sdk/x/gov/v1/MsgUpdateParams";
+  option (cosmos.msg.v1.signer)          = "authority";
+  option (amino.name)                    = "cosmos-sdk/x/gov/v1/MsgUpdateParams";
 
   // authority is the address that controls the module (defaults to x/gov unless overwritten).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
@@ -172,6 +189,82 @@ message MsgUpdateParams {
 
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
-//
-// Since: cosmos-sdk 0.47
-message MsgUpdateParamsResponse {}
+message MsgUpdateParamsResponse {
+}
+
+// MsgCancelProposal is the Msg/CancelProposal request type.
+message MsgCancelProposal {
+ 
+  
+  option (cosmos.msg.v1.signer)          = "proposer";
+
+  // proposal_id defines the unique id of the proposal.
+  uint64 proposal_id = 1 [(gogoproto.jsontag) = "proposal_id"];
+  // proposer is the account address of the proposer.
+  string proposer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgCancelProposalResponse defines the response structure for executing a
+// MsgCancelProposal message.
+message MsgCancelProposalResponse {
+ 
+  
+  // proposal_id defines the unique id of the proposal.
+  uint64 proposal_id = 1 [(gogoproto.jsontag) = "proposal_id"];
+  // canceled_time is the time when proposal is canceled.
+  google.protobuf.Timestamp canceled_time = 2 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+  // canceled_height defines the block height at which the proposal is canceled.
+  uint64 canceled_height = 3;
+}
+
+// MsgSubmitMultipleChoiceProposal defines a message to submit a multiple choice proposal.
+message MsgSubmitMultipleChoiceProposal {
+  option (cosmos.msg.v1.signer)          = "proposer";
+
+  // initial_deposit is the deposit value that must be paid at proposal submission.
+  repeated cosmos.base.v1beta1.Coin initial_deposit = 1 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (amino.dont_omitempty)   = true,
+    (amino.encoding)         = "legacy_coins"
+  ];
+
+  // proposer is the account address of the proposer.
+  string proposer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // metadata is any arbitrary metadata attached to the proposal.
+  string metadata = 3;
+
+  // title is the title of the proposal.
+  string title = 4;
+
+  // summary is the summary of the proposal
+  string summary = 5;
+
+  // vote_options defines the vote options for the proposal.
+  ProposalVoteOptions vote_options = 6;
+}
+
+// MsgSubmitMultipleChoiceProposalResponse defines the Msg/SubmitMultipleChoiceProposal response type.
+message MsgSubmitMultipleChoiceProposalResponse {
+  // proposal_id defines the unique id of the proposal.
+  uint64 proposal_id = 1;
+}
+
+
+// MsgSudoExec defines a message to execute an inner message as the governance module.
+message MsgSudoExec {
+  option (cosmos.msg.v1.signer)          = "authority";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // msg is the arbitrary message to be executed.
+  google.protobuf.Any msg = 2 [(cosmos_proto.accepts_interface) = "cosmos.base.v1beta1.Msg"];
+}
+
+// MsgSudoExecResponse defines the Msg/SudoExec response type.
+message MsgSudoExecResponse {
+  // result is the response data from the executed message.
+  bytes result = 1;
+}
