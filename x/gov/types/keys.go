@@ -49,6 +49,8 @@ var (
 
 	VotesKeyPrefix = []byte{0x20}
 
+	ProposalVoteOptionsKeyPrefix = []byte{0x32}
+
 	// ParamsKey is the key to query all gov params
 	ParamsKey = []byte{0x30}
 )
@@ -70,6 +72,11 @@ func GetProposalIDFromBytes(bz []byte) (proposalID uint64) {
 // ProposalKey gets a specific proposal from the store
 func ProposalKey(proposalID uint64) []byte {
 	return append(ProposalsKeyPrefix, GetProposalIDBytes(proposalID)...)
+}
+
+// ProposalVoteOptionsKey gets a specific proposal from the store
+func ProposalVoteOptionsKey(proposalID uint64) []byte {
+	return append(ProposalVoteOptionsKeyPrefix, GetProposalIDBytes(proposalID)...)
 }
 
 // VotingPeriodProposalKey gets if a proposal is in voting period.

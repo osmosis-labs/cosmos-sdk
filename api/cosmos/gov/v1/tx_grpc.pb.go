@@ -27,9 +27,7 @@ const (
 	Msg_VoteWeighted_FullMethodName                 = "/cosmos.gov.v1.Msg/VoteWeighted"
 	Msg_Deposit_FullMethodName                      = "/cosmos.gov.v1.Msg/Deposit"
 	Msg_UpdateParams_FullMethodName                 = "/cosmos.gov.v1.Msg/UpdateParams"
-	Msg_CancelProposal_FullMethodName               = "/cosmos.gov.v1.Msg/CancelProposal"
 	Msg_SubmitMultipleChoiceProposal_FullMethodName = "/cosmos.gov.v1.Msg/SubmitMultipleChoiceProposal"
-	Msg_SudoExec_FullMethodName                     = "/cosmos.gov.v1.Msg/SudoExec"
 )
 
 // MsgClient is the client API for Msg service.
@@ -50,13 +48,8 @@ type MsgClient interface {
 	// UpdateParams defines a governance operation for updating the x/gov module
 	// parameters. The authority is defined in the keeper.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	// CancelProposal defines a method to cancel governance proposal
-	CancelProposal(ctx context.Context, in *MsgCancelProposal, opts ...grpc.CallOption) (*MsgCancelProposalResponse, error)
 	// SubmitMultipleChoiceProposal defines a method to create new multiple choice proposal.
 	SubmitMultipleChoiceProposal(ctx context.Context, in *MsgSubmitMultipleChoiceProposal, opts ...grpc.CallOption) (*MsgSubmitMultipleChoiceProposalResponse, error)
-	// SudoExec defines a method to execute an inner message as the governance module.
-	// It permits to execute any message from a proposal, even if they weren't meant to be governance proposals.
-	SudoExec(ctx context.Context, in *MsgSudoExec, opts ...grpc.CallOption) (*MsgSudoExecResponse, error)
 }
 
 type msgClient struct {
@@ -121,27 +114,9 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
-func (c *msgClient) CancelProposal(ctx context.Context, in *MsgCancelProposal, opts ...grpc.CallOption) (*MsgCancelProposalResponse, error) {
-	out := new(MsgCancelProposalResponse)
-	err := c.cc.Invoke(ctx, Msg_CancelProposal_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *msgClient) SubmitMultipleChoiceProposal(ctx context.Context, in *MsgSubmitMultipleChoiceProposal, opts ...grpc.CallOption) (*MsgSubmitMultipleChoiceProposalResponse, error) {
 	out := new(MsgSubmitMultipleChoiceProposalResponse)
 	err := c.cc.Invoke(ctx, Msg_SubmitMultipleChoiceProposal_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) SudoExec(ctx context.Context, in *MsgSudoExec, opts ...grpc.CallOption) (*MsgSudoExecResponse, error) {
-	out := new(MsgSudoExecResponse)
-	err := c.cc.Invoke(ctx, Msg_SudoExec_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -166,13 +141,8 @@ type MsgServer interface {
 	// UpdateParams defines a governance operation for updating the x/gov module
 	// parameters. The authority is defined in the keeper.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	// CancelProposal defines a method to cancel governance proposal
-	CancelProposal(context.Context, *MsgCancelProposal) (*MsgCancelProposalResponse, error)
 	// SubmitMultipleChoiceProposal defines a method to create new multiple choice proposal.
 	SubmitMultipleChoiceProposal(context.Context, *MsgSubmitMultipleChoiceProposal) (*MsgSubmitMultipleChoiceProposalResponse, error)
-	// SudoExec defines a method to execute an inner message as the governance module.
-	// It permits to execute any message from a proposal, even if they weren't meant to be governance proposals.
-	SudoExec(context.Context, *MsgSudoExec) (*MsgSudoExecResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -198,14 +168,8 @@ func (UnimplementedMsgServer) Deposit(context.Context, *MsgDeposit) (*MsgDeposit
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServer) CancelProposal(context.Context, *MsgCancelProposal) (*MsgCancelProposalResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelProposal not implemented")
-}
 func (UnimplementedMsgServer) SubmitMultipleChoiceProposal(context.Context, *MsgSubmitMultipleChoiceProposal) (*MsgSubmitMultipleChoiceProposalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitMultipleChoiceProposal not implemented")
-}
-func (UnimplementedMsgServer) SudoExec(context.Context, *MsgSudoExec) (*MsgSudoExecResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SudoExec not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -328,24 +292,6 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CancelProposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCancelProposal)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).CancelProposal(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_CancelProposal_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CancelProposal(ctx, req.(*MsgCancelProposal))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Msg_SubmitMultipleChoiceProposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgSubmitMultipleChoiceProposal)
 	if err := dec(in); err != nil {
@@ -360,24 +306,6 @@ func _Msg_SubmitMultipleChoiceProposal_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).SubmitMultipleChoiceProposal(ctx, req.(*MsgSubmitMultipleChoiceProposal))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_SudoExec_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSudoExec)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).SudoExec(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_SudoExec_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SudoExec(ctx, req.(*MsgSudoExec))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -414,16 +342,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_UpdateParams_Handler,
 		},
 		{
-			MethodName: "CancelProposal",
-			Handler:    _Msg_CancelProposal_Handler,
-		},
-		{
 			MethodName: "SubmitMultipleChoiceProposal",
 			Handler:    _Msg_SubmitMultipleChoiceProposal_Handler,
-		},
-		{
-			MethodName: "SudoExec",
-			Handler:    _Msg_SudoExec_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

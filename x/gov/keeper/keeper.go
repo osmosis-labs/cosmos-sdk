@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -226,4 +227,30 @@ func (keeper Keeper) assertMetadataLength(metadata string) error {
 		return types.ErrMetadataTooLong.Wrapf("got metadata with length %d", len(metadata))
 	}
 	return nil
+}
+
+func (k Keeper) SetProposalVoteOptions(ctx context.Context, proposalID uint64, voteOptions v1.ProposalVoteOptions) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := sdkCtx.KVStore(k.storeKey)
+	bz, err := k.cdc.Marshal(&voteOptions)
+	if err != nil {
+		return err
+	}
+	store.Set(types.ProposalVoteOptionsKey(proposalID), bz)
+	return nil
+}
+
+func (k Keeper) GetProposalVoteOptions(ctx context.Context, proposalID uint64) (v1.ProposalVoteOptions, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := sdkCtx.KVStore(k.storeKey)
+	bz := store.Get(types.ProposalVoteOptionsKey(proposalID))
+	if bz == nil {
+		return v1.ProposalVoteOptions{}, types.ErrUnknownProposal
+	}
+	var voteOptions v1.ProposalVoteOptions
+	err := k.cdc.Unmarshal(bz, &voteOptions)
+	if err != nil {
+		return v1.ProposalVoteOptions{}, err
+	}
+	return voteOptions, nil
 }

@@ -15,7 +15,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 )
 
-var _ v1.QueryServer = Keeper{}
+var (
+	_ v1.QueryServer = Keeper{}
+
+	defaultVoteOptions = &v1.ProposalVoteOptions{
+		OptionOne:   "yes",
+		OptionTwo:   "abstain",
+		OptionThree: "no",
+		OptionFour:  "no_with_veto",
+		OptionSpam:  "spam",
+	}
+)
 
 // Proposal returns proposal details based on ProposalID
 func (q Keeper) Proposal(c context.Context, req *v1.QueryProposalRequest) (*v1.QueryProposalResponse, error) {
@@ -35,6 +45,41 @@ func (q Keeper) Proposal(c context.Context, req *v1.QueryProposalRequest) (*v1.Q
 	}
 
 	return &v1.QueryProposalResponse{Proposal: &proposal}, nil
+}
+
+// ProposalVoteOptions returns the proposal votes options
+// It returns the stringified vote options if the proposal is a multiple choice proposal
+// Otherwise it returns the generic vote options
+func (q Keeper) ProposalVoteOptions(ctx context.Context, req *v1.QueryProposalVoteOptionsRequest) (*v1.QueryProposalVoteOptionsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	if req.ProposalId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "proposal id can not be 0")
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	_, ok := q.GetProposal(sdkCtx, req.ProposalId)
+	if !ok {
+		return nil, status.Errorf(codes.NotFound, "proposal %d doesn't exist", req.ProposalId)
+	}
+
+	voteOptions, err := q.GetProposalVoteOptions(ctx, req.ProposalId)
+	if err != nil {
+
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &v1.QueryProposalVoteOptionsResponse{
+		VoteOptions: &v1.ProposalVoteOptions{
+			OptionOne:   voteOptions.OptionOne,
+			OptionTwo:   voteOptions.OptionTwo,
+			OptionThree: voteOptions.OptionThree,
+			OptionFour:  voteOptions.OptionFour,
+			OptionSpam:  defaultVoteOptions.OptionSpam,
+		},
+	}, nil
 }
 
 // Proposals implements the Query/Proposals gRPC method
