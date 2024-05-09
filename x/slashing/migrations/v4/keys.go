@@ -11,8 +11,13 @@ import (
 const MissedBlockBitmapChunkSize = 1024 // 2^10 bits
 
 var (
-	ValidatorSigningInfoKeyPrefix         = []byte{0x01}
-	validatorMissedBlockBitArrayKeyPrefix = []byte{0x02}
+	ValidatorSigningInfoKeyPrefix                   = []byte{0x01}
+	deprecatedValidatorMissedBlockBitArrayKeyPrefix = []byte{0x02}
+
+	// NOTE: sdk v0.50 uses the same key prefix for both deprecated and new missed block bitmaps.
+	// We needed to use a new key, because we are skipping deletion of all old keys at upgrade time
+	// due to how long this would bring the chain down. We use 0x10 here to prevent overlap with any future keys.
+	validatorMissedBlockBitMapKeyPrefix = []byte{0x10}
 )
 
 func ValidatorSigningInfoKey(v sdk.ConsAddress) []byte {
@@ -28,7 +33,7 @@ func ValidatorSigningInfoAddress(key []byte) (v sdk.ConsAddress) {
 }
 
 func validatorMissedBlockBitArrayPrefixKey(v sdk.ConsAddress) []byte {
-	return append(validatorMissedBlockBitArrayKeyPrefix, address.MustLengthPrefix(v.Bytes())...)
+	return append(deprecatedValidatorMissedBlockBitArrayKeyPrefix, address.MustLengthPrefix(v.Bytes())...)
 }
 
 func ValidatorMissedBlockBitArrayKey(v sdk.ConsAddress, i int64) []byte {
@@ -38,7 +43,7 @@ func ValidatorMissedBlockBitArrayKey(v sdk.ConsAddress, i int64) []byte {
 }
 
 func validatorMissedBlockBitmapPrefixKey(v sdk.ConsAddress) []byte {
-	return append(validatorMissedBlockBitArrayKeyPrefix, address.MustLengthPrefix(v.Bytes())...)
+	return append(validatorMissedBlockBitMapKeyPrefix, address.MustLengthPrefix(v.Bytes())...)
 }
 
 func ValidatorMissedBlockBitmapKey(v sdk.ConsAddress, chunkIndex int64) []byte {
