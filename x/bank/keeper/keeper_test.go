@@ -238,7 +238,6 @@ func (suite *KeeperTestSuite) mockDelegateCoins(ctx context.Context, acc, mAcc s
 	if ok {
 		suite.authKeeper.EXPECT().SetAccount(ctx, vacc)
 	}
-	//suite.authKeeper.EXPECT().GetAccount(ctx, acc.GetAddress()).Return(acc)
 	suite.authKeeper.EXPECT().GetAccount(ctx, acc.GetAddress()).Return(acc).Times(2)
 	suite.authKeeper.EXPECT().GetAccount(ctx, mAcc.GetAddress()).Return(mAcc)
 }

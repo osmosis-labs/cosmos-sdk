@@ -627,7 +627,7 @@ func (coins DecCoins) Sort() DecCoins {
 func ParseDecCoin(coinStr string) (coin DecCoin, err error) {
 	var amountStr, denomStr string
 	// if custom parsing has not been set, use default coin regex
-	if reDecCoin == nil { //nolint:gocritic
+	if reDecCoin == nil {
 		amountStr, denomStr, err = ParseDecAmount(coinStr)
 		if err != nil {
 			return DecCoin{}, err
@@ -665,8 +665,8 @@ func ParseDecAmount(coinStr string) (string, string, error) {
 	parsingAmount := true
 
 	for _, r := range strings.TrimSpace(coinStr) {
-		if parsingAmount { //nolint:gocritic
-			if unicode.IsDigit(r) || r == '.' { //nolint:gocritic
+		if parsingAmount {
+			if unicode.IsDigit(r) || r == '.' {
 				amountRune = append(amountRune, r)
 			} else if unicode.IsSpace(r) { // if space is seen, indicates that we have finished parsing amount
 				parsingAmount = false
