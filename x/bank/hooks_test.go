@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"testing"
 
-	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
+
+	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
-
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -43,7 +43,7 @@ var (
 func (h *MockBankHooksReceiver) TrackBeforeSend(ctx context.Context, from, to sdk.AccAddress, amount sdk.Coins) {
 	for _, coin := range amount {
 		if coin.Amount.Equal(math.NewInt(50)) {
-			countTrackBeforeSend += 1
+			countTrackBeforeSend++
 		}
 	}
 }
@@ -96,6 +96,7 @@ func TestHooks(t *testing.T) {
 	require.Error(t, err)
 
 	err = app.BankKeeper.SendManyCoins(ctx, addr1, []sdk.AccAddress{addr1, addr2}, []sdk.Coins{triggerTrackSendAmount, validSendAmount})
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 
@@ -105,6 +106,7 @@ func TestHooks(t *testing.T) {
 	err = app.BankKeeper.SendCoinsFromAccountToModule(ctx, addr1, stakingtypes.BondedPoolName, invalidBlockSendAmount)
 	require.Error(t, err)
 	err = app.BankKeeper.SendCoinsFromAccountToModule(ctx, addr1, stakingtypes.BondedPoolName, triggerTrackSendAmount)
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 
@@ -114,6 +116,7 @@ func TestHooks(t *testing.T) {
 	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, stakingtypes.BondedPoolName, addr1, invalidBlockSendAmount)
 	require.Error(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, stakingtypes.BondedPoolName, addr1, triggerTrackSendAmount)
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 
@@ -124,6 +127,7 @@ func TestHooks(t *testing.T) {
 	// there should be no error since module to module does not call block before send hooks
 	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, stakingtypes.BondedPoolName, stakingtypes.NotBondedPoolName, triggerTrackSendAmount)
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 
@@ -133,6 +137,7 @@ func TestHooks(t *testing.T) {
 	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addr1, addr2}, []sdk.Coins{validSendAmount, invalidBlockSendAmount})
 	require.Error(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToManyAccounts(ctx, stakingtypes.BondedPoolName, []sdk.AccAddress{addr1, addr2}, []sdk.Coins{validSendAmount, triggerTrackSendAmount})
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 
@@ -142,6 +147,7 @@ func TestHooks(t *testing.T) {
 	err = app.BankKeeper.DelegateCoins(ctx, addr1, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), invalidBlockSendAmount)
 	require.Error(t, err)
 	err = app.BankKeeper.DelegateCoins(ctx, addr1, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), triggerTrackSendAmount)
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 
@@ -152,6 +158,7 @@ func TestHooks(t *testing.T) {
 	require.Error(t, err)
 
 	err = app.BankKeeper.UndelegateCoins(ctx, app.AccountKeeper.GetModuleAddress(stakingtypes.BondedPoolName), addr1, triggerTrackSendAmount)
+	require.NoError(t, err)
 	require.Equal(t, countTrackBeforeSend, expNextCount)
 	expNextCount++
 }

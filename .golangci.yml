@@ -8,6 +8,7 @@ run:
     - server/grpc/gogoreflection/fix_registration.go
     - "fix_registration.go"
     - "x/bank/migrations/v4/gen_state_test.go"
+    - "baseapp/abci_utils.go"
     - ".*\\.pb\\.go$"
     - ".*\\.pb\\.gw\\.go$"
     - ".*\\.pulsar\\.go$"

@@ -52,6 +52,8 @@ whitespace += $(whitespace)
 comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
+# test
+
 # process linker flags
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sim \

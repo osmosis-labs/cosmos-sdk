@@ -6,7 +6,6 @@ on:
       - "**.go"
   push:
     branches:
-      - main
       - release/**
     paths:
       - "**.go"

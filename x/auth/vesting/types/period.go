@@ -190,7 +190,7 @@ func DisjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (int64, 
 }
 
 // ConjunctPeriods returns the combination of two period schedules where the result is the minimum of the two schedules.
-func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTime int64, endTime int64, merged []Period) {
+func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTime, endTime int64, merged []Period) {
 	timeP := startP
 	timeQ := startQ
 	iP := 0
@@ -246,7 +246,7 @@ func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTi
 	}
 
 	// consumeBoth processes simultaneous events in P and Q and emits an
-	// event if the minumum of P and Q changes
+	// event if the minimum of P and Q changes
 	consumeBoth := func(nextTime int64) {
 		amountP = amountP.Add(periodsP[iP].Amount...)
 		amountQ = amountQ.Add(periodsQ[iQ].Amount...)
@@ -289,7 +289,7 @@ func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTi
 	}
 
 	endTime = time
-	return
+	return startTime, endTime, merged
 }
 
 // AlignSchedules rewrites the first period length to align the two arguments to the same start time,
