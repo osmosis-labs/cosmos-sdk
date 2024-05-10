@@ -5,7 +5,7 @@ on:
   merge_group:
   push:
     branches:
-      - main
+      - osmo**
       - release/**
 permissions:
   contents: read
