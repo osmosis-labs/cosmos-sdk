@@ -618,11 +618,13 @@ func TestMultiStore_PruningRestart(t *testing.T) {
 
 	// commit one more block and ensure the heights have been pruned
 	ms.Commit()
-	time.Sleep(150 * time.Millisecond)
-	ms.Commit()
 
 	actualHeightToPrune = ms.pruningManager.GetPruningHeight(ms.LatestVersion())
 	require.Equal(t, int64(8), actualHeightToPrune)
+
+	// Ensure async pruning is done
+	time.Sleep(500 * time.Millisecond)
+	ms.Commit()
 
 	for v := int64(1); v <= actualHeightToPrune; v++ {
 		_, err := ms.CacheMultiStoreWithVersion(v)
