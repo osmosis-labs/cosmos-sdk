@@ -17,6 +17,7 @@ type AccountKeeper interface {
 
 	IterateAccounts(ctx context.Context, process func(sdk.AccountI) (stop bool))
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI // only used for simulation
+	GetAllAccounts(ctx context.Context) []sdk.AccountI                // only used for simulation
 
 	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx context.Context, moduleName string) sdk.ModuleAccountI
