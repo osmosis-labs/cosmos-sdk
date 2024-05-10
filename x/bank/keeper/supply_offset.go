@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
+
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -90,7 +91,6 @@ func (k BaseKeeper) GetPaginatedTotalSupplyWithOffsets(ctx context.Context, pagi
 		supply = supply.Add(sdk.NewCoin(denom, amount))
 		return nil
 	})
-
 	if err != nil {
 		return nil, nil, err
 	}

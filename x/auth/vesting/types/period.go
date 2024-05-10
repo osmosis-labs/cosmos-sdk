@@ -190,7 +190,7 @@ func DisjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (int64, 
 }
 
 // ConjunctPeriods returns the combination of two period schedules where the result is the minimum of the two schedules.
-func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTime int64, endTime int64, merged []Period) {
+func ConjunctPeriods(startP, startQ int64, periodsP, periodsQ []Period) (startTime, endTime int64, merged []Period) {
 	timeP := startP
 	timeQ := startQ
 	iP := 0

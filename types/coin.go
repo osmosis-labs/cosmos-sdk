@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-
 	"unicode"
 
 	"cosmossdk.io/math"

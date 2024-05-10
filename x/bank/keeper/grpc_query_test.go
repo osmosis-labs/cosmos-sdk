@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -312,7 +313,6 @@ func (suite *KeeperTestSuite) TestQueryTotalSupply() {
 	suite.Require().NotNil(res2)
 
 	suite.Require().Equal(expectedTotalSupply, res2.Supply)
-
 }
 
 func (suite *KeeperTestSuite) TestQueryTotalSupplyOf() {
