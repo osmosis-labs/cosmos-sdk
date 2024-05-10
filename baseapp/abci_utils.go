@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"slices"
 
 	"github.com/cockroachdb/errors"
