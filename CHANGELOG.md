@@ -36,7 +36,113 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## Osmosis Specific Info
+
+This v0.50.x branch was created at the [bd886bb4b03fdfc52bdc1fa2f98e960316604f89](https://github.com/cosmos/cosmos-sdk/commit/bd886bb4b03fdfc52bdc1fa2f98e960316604f89) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
+
+### Osmosis Specific PRs (should upstream)
+
+* Instant Undelegate
+    * [5046a6d](https://github.com/osmosis-labs/cosmos-sdk/commit/5046a6d19a5e1127ef106b0318740cd1bccb429e)
+
+* Supply Offsets
+    * [#119](https://github.com/osmosis-labs/cosmos-sdk/pull/119)
+    * [#295](https://github.com/osmosis-labs/cosmos-sdk/pull/295)
+
+* Clawback Vesting Account
+    * [#171](https://github.com/osmosis-labs/cosmos-sdk/pull/171)
+    * [#178](https://github.com/osmosis-labs/cosmos-sdk/pull/178)
+    * [5b03258](https://github.com/osmosis-labs/cosmos-sdk/commit/5b032581d579eac710ce0acb62edd84fe9679c18)
+
+* Track Before Send and Block Before Send
+    * [#278](https://github.com/osmosis-labs/cosmos-sdk/pull/278)
+    * [#421](https://github.com/osmosis-labs/cosmos-sdk/pull/421)
+
+### Osmosis Specific PRs (should not upstream)
+
+* Slashing
+    * [0609929](https://github.com/osmosis-labs/cosmos-sdk/commit/0609929d2ddfd845aebfe53622176660f8392fcb) Osmosis specific key migration slashing changes, due to implementing it early in v0.47.x
+
+* Distribution
+    * [#527](https://github.com/osmosis-labs/cosmos-sdk/pull/527) Distribute every 50 blocks
+
+* Performance (Already upstreamed but not in this version)
+    * [#538](https://github.com/osmosis-labs/cosmos-sdk/pull/538) Slight speedup to Slashing BeginBlock logic
+    * [#570](https://github.com/osmosis-labs/cosmos-sdk/pull/570) Removal of regex usage on denom validation
+
+* Per module fast nodes
+    * [#552](https://github.com/osmosis-labs/cosmos-sdk/pull/552) Per module fast nodes implementation
+    * [715f32](https://github.com/osmosis-labs/cosmos-sdk/commit/715f3216416030f5b1bb30f02882ee38e238c1a2) Replace store imports with fast nodes
+    * [#572](https://github.com/osmosis-labs/cosmos-sdk/pull/572) Fix fast nodes whitelist parsing
+
+* IAVL
+    * [#593](https://github.com/osmosis-labs/cosmos-sdk/pull/593) Async pruning IAVL v1
+
+### Osmosis Specific PRs (unknown upstream status)
+
+* Performance Improvements
+    * [b9a3e8f](https://github.com/osmosis-labs/cosmos-sdk/commit/b9a3e8fa12229200b31a1e7c1805ab5a495fbd11) Lower event emission from Osmosis epoch sends
+    * [bbb9a48](https://github.com/osmosis-labs/cosmos-sdk/commit/bbb9a4898aa46cb27d2b482a74259687afe4ab16) Remove GetAccount calls in epoch
+    * [8628b48](https://github.com/osmosis-labs/cosmos-sdk/commit/8628b4869dcbf7427d4de8a5a6f8e40d9fa86e66) Types speedups
+    * [3ef7ba4](https://github.com/osmosis-labs/cosmos-sdk/commit/3ef7ba4964b74154eb9d394dbe25fd967b31fbed) Replace amino json encoder with stdlib
+    * [#601](https://github.com/osmosis-labs/cosmos-sdk/pull/601) Don't run ValidateBasic on recheck
+    * [#603](https://github.com/osmosis-labs/cosmos-sdk/pull/603) Remove IAVL per-get/delete timing info
+
+* Cliff Vesting
+    * [#271](https://github.com/osmosis-labs/cosmos-sdk/pull/271) Bring back cliff vesting CLI command
+
 ## [Unreleased]
+
+## v26
+
+## [v0.50.x-v26-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/TODO)
+
+### Osmosis Specific Changes
+
+* Instant Undelegate
+    * [5046a6d](https://github.com/osmosis-labs/cosmos-sdk/commit/5046a6d19a5e1127ef106b0318740cd1bccb429e)
+
+* Supply Offsets
+    * [#119](https://github.com/osmosis-labs/cosmos-sdk/pull/119)
+    * [#295](https://github.com/osmosis-labs/cosmos-sdk/pull/295)
+
+* Clawback Vesting Account
+    * [#171](https://github.com/osmosis-labs/cosmos-sdk/pull/171)
+    * [#178](https://github.com/osmosis-labs/cosmos-sdk/pull/178)
+    * [5b03258](https://github.com/osmosis-labs/cosmos-sdk/commit/5b032581d579eac710ce0acb62edd84fe9679c18)
+
+* Track Before Send and Block Before Send
+    * [#278](https://github.com/osmosis-labs/cosmos-sdk/pull/278)
+    * [#421](https://github.com/osmosis-labs/cosmos-sdk/pull/421)
+
+* Slashing
+    * [0609929](https://github.com/osmosis-labs/cosmos-sdk/commit/0609929d2ddfd845aebfe53622176660f8392fcb) Osmosis specific key migration slashing changes, due to implementing it early in v0.47.x
+
+* Distribution
+    * [#527](https://github.com/osmosis-labs/cosmos-sdk/pull/527) Distribute every 50 blocks
+
+* Performance (Already upstreamed but not in this version)
+    * [#538](https://github.com/osmosis-labs/cosmos-sdk/pull/538) Slight speedup to Slashing BeginBlock logic
+    * [#570](https://github.com/osmosis-labs/cosmos-sdk/pull/570) Removal of regex usage on denom validation
+
+* Per module fast nodes
+    * [#552](https://github.com/osmosis-labs/cosmos-sdk/pull/552) Per module fast nodes implementation
+    * [715f32](https://github.com/osmosis-labs/cosmos-sdk/commit/715f3216416030f5b1bb30f02882ee38e238c1a2) Replace store imports with fast nodes
+    * [#572](https://github.com/osmosis-labs/cosmos-sdk/pull/572) Fix fast nodes whitelist parsing
+
+* IAVL
+    * [#593](https://github.com/osmosis-labs/cosmos-sdk/pull/593) Async pruning IAVL v1
+
+* Performance Improvements
+    * [b9a3e8f](https://github.com/osmosis-labs/cosmos-sdk/commit/b9a3e8fa12229200b31a1e7c1805ab5a495fbd11) Lower event emission from Osmosis epoch sends
+    * [bbb9a48](https://github.com/osmosis-labs/cosmos-sdk/commit/bbb9a4898aa46cb27d2b482a74259687afe4ab16) Remove GetAccount calls in epoch
+    * [8628b48](https://github.com/osmosis-labs/cosmos-sdk/commit/8628b4869dcbf7427d4de8a5a6f8e40d9fa86e66) Types speedups
+    * [3ef7ba4](https://github.com/osmosis-labs/cosmos-sdk/commit/3ef7ba4964b74154eb9d394dbe25fd967b31fbed) Replace amino json encoder with stdlib
+    * [#601](https://github.com/osmosis-labs/cosmos-sdk/pull/601) Don't run ValidateBasic on recheck
+    * [#603](https://github.com/osmosis-labs/cosmos-sdk/pull/603) Remove IAVL per-get/delete timing info
+
+* Cliff Vesting
+    * [#271](https://github.com/osmosis-labs/cosmos-sdk/pull/271) Bring back cliff vesting CLI command
 
 ### Improvements
 
@@ -55,7 +161,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 * (types) [#19759](https://github.com/cosmos/cosmos-sdk/pull/19759) Align SignerExtractionAdapter in PriorityNonceMempool Remove.
 * (client) [#19870](https://github.com/cosmos/cosmos-sdk/pull/19870) Add new query command `wait-tx`. Alias `event-query-tx-for` to `wait-tx` for backward compatibility.
 
-### Improvements 
+### Improvements
 
 * (telemetry) [#19903](https://github.com/cosmos/cosmos-sdk/pull/19903) Conditionally emit metrics based on enablement.
     * **Introduction of `Now` Function**: Added a new function called `Now` to the telemetry package. It returns the current system time if telemetry is enabled, or a zero time if telemetry is not enabled.
@@ -94,6 +200,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 * (x/auth) [#19549](https://github.com/cosmos/cosmos-sdk/pull/19549) Accept custom get signers when injecting `x/auth/tx`.
 * (x/staking) Fix a possible bypass of delegator slashing: [GHSA-86h5-xcpx-cfqc](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-86h5-xcpx-cfqc)
 * (baseapp) Fix a bug in `baseapp.ValidateVoteExtensions` helper ([GHSA-95rx-m9m5-m94v](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-95rx-m9m5-m94v)). The helper has been fixed and for avoiding API breaking changes `currentHeight` and `chainID` arguments are ignored. Those arguments are removed from the helper in v0.51+.
+
+*****************************************************************************************
+*****************************************************************************************
+*****************************************************************************************
+*****************************************************************************************
+*****************************************************************************************
 
 ## [v0.50.4](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.50.4) - 2024-02-19
 
