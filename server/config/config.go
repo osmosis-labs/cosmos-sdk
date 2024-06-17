@@ -318,6 +318,7 @@ func DefaultConfig() *Config {
 			IAVLFastNodeModuleWhitelist: []string{"lockup"},
 			IAVLLazyLoading:             false,
 			AppDBBackend:                "",
+			MaxEventSize:                0,
 		},
 		Telemetry: telemetry.Config{
 			Enabled:      false,
@@ -383,6 +384,7 @@ func GetConfig(v *viper.Viper) (Config, error) {
 	if err := v.Unmarshal(conf); err != nil {
 		return Config{}, fmt.Errorf("error extracting app config: %w", err)
 	}
+	sdk.MaxEventSize = conf.BaseConfig.MaxEventSize
 	return *conf, nil
 }
 

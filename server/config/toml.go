@@ -6,8 +6,6 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/spf13/viper"
 )
 
@@ -312,7 +310,6 @@ func init() {
 func ParseConfig(v *viper.Viper) (*Config, error) {
 	conf := DefaultConfig()
 	err := v.Unmarshal(conf)
-	types.MaxEventSize = conf.BaseConfig.MaxEventSize
 
 	return conf, err
 }
