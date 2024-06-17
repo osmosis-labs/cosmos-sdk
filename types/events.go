@@ -38,10 +38,13 @@ func (em *EventManager) Events() Events { return em.events }
 // EmitEvent stores a single Event object.
 // Deprecated: Use EmitTypedEvent
 func (em *EventManager) EmitEvent(event Event) {
+	fmt.Println("EmitEvent, maxEventSize", em.maxEventSize)
 	if em.maxEventSize > 0 {
 		totalEventSize := 0
+		fmt.Println("EmitEvent event.Attributes", event.Attributes)
 		for _, attr := range event.Attributes {
 			totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+			fmt.Println("EmitEvent totalEventSize", totalEventSize)
 			if totalEventSize > em.maxEventSize {
 				return // Omit the event if it exceeds the max size
 			}
@@ -53,11 +56,14 @@ func (em *EventManager) EmitEvent(event Event) {
 // EmitEvents stores a series of Event objects.
 // Deprecated: Use EmitTypedEvents
 func (em *EventManager) EmitEvents(events Events) {
+	fmt.Println("EmitEvents, maxEventSize", em.maxEventSize)
 	if em.maxEventSize > 0 {
 		for _, event := range events {
 			totalEventSize := 0
+			fmt.Println("EmitEvents event.Attributes", event.Attributes)
 			for _, attr := range event.Attributes {
 				totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+				fmt.Println("EmitEvents totalEventSize", totalEventSize)
 				if totalEventSize > em.maxEventSize {
 					continue // Omit the event if it exceeds the max size
 				}
@@ -81,10 +87,12 @@ func (em *EventManager) EmitTypedEvent(tev proto.Message) error {
 		return err
 	}
 
+	fmt.Println("EmitTypedEvent, maxEventSize", em.maxEventSize)
 	if em.maxEventSize > 0 {
 		totalEventSize := 0
 		for _, attr := range event.Attributes {
 			totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+			fmt.Println("EmitTypedEvent totalEventSize", totalEventSize)
 			if totalEventSize > em.maxEventSize {
 				return nil // Omit the event if it exceeds the max size
 			}
@@ -103,10 +111,13 @@ func (em *EventManager) EmitTypedEvents(tevs ...proto.Message) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Println("EmitTypedEvents, maxEventSize", em.maxEventSize)
 		if em.maxEventSize > 0 {
 			totalEventSize := 0
 			for _, attr := range event.Attributes {
 				totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+				fmt.Println("EmitTypedEvents totalEventSize", totalEventSize)
 				if totalEventSize > em.maxEventSize {
 					continue // Omit the event if it exceeds the max size
 				}
