@@ -412,9 +412,12 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, sdk.MarkEventsToIndex(anteEvents, app.indexEvents), app.trace)
 	}
 
+	fmt.Println("DeliverTx")
 	if sdk.MaxEventSize > 0 {
+		fmt.Println("sdk.MaxEventSize > 0", sdk.MaxEventSize)
 		for _, event := range result.Events {
 			for _, attr := range event.Attributes {
+				fmt.Println("lengths", len([]byte(attr.Key)), len([]byte(attr.Value)))
 				if len([]byte(attr.Key))+len([]byte(attr.Value)) > sdk.MaxEventSize {
 					attr.Value = "evt val too large, inc max-event-size in config.toml"
 				}
