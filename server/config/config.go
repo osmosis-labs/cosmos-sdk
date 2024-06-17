@@ -108,6 +108,8 @@ type BaseConfig struct {
 	// AppDBBackend defines the type of Database to use for the application and snapshots databases.
 	// An empty string indicates that the Tendermint config's DBBackend value should be used.
 	AppDBBackend string `mapstructure:"app-db-backend"`
+
+	MaxEventSize int `mapstructure:"max-event-size" json:"max-event-size"`
 }
 
 // APIConfig defines the API listener configuration.
@@ -316,6 +318,7 @@ func DefaultConfig() *Config {
 			IAVLFastNodeModuleWhitelist: []string{"lockup"},
 			IAVLLazyLoading:             false,
 			AppDBBackend:                "",
+			MaxEventSize:                0,
 		},
 		Telemetry: telemetry.Config{
 			Enabled:      false,
@@ -381,6 +384,7 @@ func GetConfig(v *viper.Viper) (Config, error) {
 	if err := v.Unmarshal(conf); err != nil {
 		return Config{}, fmt.Errorf("error extracting app config: %w", err)
 	}
+	sdk.MaxEventSize = conf.BaseConfig.MaxEventSize
 	return *conf, nil
 }
 
