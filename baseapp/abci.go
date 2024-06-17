@@ -412,6 +412,16 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, sdk.MarkEventsToIndex(anteEvents, app.indexEvents), app.trace)
 	}
 
+	if sdk.MaxEventSize > 0 {
+		for _, event := range result.Events {
+			for _, attr := range event.Attributes {
+				if len([]byte(attr.Key))+len([]byte(attr.Value)) > sdk.MaxEventSize {
+					attr.Value = "evt val too large, inc max-event-size in config.toml"
+				}
+			}
+		}
+	}
+
 	return abci.ResponseDeliverTx{
 		GasWanted: int64(gInfo.GasWanted), // TODO: Should type accept unsigned ints?
 		GasUsed:   int64(gInfo.GasUsed),   // TODO: Should type accept unsigned ints?
