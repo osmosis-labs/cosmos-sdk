@@ -109,6 +109,8 @@ type BaseConfig struct {
 	// An empty string indicates that the Tendermint config's DBBackend value should be used.
 	AppDBBackend string `mapstructure:"app-db-backend"`
 
+	// MaxEventSize defines the maximum size of an attribute (key + value) of an event that will be stored in the block results.
+	// If an attribute is larger than this size, it will be replaced with a placeholder in the block results.
 	MaxEventSize int `mapstructure:"max-event-size" json:"max-event-size"`
 }
 
@@ -318,7 +320,7 @@ func DefaultConfig() *Config {
 			IAVLFastNodeModuleWhitelist: []string{"lockup"},
 			IAVLLazyLoading:             false,
 			AppDBBackend:                "",
-			MaxEventSize:                0,
+			MaxEventSize:                1000000, // 1MB
 		},
 		Telemetry: telemetry.Config{
 			Enabled:      false,
