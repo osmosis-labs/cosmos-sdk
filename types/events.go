@@ -16,6 +16,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
+var MaxEventSize = int(0)
+
 // ----------------------------------------------------------------------------
 // Event Manager
 // ----------------------------------------------------------------------------
@@ -23,11 +25,12 @@ import (
 // EventManager implements a simple wrapper around a slice of Event objects that
 // can be emitted from.
 type EventManager struct {
-	events Events
+	events       Events
+	maxEventSize int // max size of events in bytes. 0 means no limit
 }
 
 func NewEventManager() *EventManager {
-	return &EventManager{EmptyEvents()}
+	return &EventManager{events: EmptyEvents(), maxEventSize: MaxEventSize}
 }
 
 func (em *EventManager) Events() Events { return em.events }
@@ -35,13 +38,21 @@ func (em *EventManager) Events() Events { return em.events }
 // EmitEvent stores a single Event object.
 // Deprecated: Use EmitTypedEvent
 func (em *EventManager) EmitEvent(event Event) {
+	if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
+		return // Omit the event if it exceeds the max size
+	}
 	em.events = em.events.AppendEvent(event)
 }
 
 // EmitEvents stores a series of Event objects.
 // Deprecated: Use EmitTypedEvents
 func (em *EventManager) EmitEvents(events Events) {
-	em.events = em.events.AppendEvents(events)
+	for _, event := range events {
+		if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
+			continue // Omit the event if it exceeds the max size
+		}
+		em.events = em.events.AppendEvent(event)
+	}
 }
 
 // ABCIEvents returns all stored Event objects as abci.Event objects.
@@ -56,19 +67,26 @@ func (em *EventManager) EmitTypedEvent(tev proto.Message) error {
 		return err
 	}
 
+	if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
+		return nil // Omit the event if it exceeds the max size
+	}
+
 	em.EmitEvent(event)
 	return nil
 }
 
 // EmitTypedEvents takes series of typed events and emit
 func (em *EventManager) EmitTypedEvents(tevs ...proto.Message) error {
-	events := make(Events, len(tevs))
-	for i, tev := range tevs {
-		res, err := TypedEventToEvent(tev)
+	events := make(Events, 0, len(tevs))
+	for _, tev := range tevs {
+		event, err := TypedEventToEvent(tev)
 		if err != nil {
 			return err
 		}
-		events[i] = res
+		if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
+			continue // Omit the event if it exceeds the max size
+		}
+		events = append(events, event)
 	}
 
 	em.EmitEvents(events)

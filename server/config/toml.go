@@ -6,6 +6,8 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/spf13/viper"
 )
 
@@ -73,7 +75,7 @@ index-events = [{{ range .BaseConfig.IndexEvents }}{{ printf "%q, " . }}{{end}}]
 # IavlCacheSize set the size of the iavl tree cache (in number of nodes).
 iavl-cache-size = {{ .BaseConfig.IAVLCacheSize }}
 
-# IAVLDisableFastNode enables or disables the fast node feature of IAVL. 
+# IAVLDisableFastNode enables or disables the fast node feature of IAVL.
 # Default is false.
 iavl-disable-fastnode = {{ .BaseConfig.IAVLDisableFastNode }}
 
@@ -95,6 +97,9 @@ iavl-lazy-loading = {{ .BaseConfig.IAVLLazyLoading }}
 # An empty string indicates that a fallback will be used.
 # The fallback is the db_backend value set in Tendermint's config.toml.
 app-db-backend = "{{ .BaseConfig.AppDBBackend }}"
+
+# Maximum event size in bytes. 0 means no limit
+max-event-size = {{ .BaseConfig.MaxEventSize }}
 
 ###############################################################################
 ###                         Telemetry Configuration                         ###
@@ -307,6 +312,7 @@ func init() {
 func ParseConfig(v *viper.Viper) (*Config, error) {
 	conf := DefaultConfig()
 	err := v.Unmarshal(conf)
+	types.MaxEventSize = conf.BaseConfig.MaxEventSize
 
 	return conf, err
 }
