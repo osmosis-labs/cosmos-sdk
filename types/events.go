@@ -38,8 +38,14 @@ func (em *EventManager) Events() Events { return em.events }
 // EmitEvent stores a single Event object.
 // Deprecated: Use EmitTypedEvent
 func (em *EventManager) EmitEvent(event Event) {
-	if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
-		return // Omit the event if it exceeds the max size
+	if em.maxEventSize > 0 {
+		totalEventSize := 0
+		for _, attr := range event.Attributes {
+			totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+			if totalEventSize > em.maxEventSize {
+				return // Omit the event if it exceeds the max size
+			}
+		}
 	}
 	em.events = em.events.AppendEvent(event)
 }
@@ -47,11 +53,19 @@ func (em *EventManager) EmitEvent(event Event) {
 // EmitEvents stores a series of Event objects.
 // Deprecated: Use EmitTypedEvents
 func (em *EventManager) EmitEvents(events Events) {
-	for _, event := range events {
-		if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
-			continue // Omit the event if it exceeds the max size
+	if em.maxEventSize > 0 {
+		for _, event := range events {
+			totalEventSize := 0
+			for _, attr := range event.Attributes {
+				totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+				if totalEventSize > em.maxEventSize {
+					continue // Omit the event if it exceeds the max size
+				}
+			}
+			em.events = em.events.AppendEvent(event)
 		}
-		em.events = em.events.AppendEvent(event)
+	} else {
+		em.events = em.events.AppendEvents(events)
 	}
 }
 
@@ -67,8 +81,14 @@ func (em *EventManager) EmitTypedEvent(tev proto.Message) error {
 		return err
 	}
 
-	if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
-		return nil // Omit the event if it exceeds the max size
+	if em.maxEventSize > 0 {
+		totalEventSize := 0
+		for _, attr := range event.Attributes {
+			totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+			if totalEventSize > em.maxEventSize {
+				return nil // Omit the event if it exceeds the max size
+			}
+		}
 	}
 
 	em.EmitEvent(event)
@@ -83,8 +103,14 @@ func (em *EventManager) EmitTypedEvents(tevs ...proto.Message) error {
 		if err != nil {
 			return err
 		}
-		if em.maxEventSize > 0 && len(event.Attributes) > em.maxEventSize {
-			continue // Omit the event if it exceeds the max size
+		if em.maxEventSize > 0 {
+			totalEventSize := 0
+			for _, attr := range event.Attributes {
+				totalEventSize += len([]byte(attr.Key)) + len([]byte(attr.Value))
+				if totalEventSize > em.maxEventSize {
+					continue // Omit the event if it exceeds the max size
+				}
+			}
 		}
 		events = append(events, event)
 	}
