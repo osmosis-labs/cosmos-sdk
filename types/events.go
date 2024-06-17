@@ -16,7 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-var MaxEventSize = int(0)
+var MaxEventSize = 0
 
 // ----------------------------------------------------------------------------
 // Event Manager

@@ -412,6 +412,8 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		return sdkerrors.ResponseDeliverTxWithEvents(err, gInfo.GasWanted, gInfo.GasUsed, sdk.MarkEventsToIndex(anteEvents, app.indexEvents), app.trace)
 	}
 
+	// If the application has set a maximum event size, check the size of each event attribute.
+	// If the size of any attribute exceeds the maximum, set the attribute value to a placeholder.
 	if sdk.MaxEventSize > 0 {
 		for i, event := range result.Events {
 			for j, attr := range event.Attributes {
