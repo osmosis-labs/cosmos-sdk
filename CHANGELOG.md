@@ -43,6 +43,10 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## v24
 
+## [v0.47.5-v25-osmo-2](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v25-osmo-1)
+
+* (server) [#614](https://github.com/osmosis-labs/cosmos-sdk/pull/614) Add `max-event-size` config to app.toml to limit the size of events stored.
+
 ## [v0.47.5-v24-osmo-6](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.47.5-v24-osmo-6)
 
 * (perf) [#601](https://github.com/osmosis-labs/cosmos-sdk/pull/601) Don't run ValidateBasic on recheck
