@@ -53,9 +53,6 @@ type StakingKeeper interface {
 
 	// MaxValidators returns the maximum amount of bonded validators
 	MaxValidators(sdk.Context) uint32
-
-	// IsValidatorJailed returns if the validator is jailed.
-	IsValidatorJailed(ctx sdk.Context, addr sdk.ConsAddress) bool
 }
 
 // StakingHooks event hooks for staking validator object (noalias)

@@ -23,7 +23,8 @@ func (k Keeper) HandleValidatorSignatureWithParams(ctx sdk.Context, params types
 	consAddr := sdk.ConsAddress(addr)
 
 	// don't update missed blocks when validator's jailed
-	if k.sk.IsValidatorJailed(ctx, consAddr) {
+	validator := k.sk.ValidatorByConsAddr(ctx, consAddr)
+	if validator.IsJailed() {
 		return
 	}
 
@@ -112,7 +113,6 @@ func (k Keeper) HandleValidatorSignatureWithParams(ctx sdk.Context, params types
 	// if we are past the minimum height and the validator has missed too many blocks, punish them
 	if height > minHeight && signInfo.MissedBlocksCounter > maxMissed {
 		modifiedSignInfo = true
-		validator := k.sk.ValidatorByConsAddr(ctx, consAddr)
 		if validator != nil && !validator.IsJailed() {
 			// Downtime confirmed: slash and jail the validator
 			// We need to retrieve the stake distribution which signed the block, so we subtract ValidatorUpdateDelay from the evidence height,

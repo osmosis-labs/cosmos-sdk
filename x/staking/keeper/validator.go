@@ -476,12 +476,3 @@ func (k Keeper) UnbondAllMatureValidators(ctx sdk.Context) {
 		}
 	}
 }
-
-func (k Keeper) IsValidatorJailed(ctx sdk.Context, addr sdk.ConsAddress) bool {
-	v, ok := k.GetValidatorByConsAddr(ctx, addr)
-	if !ok {
-		return false
-	}
-
-	return v.Jailed
-}

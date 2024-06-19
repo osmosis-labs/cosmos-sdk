@@ -131,7 +131,7 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // AddSupplyOffset mocks base method.
-func (m *MockBankKeeper) AddSupplyOffset(ctx types.Context, denom string, offsetAmount types.Int) {
+func (m *MockBankKeeper) AddSupplyOffset(ctx types.Context, denom string, offsetAmount math.Int) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "AddSupplyOffset", ctx, denom, offsetAmount)
 }
@@ -493,10 +493,10 @@ func (mr *MockBankKeeperMockRecorder) GetSupply(ctx, denom interface{}) *gomock.
 }
 
 // GetSupplyOffset mocks base method.
-func (m *MockBankKeeper) GetSupplyOffset(ctx types.Context, denom string) types.Int {
+func (m *MockBankKeeper) GetSupplyOffset(ctx types.Context, denom string) math.Int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSupplyOffset", ctx, denom)
-	ret0, _ := ret[0].(types.Int)
+	ret0, _ := ret[0].(math.Int)
 	return ret0
 }
 
