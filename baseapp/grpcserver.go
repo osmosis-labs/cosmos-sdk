@@ -5,6 +5,12 @@ import (
 	"fmt"
 	"strconv"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	otelcodes "go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
+
 	gogogrpc "github.com/cosmos/gogoproto/grpc"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -18,14 +24,18 @@ import (
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 )
 
+const tracerName = "cosmos-sdk"
+
 // GRPCQueryRouter returns the GRPCQueryRouter of a BaseApp.
 func (app *BaseApp) GRPCQueryRouter() *GRPCQueryRouter { return app.grpcQueryRouter }
 
 // RegisterGRPCServer registers gRPC services directly with the gRPC server.
 func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server, logQueries bool) {
+	tracer := otel.Tracer(tracerName)
+
 	// Define an interceptor for all gRPC queries: this interceptor will create
 	// a new sdk.Context, and pass it into the query handler.
-	interceptor := func(grpcCtx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	interceptor := func(grpcCtx context.Context, req interface{}, grpcInfo *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		// If there's some metadata in the context, retrieve it.
 		md, ok := metadata.FromIncomingContext(grpcCtx)
 		if !ok {
@@ -70,7 +80,25 @@ func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server, logQueries bool) 
 			app.logger.Info("gRPC query received of type: " + fmt.Sprintf("%#v", req))
 		}
 
-		return handler(grpcCtx, req)
+		// Extract the existing span context from the incoming request
+		parentCtx := otel.GetTextMapPropagator().Extract(grpcCtx, propagation.HeaderCarrier(md))
+
+		// Start a new span representing the request
+		// The span ends when the request is complete
+		grpcCtx, span := tracer.Start(parentCtx, grpcInfo.FullMethod, trace.WithSpanKind(trace.SpanKindServer))
+		defer span.End()
+
+		span.SetAttributes(attribute.String("http.method", grpcInfo.FullMethod))
+
+		resp, err = handler(grpcCtx, req)
+
+		if err != nil {
+			span.SetStatus(otelcodes.Error, err.Error())
+		} else {
+			span.SetStatus(otelcodes.Ok, "OK")
+		}
+
+		return resp, err
 	}
 
 	// Loop through all services and methods, add the interceptor, and register
