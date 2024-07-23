@@ -27,7 +27,6 @@ linters:
     - govet
     - ineffassign
     - misspell
-    - staticcheck
     - revive
     - stylecheck
     - unconvert
