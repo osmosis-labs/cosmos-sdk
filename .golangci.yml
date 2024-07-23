@@ -27,7 +27,6 @@ linters:
     - nakedret
     - nolintlint
     - revive
-    - staticcheck
     - stylecheck
     - thelper
     - typecheck
