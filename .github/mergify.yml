@@ -40,7 +40,7 @@ pull_request_rules:
           - osmo-v25/v0.47.5
   - name: backport patches to sdk v50 branch
     conditions:
-      - base=osmo/v0.50.x
+      - base=osmo/v0.47.5
       - label=A:backport/sdk-v50
     actions:
       backport:
