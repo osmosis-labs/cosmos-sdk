@@ -30,7 +30,6 @@ linters:
     - staticcheck
     - revive
     - stylecheck
-    - typecheck
     - unconvert
     - unused
 

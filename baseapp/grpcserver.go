@@ -2,7 +2,6 @@ package baseapp
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"go.opentelemetry.io/otel"
