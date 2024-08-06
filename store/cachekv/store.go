@@ -14,6 +14,7 @@ import (
 	"cosmossdk.io/store/internal/kv"
 	"cosmossdk.io/store/tracekv"
 	"cosmossdk.io/store/types"
+	"github.com/jfcg/sorty/v2"
 )
 
 // cValue represents a cached value.
@@ -380,9 +381,14 @@ func (store *Store) clearUnsortedCacheSubset(unsorted []*kv.Pair, sortState sort
 	}
 
 	if sortState == stateUnsorted {
-		sort.Slice(unsorted, func(i, j int) bool {
+		fn := func(i, j int) bool {
 			return bytes.Compare(unsorted[i].Key, unsorted[j].Key) < 0
-		})
+		}
+		if len(unsorted) > 1000 {
+			sort.Slice(unsorted, fn)
+		} else {
+			sorty.SortSlice(unsorted)
+		}
 	}
 
 	for _, item := range unsorted {

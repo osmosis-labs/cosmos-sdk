@@ -26,6 +26,8 @@ require (
 	gotest.tools/v3 v3.5.1
 )
 
+require github.com/jfcg/sorty/v2 v2.1.1
+
 require (
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -48,6 +50,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
+	github.com/jfcg/sixb v1.4.1 // indirect
 	github.com/jhump/protoreflect v1.15.3 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
