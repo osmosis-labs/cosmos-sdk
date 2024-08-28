@@ -12,17 +12,28 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func migrateDelegationsByValidatorIndex(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func migrateDelegationsByValidatorIndex(ctx sdk.Context, store storetypes.KVStore, _ codec.BinaryCodec) error {
 	iterator := storetypes.KVStorePrefixIterator(store, DelegationKey)
+	iterationLimit := 1000
+	iterationCounter := 0
 
 	for ; iterator.Valid(); iterator.Next() {
 		key := iterator.Key()
+
 		del, val, err := ParseDelegationKey(key)
 		if err != nil {
 			return err
 		}
 
 		store.Set(GetDelegationsByValKey(val, del), []byte{})
+
+		iterationCounter++
+		if iterationCounter >= iterationLimit {
+			ctx.Logger().Info(fmt.Sprintf("Migrated 1000 delegations, next key %x", key[1:]))
+			// we set the store to the key sans the DelgationKey as we create a prefix store to iterate per block
+			store.Set(NextMigrateDelegationsByValidatorIndexKey, key[1:])
+			break
+		}
 	}
 
 	return nil

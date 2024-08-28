@@ -6,6 +6,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -19,5 +20,19 @@ func (k *Keeper) BeginBlocker(ctx context.Context) error {
 // EndBlocker called at every block, update validator set
 func (k *Keeper) EndBlocker(ctx context.Context) ([]abci.ValidatorUpdate, error) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+
+	// TODO: Remove migration code and panic catch in the next upgrade
+	// Wrap the migration call in a function that can recover from panics
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				k.Logger(sdk.UnwrapSDKContext(ctx)).Error("Panic in MigrateDelegationsByValidatorIndex", "recover", r)
+			}
+		}()
+
+		// Only migrate 2000 items per block to make sure block times don't grow too much
+		k.MigrateDelegationsByValidatorIndex(sdk.UnwrapSDKContext(ctx), 2000)
+	}()
+
 	return k.BlockValidatorUpdates(ctx)
 }
