@@ -30,8 +30,8 @@ func (k *Keeper) EndBlocker(ctx context.Context) ([]abci.ValidatorUpdate, error)
 			}
 		}()
 
-		// Only migrate 2000 items per block to make sure block times don't grow too much
-		k.MigrateDelegationsByValidatorIndex(sdk.UnwrapSDKContext(ctx), 2000)
+		// Only migrate 10000 items per block to make the migration as fast as possible
+		k.MigrateDelegationsByValidatorIndex(sdk.UnwrapSDKContext(ctx), 10000)
 	}()
 
 	return k.BlockValidatorUpdates(ctx)
