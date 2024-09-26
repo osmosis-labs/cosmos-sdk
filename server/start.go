@@ -758,7 +758,7 @@ func testnetify(ctx *Context, testnetAppCreator types.AppCreator, db dbm.DB, tra
 	}
 
 	emptyAddrBook := []byte("{}")
-	if err := os.WriteFile(addrBookPath, emptyAddrBook, 0o644); err != nil {
+	if err := os.WriteFile(addrBookPath, emptyAddrBook, 0o600); err != nil {
 		return nil, fmt.Errorf("failed to create empty addrbook.json: %w", err)
 	}
 
