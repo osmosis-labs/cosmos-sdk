@@ -41,14 +41,20 @@ func (b *Builder) AddQueryServiceCommands(cmd *cobra.Command, cmdDescriptor *aut
 	for cmdName, subCmdDesc := range cmdDescriptor.SubCommands {
 		subCmd := findSubCommand(cmd, cmdName)
 		if subCmd == nil {
-			subCmd = topLevelCmd(cmd.Context(), cmdName, fmt.Sprintf("Querying commands for the %s service", subCmdDesc.Service))
+			short := subCmdDesc.Short
+			if short == "" {
+				short = fmt.Sprintf("Querying commands for the %s service", subCmdDesc.Service)
+			}
+			subCmd = topLevelCmd(cmd.Context(), cmdName, short)
 		}
 
 		if err := b.AddQueryServiceCommands(subCmd, subCmdDesc); err != nil {
 			return err
 		}
 
-		cmd.AddCommand(subCmd)
+		if !subCmdDesc.EnhanceCustomCommand {
+			cmd.AddCommand(subCmd)
+		}
 	}
 
 	// skip empty command descriptors
@@ -114,11 +120,12 @@ func (b *Builder) BuildQueryMethodCommand(ctx context.Context, descriptor protor
 	methodName := fmt.Sprintf("/%s/%s", serviceDescriptor.FullName(), descriptor.Name())
 	outputType := util.ResolveMessageType(b.TypeResolver, descriptor.Output())
 	encoderOptions := aminojson.EncoderOptions{
-		Indent:          "  ",
-		EnumAsString:    true,
-		DoNotSortFields: true,
-		TypeResolver:    b.TypeResolver,
-		FileResolver:    b.FileResolver,
+		Indent:             "  ",
+		EnumAsString:       true,
+		DoNotSortFields:    true,
+		AminoNameAsTypeURL: true,
+		TypeResolver:       b.TypeResolver,
+		FileResolver:       b.FileResolver,
 	}
 
 	cmd, err := b.buildMethodCommandCommon(descriptor, options, func(cmd *cobra.Command, input protoreflect.Message) error {
