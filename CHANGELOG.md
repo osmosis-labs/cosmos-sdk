@@ -40,7 +40,11 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## v26
 
-## [v0.50.x-v26-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/TODO)
+## [v0.50.10-v26-osmo-2](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.10-v26-osmo-2)
+
+This osmo-v26/v0.50.10 branch was created at the [4e74a30430c8c2bcb9f760d7df287b2388a48702](https://github.com/cosmos/cosmos-sdk/commit/4e74a30430c8c2bcb9f760d7df287b2388a48702) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
+
+## [v0.50.x-v26-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.6-v26-osmo-1)
 
 This v0.50.x branch was created at the [bd886bb4b03fdfc52bdc1fa2f98e960316604f89](https://github.com/cosmos/cosmos-sdk/commit/bd886bb4b03fdfc52bdc1fa2f98e960316604f89) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
 
