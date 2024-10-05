@@ -62,7 +62,7 @@ func (k BaseKeeper) setSupplyOffsetOld(ctx context.Context, denom string, offset
 	}
 }
 
-// AddSupplyOffset adjusts the current supply offset of a denom by the inputted offsetAmount using the pre v26 (old) key
+// AddSupplyOffsetOld adjusts the current supply offset of a denom by the inputted offsetAmount using the pre v26 (old) key
 // TODO: Remove after v27 migration
 func (k BaseKeeper) AddSupplyOffsetOld(ctx context.Context, denom string, offsetAmount math.Int) {
 	k.setSupplyOffsetOld(ctx, denom, k.GetSupplyOffsetOld(ctx, denom).Add(offsetAmount))
