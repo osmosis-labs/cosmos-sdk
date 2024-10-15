@@ -64,6 +64,9 @@ This v0.50.x branch was created at the [bd886bb4b03fdfc52bdc1fa2f98e960316604f89
 
 ### Osmosis Specific PRs (should not upstream)
 
+* Fix Supply Offsets
+    * [#629](https://github.com/osmosis-labs/cosmos-sdk/pull/629) fix: add old supply offset functions
+
 * Slashing
     * [0609929](https://github.com/osmosis-labs/cosmos-sdk/commit/0609929d2ddfd845aebfe53622176660f8392fcb) Osmosis specific key migration slashing changes, due to implementing it early in v0.47.x
 
