@@ -33,7 +33,12 @@ var (
 	// ParamsKey is the prefix for x/bank parameters
 	ParamsKey = collections.NewPrefix(5)
 
+	// SupplyOffKey is a Osmosis specific key that handles supply offsets
 	SupplyOffsetKey = collections.NewPrefix(88)
+
+	// SupplyOffKeyOld is a Osmosis specific key that handles supply offsets pre v0.50
+	// TODO: Remove in the v28 upgrade
+	SupplyOffsetKeyOld = []byte{0x88}
 )
 
 // BalanceValueCodec is a codec for encoding bank balances in a backwards compatible way.

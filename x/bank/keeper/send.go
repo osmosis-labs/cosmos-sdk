@@ -165,6 +165,19 @@ func (k BaseSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 		return err
 	}
 
+	for _, out := range outputs {
+		outAddress, err := k.ak.AddressCodec().StringToBytes(out.Address)
+		if err != nil {
+			return err
+		}
+
+		if err := k.BlockBeforeSend(ctx, inAddress, outAddress, out.Coins); err != nil {
+			return err
+		}
+
+		k.TrackBeforeSend(ctx, inAddress, outAddress, out.Coins)
+	}
+
 	err = k.subUnlockedCoins(ctx, inAddress, input.Coins)
 	if err != nil {
 		return err
