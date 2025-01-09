@@ -86,6 +86,7 @@ This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0
     * [#572](https://github.com/osmosis-labs/cosmos-sdk/pull/572) Fix fast nodes whitelist parsing
 
 * IAVL
+    * [#634](https://github.com/osmosis-labs/cosmos-sdk/pull/634) Bump IAVL to v1.2.4 for speed ups in block sync
     * [#593](https://github.com/osmosis-labs/cosmos-sdk/pull/593) Async pruning IAVL v1
 
 ### Osmosis Specific PRs (unknown upstream status)
