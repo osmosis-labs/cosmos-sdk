@@ -3,7 +3,9 @@ package grpc
 import (
 	"context"
 	"fmt"
+	lo "log"
 	"net"
+	"os"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -19,6 +21,27 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino" // Import amino.proto file for reflection
 )
+
+// Create a logger
+var logger = lo.New(os.Stdout, "INFO: ", lo.Ldate|lo.Ltime|lo.Lshortfile)
+
+// UnaryServerInterceptor returns a new unary server interceptor for logging request details and timestamps.
+func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		msg := fmt.Sprintf("Request - Method:%s\t", info.FullMethod)
+		logger.Println(msg)
+		return handler(ctx, req)
+	}
+}
+
+// StreamServerInterceptor returns a new streaming server interceptor for logging request details and timestamps.
+func StreamServerInterceptor() grpc.StreamServerInterceptor {
+	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		msg := fmt.Sprintf("Request - Method:%s\t", info.FullMethod)
+		logger.Println(msg)
+		return handler(srv, stream)
+	}
+}
 
 // NewGRPCServer returns a correctly configured and initialized gRPC server.
 // Note, the caller is responsible for starting the server. See StartGRPCServer.
@@ -38,6 +61,8 @@ func NewGRPCServer(clientCtx client.Context, app types.Application, cfg config.G
 		grpc.MaxSendMsgSize(maxSendMsgSize),
 		grpc.MaxRecvMsgSize(maxRecvMsgSize),
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.UnaryInterceptor(UnaryServerInterceptor()),
+		grpc.StreamInterceptor(StreamServerInterceptor()),
 	)
 
 	app.RegisterGRPCServer(grpcSrv)
