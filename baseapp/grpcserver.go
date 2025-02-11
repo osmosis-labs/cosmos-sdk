@@ -2,6 +2,7 @@ package baseapp
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	gogogrpc "github.com/cosmos/gogoproto/grpc"
@@ -81,6 +82,7 @@ func (app *BaseApp) RegisterGRPCServer(server gogogrpc.Server) {
 		defer span.End()
 
 		span.SetAttributes(attribute.String("http.method", grpcInfo.FullMethod))
+		span.SetAttributes(attribute.String("http.request", fmt.Sprintf("%+v", req)))
 
 		resp, err = handler(grpcCtx, req)
 
