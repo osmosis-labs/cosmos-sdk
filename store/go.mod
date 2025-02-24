@@ -78,3 +78,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/cosmos/iavl v1.2.4 => github.com/cosmos/iavl v1.2.5-0.20250224053109-a896fc3bf0e1
