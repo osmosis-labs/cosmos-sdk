@@ -89,3 +89,77 @@ jobs:
           SLACK_COLOR: danger
           SLACK_MESSAGE: Sims Nightly (Long) are failing
           SLACK_FOOTER: ""
+            - name: Download a Build Artifact
+  uses: actions/download-artifact@v4.1.9
+  with:
+    # Name of the artifact to download. If unspecified, all artifacts for the run are downloaded.
+    name: # optional
+    # Destination path. Supports basic tilde expansion. Defaults to $GITHUB_WORKSPACE
+    path: # optional
+    # A glob pattern matching the artifacts that should be downloaded. Ignored if name is specified.
+    pattern: # optional
+    # When multiple artifacts are matched, this changes the behavior of the destination directories. If true, the downloaded artifacts will be in the same directory specified by path. If false, the downloaded artifacts will be extracted into individual named directories within the specified path.
+    merge-multiple: # optional, default is false
+    # The GitHub token used to authenticate with the GitHub API. This is required when downloading artifacts from a different repository or from a different workflow run. If this is not specified, the action will attempt to download artifacts from the current repository and the current workflow run.
+    github-token: # optional
+    # The repository owner and the repository name joined together by "/". If github-token is specified, this is the repository that artifacts will be downloaded from.
+    repository: # optional, default is ${{ github.repository }}
+    # The id of the workflow run where the desired download artifact was uploaded from. If github-token is specified, this is the run that artifacts will be downloaded from.
+    run-id: # optional, default is ${{ github.run_id }}
+
+                      - name: Cache
+  uses: actions/cache@v3.4.3
+  with:
+    # A list of files, directories, and wildcard patterns to cache and restore
+    path: 
+    # An explicit key for restoring and saving the cache
+    key: 
+    # An ordered list of keys to use for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.
+    restore-keys: # optional
+    # The chunk size used to split up large files during upload, in bytes
+    upload-chunk-size: # optional
+    # An optional boolean when enabled, allows windows runners to save or restore caches that can be restored or saved respectively on other platforms
+    enableCrossOsArchive: # optional, default is false
+    # Fail the workflow if cache entry is not found
+    fail-on-cache-miss: # optional, default is false
+    # Check if a cache entry exists for the given input(s) (key, restore-keys) without downloading the cache
+    lookup-only: # optional, default is false
+                      - name: run-sqlpackage
+  uses: Azure/run-sqlpackage-action@v1.0.0
+  with:
+    # Action parameter to run with SqlPackage. Supported values are: Publish, DeployReport, DriftReport, Script
+    action: 
+    # The path where to look for the DACPAC file. If multiple files exists, all of them are processed
+    sourcepath: 
+    # The profile path to use during the execution. It has to be an xml file
+    profile: 
+    # Database server URL (without protocol). If not indicated in the publishing profile, it has to be indicated here.
+    database-server: # optional, default is 
+    # Database name. If not indicated in the publishing profile, it has to be indicated here.
+    database-name: # optional, default is 
+    # The authentication token used to connect to the database, if credentials not indicated in the connection string
+    authtoken: # optional, default is 
+    # The output folder where assets will be generated if any
+    outputpath: # optional, default is .
+    # The output file name. The final name of the file will be [dacpac_name].[outputfile]
+    outputfile: # optional, default is deployreport.xml
+                      - name: Harden-Runner
+  # You may pin to the exact commit or the version.
+  # uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481
+  uses: step-security/harden-runner@v2.11.0
+  with:
+    # Only these endpoints will be allowed if egress-policy is set to block
+    allowed-endpoints: # optional, default is 
+    # Policy for outbound traffic, can be either audit or block
+    egress-policy: # optional, default is block
+    # Used to avoid github rate limiting
+    token: # optional, default is ${{ github.token }}
+    # Disable sending telemetry to StepSecurity API, can be set to true or false. This can only be set to true when egress-policy is set to block
+    disable-telemetry: # optional, default is false
+    # Disable sudo access for the runner account
+    disable-sudo: # optional, default is false
+    # Disable file monitoring
+    disable-file-monitoring: # optional, default is false
+    # Policy name to be used from the policy store
+    policy: # optional, default is 
+          
