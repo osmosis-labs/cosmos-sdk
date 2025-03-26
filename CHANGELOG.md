@@ -64,6 +64,9 @@ This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0
 
 ### Osmosis Specific PRs (should not upstream)
 
+* Bump IAVL
+    * [#640](https://github.com/osmosis-labs/cosmos-sdk/pull/640) fix: bump IAVL to avoid pruning issues
+
 * Supply offset fix
     * [#629](https://github.com/osmosis-labs/cosmos-sdk/pull/629) fix: add old supply offset functions
 
