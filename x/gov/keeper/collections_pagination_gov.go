@@ -10,7 +10,6 @@ import (
 	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/types/query"
-	collq "github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // CollectionFilteredPaginate works in the same way as CollectionPaginate but allows to filter
@@ -20,13 +19,13 @@ import (
 // to convert the result to a different type.
 // NOTE: do not collect results using the values/keys passed to predicateFunc as they are not
 // guaranteed to be in the pagination range requested.
-func CollectionFilteredPaginate[K, V any, C collq.Collection[K, V], T any](
+func CollectionFilteredPaginate[K, V any, C query.Collection[K, V], T any](
 	ctx context.Context,
 	coll C,
 	pageReq *query.PageRequest,
 	predicateFunc func(key K, value V) (include bool, err error),
 	transformFunc func(key K, value V) (T, error),
-	opts ...func(opt *collq.CollectionsPaginateOptions[K]),
+	opts ...func(opt *query.CollectionsPaginateOptions[K]),
 ) (results []T, pageRes *query.PageResponse, err error) {
 	pageReq = initPageRequestDefaults(pageReq)
 
@@ -40,7 +39,7 @@ func CollectionFilteredPaginate[K, V any, C collq.Collection[K, V], T any](
 		return nil, nil, fmt.Errorf("invalid request, either offset or key is expected, got both")
 	}
 
-	opt := new(collq.CollectionsPaginateOptions[K])
+	opt := new(query.CollectionsPaginateOptions[K])
 	for _, o := range opts {
 		o(opt)
 	}
@@ -82,7 +81,7 @@ func initPageRequestDefaults(pageRequest *query.PageRequest) *query.PageRequest 
 	}
 
 	if pageRequestCopy.Limit == 0 {
-		pageRequestCopy.Limit = collq.DefaultLimit
+		pageRequestCopy.Limit = query.DefaultLimit
 
 		// count total results when the limit is zero/not supplied
 		pageRequestCopy.CountTotal = true
@@ -92,13 +91,13 @@ func initPageRequestDefaults(pageRequest *query.PageRequest) *query.PageRequest 
 }
 
 // todo maybe move to collections?
-func encodeCollKey[K, V any, C collq.Collection[K, V]](coll C, key K) ([]byte, error) {
+func encodeCollKey[K, V any, C query.Collection[K, V]](coll C, key K) ([]byte, error) {
 	buffer := make([]byte, coll.KeyCodec().Size(key))
 	_, err := coll.KeyCodec().Encode(buffer, key)
 	return buffer, err
 }
 
-func getCollIter[K, V any, C collq.Collection[K, V]](ctx context.Context, coll C, prefix, start []byte, reverse bool) (collections.Iterator[K, V], error) {
+func getCollIter[K, V any, C query.Collection[K, V]](ctx context.Context, coll C, prefix, start []byte, reverse bool) (collections.Iterator[K, V], error) {
 	// TODO: maybe can be simplified
 	if reverse {
 		// if we are in reverse mode, we need to increase the start key
@@ -132,7 +131,7 @@ func advanceIter[I interface {
 
 // collFilteredPaginateNoKey applies the provided pagination on the collection when the starting key is not set.
 // If predicateFunc is nil no filtering is applied.
-func collFilteredPaginateNoKey[K, V any, C collq.Collection[K, V], T any](
+func collFilteredPaginateNoKey[K, V any, C query.Collection[K, V], T any](
 	ctx context.Context,
 	coll C,
 	prefix []byte,
@@ -258,7 +257,7 @@ func collFilteredPaginateNoKey[K, V any, C collq.Collection[K, V], T any](
 
 // collFilteredPaginateByKey paginates a collection when a starting key
 // is provided in the PageRequest. Predicate is applied only if not nil.
-func collFilteredPaginateByKey[K, V any, C collq.Collection[K, V], T any](
+func collFilteredPaginateByKey[K, V any, C query.Collection[K, V], T any](
 	ctx context.Context,
 	coll C,
 	prefix []byte,
