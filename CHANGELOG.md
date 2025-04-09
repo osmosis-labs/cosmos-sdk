@@ -68,6 +68,9 @@ This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0
     * [#640](https://github.com/osmosis-labs/cosmos-sdk/pull/640) fix: bump IAVL to avoid pruning issues
     * [#641](https://github.com/osmosis-labs/cosmos-sdk/pull/641) fix: bump IAVL to skip broken legacy state
 
+* Gov proposals fix
+    * [#642](https://github.com/osmosis-labs/cosmos-sdk/pull/642) fix: gov proposal fix for missing codec value
+
 * Supply offset fix
     * [#629](https://github.com/osmosis-labs/cosmos-sdk/pull/629) fix: add old supply offset functions
 
