@@ -38,9 +38,13 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## Osmosis Specific Info
 
-## v28
+## v29
 
-## [v0.50.11-v28-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.11-v28-osmo-1)
+## [v0.50.11-v28-osmo-3](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.11-v28-osmo-3)
+
+This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0](https://github.com/cosmos/cosmos-sdk/commit/eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
+
+## [v0.50.11-v28-osmo-2](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.11-v28-osmo-2)
 
 This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0](https://github.com/cosmos/cosmos-sdk/commit/eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
 
@@ -70,6 +74,7 @@ This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0
 
 * Gov proposals fix
     * [#642](https://github.com/osmosis-labs/cosmos-sdk/pull/642) fix: gov proposal fix for missing codec value
+    * [#643](https://github.com/osmosis-labs/cosmos-sdk/pull/643) fix: missing case for key pagination
 
 * Supply offset fix
     * [#629](https://github.com/osmosis-labs/cosmos-sdk/pull/629) fix: add old supply offset functions
@@ -108,6 +113,13 @@ This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0
 
 * Cliff Vesting
     * [#271](https://github.com/osmosis-labs/cosmos-sdk/pull/271) Bring back cliff vesting CLI command
+
+## v28
+
+## [v0.50.11-v28-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.11-v28-osmo-1)
+
+This v0.50.x branch was created at the [eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0](https://github.com/cosmos/cosmos-sdk/commit/eb1a8e88a4ddf77bc2fe235fc07c57016b7386f0) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
+
 
 ## v27
 
