@@ -300,6 +300,10 @@ func collFilteredPaginateByKey[K, V any, C query.Collection[K, V], T any](
 
 		kv, err := iterator.KeyValue()
 		if err != nil {
+			if strings.Contains(err.Error(), "no concrete type registered for type URL") {
+				// URL /osmosis.concentratedliquidity.v1beta1.CreateConcentratedLiquidityPoolsProposal
+				continue
+			}
 			return nil, nil, err
 		}
 		// if no predicate is specified then we just append the result
