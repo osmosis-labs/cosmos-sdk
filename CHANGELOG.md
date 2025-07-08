@@ -38,6 +38,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## Osmosis Specific Info
 
+<<<<<<< HEAD
 ## v28
 
 ## [v0.50.11-v28-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.11-v28-osmo-1)
@@ -122,6 +123,28 @@ This v0.50.x branch was created at the [bd886bb4b03fdfc52bdc1fa2f98e960316604f89
 This v0.50.x branch was created at the [bd886bb4b03fdfc52bdc1fa2f98e960316604f89](https://github.com/cosmos/cosmos-sdk/commit/bd886bb4b03fdfc52bdc1fa2f98e960316604f89) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.x/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
 
 ## [Unreleased]
+=======
+### Improvements
+
+* (x/gov) [#24386](https://github.com/cosmos/cosmos-sdk/pull/24386) Improve helpers to easily create governance proposals from CLI.
+
+### Bug Fixes
+
+* (baseapp) [#23879](https://github.com/cosmos/cosmos-sdk/pull/23879) Ensure finalize block response is not empty in the defer check of FinalizeBlock to avoid panic by nil pointer.
+* (query) [#23884](https://github.com/cosmos/cosmos-sdk/pull/23884) Fix NPE in query pagination.
+
+## [v0.50.13](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.50.13) - 2025-03-12
+
+### Bug Fixes
+
+* [GHSA-47ww-ff84-4jrg](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-47ww-ff84-4jrg) Fix x/group can halt when erroring in EndBlocker
+
+## [v0.50.12](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.50.12) - 2025-02-20
+
+### Bug Fixes
+
+* [GHSA-x5vx-95h7-rv4p](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-x5vx-95h7-rv4p) Fix Group module can halt chain when handling a malicious proposal
+>>>>>>> upstream/release/v0.50.x
 
 ## [v0.50.11](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.50.11) - 2024-12-16
 
