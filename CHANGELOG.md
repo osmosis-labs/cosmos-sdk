@@ -36,6 +36,14 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## v30
+
+## [v0.50.14-v30-osmo-1](https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.14-v30-osmo-1)
+
+This [v0.50.14-hotfix](https://github.com/cosmos/cosmos-sdk/compare/release/v0.50.14-hotfix) branch was created at the [f2e6295b662fdb27ea33da1296c29588ccdaab42](https://github.com/cosmos/cosmos-sdk/commit/f2e6295b662fdb27ea33da1296c29588ccdaab42) commit of the [release/v0.50.x](https://github.com/cosmos/cosmos-sdk/commits/release/v0.50.14/) branch. If you catch this fork up with the latest changes from upstream, please start at the commit after the one mentioned above, and work your way to the tip (or desired commit) of the upstream branch. Then, update this message with the new commit hash. Also, when you add a new PRs to this branch on Osmosis and it is not yet upstreamed, make sure you add it both directly below AND in the respective release section of this file.
+
+## Osmosis Specific Info
+
 ## [v0.50.14](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.50.14) - 2025-07-08
 
 ### Bug Fixes
@@ -54,8 +62,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 ### Bug Fixes
 
 * [GHSA-x5vx-95h7-rv4p](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-x5vx-95h7-rv4p) Fix Group module can halt chain when handling a malicious proposal
-
-## Osmosis Specific Info
 
 ## v29
 
